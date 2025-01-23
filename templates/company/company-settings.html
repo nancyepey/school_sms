@@ -1,0 +1,85 @@
+{% extends 'Home/base.html' %}
+{% load static %}
+{% block body %}
+   
+
+
+<div class="page-wrapper">
+<div class="content container-fluid">
+<div class="page-header">
+<div class="row">
+<div class="col-sm-12">
+<h3 class="page-title">Company Details</h3>
+<ul class="breadcrumb">
+<li class="breadcrumb-item"><a href="">Company</a></li>
+<li class="breadcrumb-item active">Company Details</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="card">
+<div class="card-body">
+<div class="row">
+<div class="col-md-12">
+<div class="about-info">
+<h4>About Me</h4>
+<div class="media mt-3">
+<img src="school/img/{{company.clientLogo}}" class="mr-3" alt="...">
+<div class="media-body">
+<ul>
+<li>
+<span class="title-span">Name : </span>
+<span class="info-span">{{ company.clientName}}</span>
+</li>
+<li>
+<span class="title-span">Address : </span>
+<span class="info-span">{{company.addressLine1}}</span>
+</li>
+<li>
+<span class="title-span">Mobile : </span>
+<span class="info-span">{{company.phoneNumber}}</span>
+</li>
+<li>
+<span class="title-span">Email : </span>
+<span class="info-span"><a href="{{company.emailAddress}}" class="__cf_email__" data-cfemail="7216131b010b32151f131b1e5c111d1f">[email&#160;protected]</a></span>
+</li>
+<li>
+<span class="title-span">Slug : </span>
+<span class="info-span">{{company.slug}}</span>
+</li>
+<li>
+<span class="title-span">Code : </span>
+<span class="info-span">{{company.uniqueId}}</span>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<footer>
+<p>Copyright © 2025 GroupBarb.</p>
+</footer>
+
+</div>
+
+</div>
+
+
+<script data-cfasync="false" src="../cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="{%static 'assets/js/jquery-3.6.0.min.js' %}"></script>
+
+<script src="{%static 'assets/js/popper.min.js' %}"></script>
+<script src="{%static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
+
+<script src="{%static 'assets/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
+
+<script src="{%static 'assets/js/script.js' %}"></script>
+</body>
+
+<!-- Mirrored from preschool.dreamguystech.com/html-template/company-details.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 28 Oct 2021 11:11:50 GMT -->
+</html>
+{% endblock %}

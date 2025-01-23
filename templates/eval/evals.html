@@ -1,0 +1,89 @@
+{% extends 'Home/base.html' %}
+{% load static %}
+{% block body %}
+   
+         <div class="page-wrapper">
+            <div class="content container-fluid">
+               <div class="page-header">
+                  <div class="row align-items-center">
+                     <div class="col">
+                        <h3 class="page-title">Evals</h3>
+                        <ul class="breadcrumb">
+                           <li class="breadcrumb-item"><a href="">Dashboard</a></li>
+                           <li class="breadcrumb-item active">Evals</li>
+                        </ul>
+                     </div>
+                     <div class="col-auto text-right float-right ml-auto">
+                        <a href="#" class="btn btn-outline-primary mr-2"><i class="fas fa-download"></i> Download</a>
+                        <a href="{% url 'add_test' %}" class="btn btn-primary"><i class="fas fa-plus"></i></a>
+                     </div>
+                  </div>
+               </div>
+               <div class="row">
+                  <div class="col-sm-12">
+                     <div class="card card-table">
+                        <div class="card-body">
+                           <div class="table-responsive">
+                              <table class="table table-hover table-center mb-0 datatable">
+                                 <thead>
+                                    <tr>
+                                       <th>ID</th>
+                                       <th>Subject</th>
+                                       <th>Title</th>
+                                       <th>Student</th>
+                                       <th>Value</th>
+                                       <th>Coef</th>
+                                       <th>Teacher</th>
+                                       <th class="text-right">Action</th>
+                                    </tr>
+                                 </thead>
+                                 <tbody>
+                                    {% for eval in eval_list %}
+                                    <tr>
+                                       <td>{{ eval.id}}</td> 
+                                       <td>{{ eval.subject.title }}</td>
+                                       <td>{{ eval.title}}</td> 
+                                       <td>{{ eval.student.name }}</td>
+                                       <td>{{ eval.value}}</td>
+                                       <td>{{ eval.coef}}</td> 
+                                       <td>{{ eval.teacher }}</td>
+                                       <td class="text-right">
+                                          <div class="actions">
+                                             <a href="{% url 'edit_test' eval.id %}" class="btn btn-sm bg-success-light mr-2">
+                                                 <i class="fas fa-pen"></i>
+                                             </a>
+                                             <form action="{% url 'delete_test' eval.id %}" method="POST" style="display:inline;">
+                                                 {% csrf_token %}
+                                                 <button type="submit" class="btn btn-sm bg-danger-light" onclick="return confirm('Are you sure you want to delete this eval?');">
+                                                     <i class="fas fa-trash"></i>
+                                                 </button>
+                                             </form>
+                                         </div>
+                                       </td>
+                                    </tr>
+                                    {% endfor %}
+                                 </tbody>
+                              </table>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+            <footer>
+               <p>Copyright © 2025 GroupBarb.</p>
+            </footer>
+         </div>
+      </div>
+      <script src="{%static 'assets/js/jquery-3.6.0.min.js' %}"></script>
+      <script src="{%static 'assets/js/popper.min.js' %}"></script>
+      <script src="{%static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
+      <script src="{%static 'assets/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
+      <script src="{%static 'assets/plugins/datatables/datatables.min.js' %}"></script>
+      <script src="{%static 'assets/js/script.js' %}"></script>
+   </body>
+   <!-- Mirrored from preschool.dreamguystech.com/html-template/evals.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 28 Oct 2021 11:11:49 GMT -->
+</html>
+
+
+{% endblock %}
