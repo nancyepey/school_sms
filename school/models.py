@@ -26,6 +26,27 @@ class ClassRoom(models.Model):
         return f"{self.class_name} ({self.class_code})"
 
 
+class Specialty(models.Model):
+    name              = models.CharField(max_length=250, unique=True,)
+    code              = models.CharField(max_length=250, unique=True,)
+    # classroom      = models.ForeignKey(ClassRoom, on_delete=models.CASCADE, null=True, blank=True)
+    department        = models.CharField(max_length=250, null=True, blank=True)
+    other                   = models.CharField(max_length=250, null=True, blank=True)
+    added_by                = models.CharField(max_length=100, null=True)
+    modified_by             = models.CharField(max_length=100, null=True, blank=True)
+    slug                    = models.SlugField(max_length=255, unique=True, blank=True)
+    is_actif                = models.BooleanField(default=True)
+    created_on              = models.DateTimeField(auto_now_add=True)
+    updated_on              = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(f"{self.name}-{self.code}")
+        super(Specialty, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.name} ({self.code})"
+
 
 class Settings(models.Model):
 

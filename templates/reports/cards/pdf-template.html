@@ -283,17 +283,70 @@
 			<table class="subject_table" style="margin: 0em; padding:0px; min-width:100%;">
 				<thead style=" min-width:100%;">
 					<tr style="margin-bottom: 0em;  margin-top: 0em;  border:none;">
-						<th colspan="1" style="margin-bottom: -1em;  margin-top: 0em;">Subject</th>
-						<th colspan="1" style="margin-bottom: -1em;  margin-top: 0em;">Test3</th>
-						<th colspan="1" style="margin-bottom: -1em;  margin-top: 0em;">Test4</th>
-						<th colspan="1" style="margin-bottom: -1em;  margin-top: 0em;">Avg</th>
-						<th colspan="1" style="margin-bottom: -1em;  margin-top: 0em;">Coef</th>
-						<th colspan="1" style="margin-bottom: -1em;  margin-top: 0em;">Total</th>
-						<th colspan="1" style="margin-bottom: -1em;  margin-top: 0em;">Rank</th>
-						<th colspan="1" style="margin-bottom: -1em;  margin-top: 0em;">Remark / Sign</th>
-						<th colspan="1" style="margin-bottom: -1em;  margin-top: 0em; margin-right: 1em;">Teacher</th>
+						<th colspan="1" style="margin-bottom: -1em;  margin-top: 0em;">
+							
+							<div class="col-6" style="text-align:left; ">
+								<p style="padding:3px; margin:0px; font-size:15px; margin-bottom: -1em;  margin-top: 0em;">Subject</p>
+								<p style="padding:3px; margin:0px; font-size:16px; ">Matiere</p>
+							</div>
+						</th>
+						<th colspan="1" style="margin-bottom: -1em;  margin-top: 0em;">
+							<div class="col-6" style="text-align:left; ">
+								<p style="padding:3px; margin:0px; font-size:15px; margin-bottom: -1em;  margin-top: 0em;">Test3</p>
+								<p style="padding:3px; margin:0px; font-size:16px; ">Eval3</p>
+							</div>
+						</th>
+						<th colspan="1" style="margin-bottom: -1em;  margin-top: 0em;">
+							<div class="col-6" style="text-align:left; ">
+								<p style="padding:3px; margin:0px; font-size:15px; margin-bottom: -1em;  margin-top: 0em;">Test4</p>
+								<p style="padding:3px; margin:0px; font-size:16px; ">Eval4</p>
+							</div>
+							
+						</th>
+						<th colspan="1" style="margin-bottom: -1em;  margin-top: 0em;">
+							<div class="col-6" style="text-align:left; ">
+								<p style="padding:3px; margin:0px; font-size:15px; margin-bottom: -1em;  margin-top: 0em;">Avg</p>
+								<p style="padding:3px; margin:0px; font-size:16px; ">Moy</p>
+							</div>
+							
+						</th>
+						<th colspan="1" style="margin-bottom: -1em;  margin-top: 0em;">
+							<div class="col-6" style="text-align:left; ">
+								<p style="padding:3px; margin:0px; font-size:15px; margin-bottom: -1em;  margin-top: 0em;">Coef</p>
+								<p style="padding:3px; margin:0px; font-size:16px; ">Coef</p>
+							</div>
+							
+						</th>
+						<th colspan="1" style="margin-bottom: -1em;  margin-top: 0em;">
+							<div class="col-6" style="text-align:left; ">
+								<p style="padding:3px; margin:0px; font-size:15px; margin-bottom: -1em;  margin-top: 0em;">Total</p>
+								<p style="padding:3px; margin:0px; font-size:16px; ">Total</p>
+							</div>
+							
+						</th>
+						<th colspan="1" style="margin-bottom: -1em;  margin-top: 0em;">
+							<div class="col-6" style="text-align:left; ">
+								<p style="padding:3px; margin:0px; font-size:15px; margin-bottom: -1em;  margin-top: 0em;">Rank</p>
+								<p style="padding:3px; margin:0px; font-size:16px; ">Rang</p>
+							</div>
+							
+						</th>
+						<th colspan="1" style="margin-bottom: -1em;  margin-top: 0em;">
+							<div class="col-6" style="text-align:left; ">
+								<p style="padding:3px; margin:0px; font-size:15px; margin-bottom: -1em;  margin-top: 0em;">Remark / Sign</p>
+								<p style="padding:3px; margin:0px; font-size:16px; ">Appr / Sign</p>
+							</div>
+							
+						</th>
+						<th colspan="1" style="margin-bottom: -1em;  margin-top: 0em; margin-right: 1em;">
+							<div class="col-6" style="text-align:left; ">
+								<p style="padding:3px; margin:0px; font-size:15px; margin-bottom: -1em;  margin-top: 0em;">Teacher</p>
+								<p style="padding:3px; margin:0px; font-size:16px; ">Professeurs</p>
+							</div>
+							Teacher
+						</th>
 					</tr>
-					<tr style="margin-bottom: 0em;  margin-top: 0em; border:none;">
+					{% comment %} <tr style="margin-bottom: 0em;  margin-top: 0em; border:none;">
 						<th style="margin-bottom: -1em;  margin-top: 0em;">Matiere</th>
 						<th style="margin-bottom: -1em;  margin-top: 0em;">Eval3</th>
 						<th style="margin-bottom: -1em;  margin-top: 0em;">Eval4</th>
@@ -303,7 +356,7 @@
 						<th style="margin-bottom: -1em;  margin-top: 0em;">Rang</th>
 						<th style="margin-bottom: -1em;  margin-top: 0em;">Appr / Sign</th>
 						<th style="margin-bottom: -1em;  margin-top: 0em; padding-right: 3em;">Professeurs</th>
-					</tr>
+					</tr> {% endcomment %}
 				</thead>
 				<tbody>
 					{% for subj in subject_line %}

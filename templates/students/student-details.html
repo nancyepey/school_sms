@@ -1,4 +1,4 @@
-{% extends 'Home/base.html' %}
+{% extends 'home/base.html' %}
 {% load static %}
 {% block body %}
    
@@ -11,7 +11,13 @@
 <div class="col-sm-12">
 <h3 class="page-title">Student Details</h3>
 <ul class="breadcrumb">
-<li class="breadcrumb-item"><a href="/student">Student</a></li>
+<li class="breadcrumb-item"><a href="
+    {% if user.is_admin %}
+    {% url 'student_list' %}
+    {% else %}
+    {% url 'dashboard' %}
+    {% endif %}
+    ">Student</a></li>
 <li class="breadcrumb-item active">Student Details</li>
 </ul>
 </div>
@@ -56,10 +62,11 @@
 </div>
 <div class="row mt-3">
 <div class="col-md-12">
-<p>Hello I am Daisy Parks. Lorem Ipsum is simply dummy text of the printing and typesetting industry, simply dummy text of the printing and typesetting industry.</p>
+<p>Hello I am {{student.name}} in {{student.student_class.class_name}}.</div>
 </div>
-</div>
-<div class="row follow-sec">
+
+
+{% comment %} <div class="row follow-sec">
 <div class="col-md-4 mb-3">
 <div class="blue-box">
 <h3>2850</h3>
@@ -78,7 +85,9 @@
 <p>Friends</p>
 </div>
 </div>
-</div>
+</div> {% endcomment %}
+
+
 <div class="row mt-2">
 <div class="col-md-12">
 <h5>Permanent Address</h5>
@@ -94,7 +103,9 @@
 </div>
 </div>
 </div>
-<div class="row mt-2">
+
+
+{% comment %} <div class="row mt-2">
 <div class="col-md-12">
 <div class="skill-info">
 <h4>Skills</h4>
@@ -145,7 +156,9 @@
 </div>
 </div>
 </div>
-</div>
+</div> {% endcomment %}
+
+{% if user.is_admin %}
 <div class="row mt-2">
 <div class="col-md-12">
 <div class="skill-info">
@@ -181,6 +194,7 @@
 </div>
 </div>
 </div>
+{% endif %}
 
 <footer>
 <p>Copyright © 2025 GroupBarb.</p>

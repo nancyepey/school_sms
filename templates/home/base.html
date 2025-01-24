@@ -6,7 +6,7 @@
    <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
-      <title>School - Dashboard</title>
+      <title>School - SMS - Dashboard</title>
       <link rel="shortcut icon" href="{%static 'assets/img/favicon.png' %}">
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,500;0,600;0,700;1,400&amp;display=swap">
       <link rel="stylesheet" href="{%static 'assets/plugins/bootstrap/css/bootstrap.min.css' %}">
@@ -100,9 +100,10 @@
                            </p>
                         </div>
                      </div>
-                     <a class="dropdown-item" href="profile.html">My Profile</a>
-                     <a class="dropdown-item" href="inbox.html">Inbox</a>
-                     <a class="dropdown-item" href="">Logout</a>
+                     
+                     <a class="dropdown-item" href="#">My Profile</a>
+                     <a class="dropdown-item" href="#">Inbox</a>
+                     <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
                   </div>
                </li>
             </ul>
@@ -118,29 +119,45 @@
                         <a href="#"><i class="fas fa-user-graduate"></i> <span> Dashboard</span> <span class="menu-arrow"></span></a>
                         <ul>
                            {% if user.is_student %}
-                           <li><a href="{% url 'dashboard' %}">Student Dashboard</a></li>
+                           <li><a href="{% url 'dashboard' %}"  class="active">Student Dashboard</a></li>
                            {% else %}
+                           {% if user.is_admin %}
                            <li><a href="index.html" class="active">Admin Dashboard</a></li>
-                           <li><a href="teacher-dashboard.html">Teacher Dashboard</a></li>
-                           <li><a href="student-dashboard.html">Student Dashboard</a></li>
+                              {% endif %}
+                              {% if user.is_teacher %}
+                              <li><a href="teacher-dashboard.html"  class="active">Teacher Dashboard</a></li>
+                              {% endif %}
+                              
+                           
+                           
                            {% endif %}
                         </ul>
                      </li>
                      <li class="submenu">
                         <a href="#"><i class="fas fa-user-graduate"></i> <span> Students</span> <span class="menu-arrow"></span></a>
                         <ul>
+                           {% if user.is_admin %}
                            <li><a href="{% url 'student_list' %}">Student List</a></li>
-                           <li><a href="student-details.html">Student View</a></li>
                            <li><a href="{% url 'add_student' %}">Student Add</a></li>
-                           <li><a href="edit-student.html">Student Edit</a></li>
+                           {% endif %}
+                           {% if user.is_student %}
+                           <li><a href="{% url 'view_student' user.student_profile.id %}">My Profile</a></li>
+                           {% endif %}
                         </ul>
                      </li>
+                     {% if user.is_admin %}
                      <li class="submenu">
                         <a href="#"><i class="fas fa-chalkboard-teacher"></i> <span> Teachers</span> <span class="menu-arrow"></span></a>
                         <ul>
-                           <li><a href="{% url 'teacher_list' %}">Teacher List</a></li>
-                           <li><a href="teacher-details.html">Teacher View</a></li>
+                           <li><a href="{% url 'teacher_list' %}">Teacher View</a></li>
                            <li><a href="{% url 'add_teacher' %}">Teacher Add</a></li>
+                        </ul>
+                     </li>
+                     <li class="submenu">
+                        <a href="#"><i class="fas fa-chalkboard"></i> <span> Specialty</span> <span class="menu-arrow"></span></a>
+                        <ul>
+                           <li><a href="{% url 'specialty_list' %}"> View</a></li>
+                           <li><a href="{% url 'add_specialty' %}">Add</a></li>
                         </ul>
                      </li>
                      <!-- <li class="submenu">
@@ -156,7 +173,6 @@
                         <ul>
                            <li><a href="{% url 'class_list' %}">Class List</a></li>
                            <li><a href="{% url 'add_class' %}">Class Add</a></li>
-                           <li><a href="edit-class.html">Class Edit</a></li>
                         </ul>
                      </li>
                      <li class="submenu">
@@ -219,10 +235,15 @@
                            {% comment %} <li><a href="error-404.html">Error Page</a></li> {% endcomment %}
                         </ul>
                      </li>
-                     <li>
+                     {% endif %}
+                     
+                     {% comment %} <li>
                         <a href="blank-page.html"><i class="fas fa-file"></i> <span>Blank Page</span></a>
+                     </li> {% endcomment %}
+                     <li>
+                        <a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
                      </li>
-                     <li class="submenu">
+                     {% comment %} <li class="submenu">
                         <a href="#"><i class="fas fa-columns"></i> <span> Forms </span> <span class="menu-arrow"></span></a>
                         <ul>
                            <li><a href="form-basic-inputs.html">Basic Inputs </a></li>
@@ -232,15 +253,15 @@
                            <li><a href="form-mask.html"> Form Mask </a></li>
                            <li><a href="form-validation.html"> Form Validation </a></li>
                         </ul>
-                     </li>
-                     <li class="submenu">
+                     </li> {% endcomment %}
+                     {% comment %} <li class="submenu">
                         <a href="#"><i class="fas fa-table"></i> <span> Tables </span> <span class="menu-arrow"></span></a>
                         <ul>
                            <li><a href="tables-basic.html">Basic Tables </a></li>
                            <li><a href="data-tables.html">Data Table </a></li>
                         </ul>
-                     </li>
-                     <li class="submenu">
+                     </li> {% endcomment %}
+                     {% comment %} <li class="submenu">
                         <a href="javascript:void(0);"><i class="fas fa-code"></i> <span>Multi Level</span> <span class="menu-arrow"></span></a>
                         <ul>
                            <li class="submenu">
@@ -261,7 +282,7 @@
                               <a href="javascript:void(0);"> <span>Level 1</span></a>
                            </li>
                         </ul>
-                     </li>
+                     </li> {% endcomment %}
                   </ul>
                </div>
             </div>

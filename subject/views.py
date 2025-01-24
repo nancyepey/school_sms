@@ -87,13 +87,13 @@ def edit_subject(request, slug):
         # obj_student_class = ClassRoom.objects.filter(classroom)
 
         
-        title = title,
-        fr_title = fr_title,
-        coef = coef,
-        subject_code = subject_code,
-        description = description,
-        modified_by = modified_by,
-        category = category,
+        subject.title = title,
+        subject.fr_title = fr_title,
+        subject.coef = coef,
+        subject.subject_code = subject_code,
+        subject.description = description,
+        subject.modified_by = modified_by,
+        subject.category = category,
 
         print("classroom")
         print(classroom)

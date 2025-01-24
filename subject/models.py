@@ -2,7 +2,7 @@ from django.db import models
 #
 from django.utils.text import slugify
 
-from school.models import ClassRoom
+from school.models import ClassRoom, Specialty
 
 
 
@@ -17,6 +17,7 @@ class Subject(models.Model):
     # To define a many-to-many relationship, use ManyToManyField.
     # In this example, an Article can be published in multiple Publication objects, and a Publication has multiple Article objects
     classroom           = models.ManyToManyField(ClassRoom)
+    speciaty          = models.ForeignKey(Specialty, on_delete=models.CASCADE, null=True, blank=True)
     description         = models.TextField( null=True, blank=True)
     category            = models.CharField(max_length=100, null=True, blank=True)
     slug                = models.SlugField(max_length=255, unique=True, blank=True)
