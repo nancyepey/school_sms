@@ -9,7 +9,7 @@ class CustomUserAdmin(DefaultUserAdmin):
     # Customize which fields are displayed in the admin form
     fieldsets = (
         (None, {'fields': ('username', 'password')}),  # Login details
-        ('Personal info', {'fields': ( 'name', 'email','student_profile', 'teacher_profile',)}),  # Personal details
+        ('Personal info', {'fields': ( 'name', 'email','student_profile', 'teacher_profile', 'photo',)}),  # Personal details
         ('Roles', {'fields': ('is_student', 'is_teacher', 'is_admin')}),  # Role fields
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'is_authorized',  # Add is_authorized here
                                     'groups', 'user_permissions')}),  # Admin permissions
@@ -19,7 +19,7 @@ class CustomUserAdmin(DefaultUserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('username', 'email', 'password1', 'password2', 'is_authorized', 'is_student', 'is_teacher', 'is_admin', 'student_profile', 'teacher_profile',)}
+            'fields': ('username', 'email', 'password1', 'password2', 'photo', 'is_authorized', 'is_student', 'is_teacher', 'is_admin', 'student_profile', 'teacher_profile',)}
          ),
     )
 

@@ -31,12 +31,20 @@
                                        <input type="text" class="form-control" name="student_name" required>
                                     </div>
                                  </div>
-                                 <!-- <div class="col-12 col-sm-6">
+                                 <div class="col-12 col-sm-6">
                                     <div class="form-group">
-                                       <label>Last Name</label>
-                                       <input type="text" class="form-control" name = "last_name" required>
+                                       <label>Username</label>
+                                       <input type="text" class="form-control" name = "u_name" required>
                                     </div>
-                                 </div> -->
+                                 </div>
+                                 
+                                 <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                       <label> Email</label>
+                                       <input type="email" class="form-control" name="student_email" >
+                                    </div>
+                                 </div>
+
                                  <div class="col-12 col-sm-6">
                                     <div class="form-group">
                                        <label>Student Uid</label>
@@ -120,6 +128,29 @@
                                  <div class="col-12">
                                     <h5 class="form-title"><span>Parent Information</span></h5>
                                  </div>
+
+                                 <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                       <label>Parent</label>
+                                       <select class="form-control" name="parents">
+                                          <option value="">Select Parent</option>
+                                          {% for parent in parents %}
+                                             <option value="{{parent.id}}">
+                                                {% if father_name %}
+                                                {{parent.father_name}}
+                                                {% endif %}
+                                                {% if mother_name %}
+                                                {{parent.mother_name}}
+                                                {% endif %}
+                                                {% if carer_name %}
+                                                {{parent.carer_name}}
+                                                {% endif %}
+                                             </option>
+                                          
+                                          {% endfor %}
+                                       </select>
+                                    </div>
+                                 </div>
                                  <div class="col-12 col-sm-6">
                                     <div class="form-group">
                                        <label>Father's Name</label>
@@ -166,6 +197,30 @@
                                     <div class="form-group">
                                        <label>Mother's Email</label>
                                        <input type="email" class="form-control" name="mother_email" required>
+                                    </div>
+                                 </div>
+                                 <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                       <label>Carer's Name</label>
+                                       <input type="text" class="form-control" name="carer_name" >
+                                    </div>
+                                 </div>
+                                 <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                       <label>Carer's Occupation</label>
+                                       <input type="text" class="form-control" name="carer_occupation" >
+                                    </div>
+                                 </div>
+                                 <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                       <label>Carer's Mobile</label>
+                                       <input type="text" class="form-control" name="carer_mobile" >
+                                    </div>
+                                 </div>
+                                 <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                       <label>Carer's Email</label>
+                                       <input type="email" class="form-control" name="carer_email" >
                                     </div>
                                  </div>
                                  <div class="col-12 col-sm-6">

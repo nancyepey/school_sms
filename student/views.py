@@ -2,6 +2,7 @@ import datetime
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, render, redirect
 
+from core.models import CustomUser
 from school.models import ClassRoom
 #
 from .models import Parent, Student
@@ -15,6 +16,8 @@ def add_student(request):
 
     if request.method == "POST":
         name = request.POST.get('student_name')
+        username = request.POST.get('u_name')
+        student_email = request.POST.get('student_email')
         student_uid = request.POST.get('student_uid')
         gender = request.POST.get('gender')
         date_of_birth = request.POST.get('date_of_birth')
@@ -53,9 +56,10 @@ def add_student(request):
                 carer_email = carer_email,
                 present_address = present_address,
                 permanent_address = permanent_address,
-                added_by = "emnanlaptop",
+                added_by = request.user.username,
 
             )
+            # stu_email = carer_email
         else:
             parent = Parent.objects.create(
                 father_name = father_name,
@@ -68,8 +72,17 @@ def add_student(request):
                 mother_email = mother_email,
                 present_address = present_address,
                 permanent_address = permanent_address,
-                added_by = "emnanlaptop",
+                added_by = request.user.username,
             )
+
+        
+        if student_email == "":
+            if father_email == "":
+                stu_email = mother_email
+            if carer_email == "":
+                stu_email = carer_email
+        else:
+            stu_email = student_email
         
         # save student information
 
@@ -90,8 +103,26 @@ def add_student(request):
             section = section,
             student_image = student_image,
             parent = parent, 
-            added_by = "emnanlaptop",
+            added_by = request.user.username,
         )
+
+        #
+        
+
+        # Create the user
+        user = CustomUser.objects.create_user(
+            username=username,
+            email=stu_email,
+            name=name,
+            password="GTECH",
+            photo = student_image,
+            student_profile = student
+        )
+        
+        # Assign student role
+        user.is_student = True
+
+        user.save()
 
         messages.success(request, 'Student added Successfully')
         return redirect("student_list")
@@ -161,7 +192,7 @@ def student_list(request):
 #         student.section = section
 #         # student.student_image = student_image
 #         student.student_uid = student_uid
-#         student.modified_by = "emnanlaptop"
+#         student.modified_by = request.user.username
 #         student.save()
 
 #         # retrieve parent data from the form
@@ -179,7 +210,7 @@ def student_list(request):
 #         parent.carer_email = request.POST.get('carer_email')
 #         parent.present_address = request.POST.get('present_address')
 #         parent.permanent_address = request.POST.get('permanent_address')
-#         parent.modified_by = "emnanlaptop"
+#         parent.modified_by = request.user.username
 
 #         parent.save() #save parent
         
@@ -242,7 +273,7 @@ def edit_student(request,slug):
         student.admission_number = admission_number
         student.section = section
         student.student_image = student_image
-        student.modified_by = "emnanlaptop"
+        student.modified_by = request.user.username
         student.save()
         # create_notification(request.user, f"Added Student:  {student.name}")
         

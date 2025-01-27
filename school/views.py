@@ -19,7 +19,7 @@ def index(request):
     # return render(request, "home/index.html")
 
 def dashboard(request):
-    company = Settings.objects.get(clientName='GILEAD TECHNICAL HIGH SCHOOL(Gilead Tech)')
+    company = Settings.objects.get(clientName='GILEAD TECHNICAL HIGH SCHOOL')
     user_info = Student.objects.get(id=request.user.student_profile.id)
     class_info = ClassRoom.objects.get(id=user_info.student_class.id)
     class_subjects = Subject.objects.filter(classroom=class_info.id)
@@ -42,7 +42,7 @@ def dashboard(request):
 
 
 def admin_dashboard(request):
-    company = Settings.objects.get(clientName='GILEAD TECHNICAL HIGH SCHOOL(Gilead Tech)')
+    company = Settings.objects.get(clientName='GILEAD TECHNICAL HIGH SCHOOL')
     classroom = ClassRoom.objects.all()
     count_class = ClassRoom.objects.all().count()
     count_subjects = Subject.objects.all().count()
@@ -59,7 +59,7 @@ def admin_dashboard(request):
 
 
 def teacher_dashboard(request):
-    company = Settings.objects.get(clientName='GILEAD TECHNICAL HIGH SCHOOL(Gilead Tech)')
+    company = Settings.objects.get(clientName='GILEAD TECHNICAL HIGH SCHOOL')
     user_info = Student.objects.get(id=request.user.student_profile.id)
     class_info = ClassRoom.objects.get(id=user_info.student_class.id)
     class_subjects = Subject.objects.filter(classroom=class_info.id)
@@ -184,10 +184,10 @@ def add_specialty(request):
         # obj_student_class = ClassRoom.objects.filter(classroom)
 
         specialty = Specialty.objects.create(
-            class_name = name,
-            class_code = code,
-            class_department = dept,
-            added_by = added_by,
+            name = name,
+            code = code,
+            department = dept,
+            added_by = added_by, 
         )
 
         # obj_class = Specialty.objects.get(id=classroom)
@@ -256,7 +256,7 @@ def del_specialty(request, slug):
 
 
 def companySettings(request):
-    company = Settings.objects.get(clientName='GILEAD TECHNICAL HIGH SCHOOL(Gilead Tech)')
+    company = Settings.objects.get(clientName='GILEAD TECHNICAL HIGH SCHOOL')
     context = {'company': company}
     return render(request, 'company/company-settings.html', context)
 

@@ -30,7 +30,7 @@
                                        {% comment %} <th>ID</th> {% endcomment %}
                                        <th>Name</th>
                                        <th>Slug</th>
-                                       <th>classroom </th>
+                                       {% comment %} <th>classroom </th> {% endcomment %}
                                        <th>Code</th>
                                        <th>Department</th>
                                        <th class="text-right">Action</th>
@@ -41,7 +41,7 @@
                                     <tr>
                                        <td>{{ specialty_l.name}}</td>  
                                        <td>{{ specialty_l.slug }}</td>
-                                       <td>{{ specialty_l.classroom.class_name }}</td>
+                                       {% comment %} <td>{{ specialty_l.classroom.class_name }}</td> {% endcomment %}
                                        <td>{{ specialty_l.code }}</td>
                                        <td>{{ specialty_l.department}}</td>
                                        {% comment %} <td>{{ class_l.resumption }}</td> {% endcomment %}

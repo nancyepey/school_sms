@@ -53,23 +53,50 @@
                                     </div>
                                 </div>
                                 
+                                
+                                 
                                 <div class="col-12 col-sm-6">
                                     <div class="form-group">
-                                       <label>Subject</label>
-                                       <select class="form-control" name="teacher_subj" required>
-                                          <option value="">Select Subject</option>
-                                          {% for subjr in subject %}
-                                             <option value={{subjr.id}}
-                                                
-                                                {% if teacher.teacher_subj_id == subjr.id %}
-                                                selected
-                                                {% endif %} 
-                                                >
-                                                {{subjr.title}}
-                                            </option>
+                                       <label>Subject</label> 
+                                       <select class="form-control selectpicker" multiple data-live-search="true" name="teacher_subj" required>
+                                          <!-- <option value="">Select Class</option> -->
+                                          {% for tag in teacher.t_subjects.all  %}
+                                            {% for subject in subject %}
+                                                {% comment %} {{ tag }} {% endcomment %}
+                                                {% if tag.id == subject.id %}
+                                                <option value="{{tag.id}}" selected>{{tag.title}}</option>
+                                                {% else %}
+                                                <option value="{{subject.id}}" >{{subject.title}}</option>
+                                                {% endif %}
+                                            {% endfor %}
+                                             {% comment %} <option value="{{subject.id}}">{{subject.title}}</option> {% endcomment %}
                                           
                                           {% endfor %}
                                        </select>
+                                    </div>
+                                 </div>
+                                 <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                       <label>Class</label>
+                                       <select class="form-control selectpicker" multiple data-live-search="true" name="classteach" required>
+                                          <!-- <option value="">Select Class</option> -->
+                                          {% for teachclassroom in teacher.classrooms.all  %}
+                                            {% for classrm in classroom %}
+                                                {% comment %} <option value="{{classrm.id}}">{{classrm.class_name}}</option> {% endcomment %}
+                                                {% if teachclassroom.id == classrm.id %}
+                                                <option value="{{teachclassroom.id}}" selected>{{teachclassroom.class_name}}</option>
+                                                {% else %}
+                                                <option value="{{classrm.id}}" >{{classrm.class_name}}</option>
+                                                {% endif %}
+                                            
+                                            {% endfor %}
+                                          {% endfor %}
+                                       </select>
+                                       <!-- <select class="selectpicker" multiple data-live-search="true">
+                                       <option>Mustard</option>
+                                       <option>Ketchup</option>
+                                       <option>Relish</option>
+                                       </select> -->
                                     </div>
                                  </div>
                                 <div class="col-12 col-sm-6">

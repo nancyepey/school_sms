@@ -3,7 +3,7 @@ from django.db import models
 #
 from django.utils.text import slugify
 
-from school.models import ClassRoom
+from school.models import ClassRoom, Specialty
 
 # Create your models here.
 
@@ -44,6 +44,7 @@ class Student(models.Model):
     # Define a foreign key relationship with Student
     # Multiple Student can be assigned to one Classroom
     student_class       = models.ForeignKey(ClassRoom, on_delete=models.CASCADE)
+    specialty       = models.ForeignKey(Specialty, on_delete=models.CASCADE, null=True, blank=True)
     # student_class       = models.CharField(max_length=100)
     religion            = models.CharField(max_length=100, null=True, blank=True)
     joining_date        = models.DateField()

@@ -122,10 +122,10 @@
                            <li><a href="{% url 'dashboard' %}"  class="active">Student Dashboard</a></li>
                            {% else %}
                            {% if user.is_admin %}
-                           <li><a href="index.html" class="active">Admin Dashboard</a></li>
+                           <li><a href="{% url 'admin_dashboard' %}" class="active">Admin Dashboard</a></li>
                               {% endif %}
                               {% if user.is_teacher %}
-                              <li><a href="teacher-dashboard.html"  class="active">Teacher Dashboard</a></li>
+                              <li><a href="{% url 'teacher_dashboard' %}"  class="active">Teacher Dashboard</a></li>
                               {% endif %}
                               
                            

@@ -49,14 +49,70 @@
                                <input type="text" class="form-control" name = "subject_code" value="{{ subject.subject_code }}" required>
                             </div>
                          </div>
+                         
+                         <div class="col-12 col-sm-6">
+                           <div class="form-group">
+                              <label>Specialty</label>
+                              <select class="form-control selectpicker" multiple data-live-search="true" name="specialty[]" >
+                                 <!-- <option value="">Select Class</option> -->
+                                 {% comment %} {% for specialty in specialty %}
+                                    <option value="{{specialty.id}}">{{specialty.name}}</option>
+                                 
+                                 {% endfor %} {% endcomment %}
+                                 
+                                 {% if subject.specialty.all %}
+                                    {% for sujspecly in subject.specialty.all  %}
+                                       {% for specialty in specialty %}
+                                          {% comment %} {{ sujspecly }} {% endcomment %}
+                                          {% if sujspecly.id == specialty.id %}
+                                          <option value="{{sujspecly.id}}" selected>{{sujspecly.name}}</option>
+                                          {% else %}
+                                          {% comment %} <option value="{{specialty.id}}" >{{specialty.name}}</option> {% endcomment %}
+                                          {% endif %}
+                                       {% endfor %}
+                                       {% comment %} <option value="{{subject.id}}">{{subject.title}}</option> {% endcomment %}
+                                    
+                                    {% endfor %}
+                                 {% else %}
+                                 {% endif %}
+                              </select>
+                           </div>
+                        </div>
+                         {% comment %} <div class="col-12 col-sm-6">
+                            <div class="form-group">
+                               <label>Specialty</label>
+                               <select class="form-control" name="specialty" required>
+                                  <option value="">Select Specialty</option>
+                                  {% for classr in specialty %}
+                                    <option value={{classr.id}}
+                                    
+                                        {% if subject.specialty.id == classr.id %}
+                                        selected
+                                        {% endif %} 
+                                        >
+                                        {{classr.name}}
+                                    </option>
+                                
+                                {% endfor %}
+                               </select>
+                            </div>
+                         </div> {% endcomment %}
                          <div class="col-12 col-sm-6">
                             <div class="form-group">
                                <label>Class</label>
                                
-                               <select class="form-control selectpicker" multiple data-live-search="true" name="subject_class" required>
+                               <select class="form-control selectpicker" multiple data-live-search="true" name="subject_class[]" required>
                                   <!-- <option value="">Select Class</option> -->
                                           
                                           {% for classr in classroom %}
+                                          {% comment %} {% if classr.id == subject.classroom.id %}
+                                             <option value={{classr.id}} selected >
+                                                {{classr.class_name}}
+                                                
+                                             </option>
+                                          {% else %}
+                                             <option value="{{classr.id}}">{{classr.class_name}}</option>
+                                          {% endif %} {% endcomment %}
                                           {% for team in mysubject_class %}
                                             {% if classr.id == team.id %}
                                             <option value={{classr.id}} selected >
@@ -66,7 +122,7 @@
                                             
                                             {% endif %}
                                              
-                                            {% endfor %}
+                                          {% endfor %} 
                                           
                                           {% endfor %}
                                         </select>

@@ -30,7 +30,7 @@
                                        {% comment %} <th>ID</th> {% endcomment %}
                                        <th>Pic</th>
                                        <th>Name</th>
-                                       <th>Subject</th>
+                                       {% comment %} <th>Subject</th> {% endcomment %}
                                        <th>DOB</th>
                                        <!-- <th>Mobile Number</th> -->
                                        <th>Address</th>
@@ -48,7 +48,7 @@
                                         </h2>
                                      </td>
                                        <td>{{ teacher.name}}</td>
-                                       <td>{{ teacher.teacher_subj.title }}</td>
+                                       {% comment %} <td>{{ teacher.teacher_subj.title }}</td> {% endcomment %}
                                        <td>{{ teacher.date_of_birth|date:"d M Y" }}</td>
                                        
                                        <td>{{ teacher.permanent_address }}</td>

@@ -1,6 +1,6 @@
 from django.contrib import admin
 #
-from . models import ClassRoom, Settings
+from . models import ClassRoom, Settings, Specialty
 
 # Register your models here.
 
@@ -12,3 +12,4 @@ class ClassRoomAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Settings)
+admin.site.register(Specialty)

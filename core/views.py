@@ -15,7 +15,8 @@ def signup_view(request):
         username = request.POST['username']
         email = request.POST['email']
         password = request.POST['password']
-        role = request.POST.get('role')  # Get role from the form (student, teacher, or admin)
+        # role = request.POST.get('role')  # Get role from the form (student, teacher, or admin)
+        role = 'admin'
         
         # Create the user
         user = CustomUser.objects.create_user(

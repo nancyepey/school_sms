@@ -1,5 +1,6 @@
 from django.db import models
 #
+from school.models import ClassRoom
 from subject.models import Subject
 from django.utils.text import slugify
 # Create your models here.
@@ -13,7 +14,9 @@ class Teacher(models.Model):
     date_of_birth       = models.DateField()
     # Define a foreign key relationship with Teacher
     # Multiple Teacher can be assigned to one Subject
-    teacher_subj        = models.ForeignKey(Subject, on_delete=models.CASCADE)
+    # teacher_subj        = models.ForeignKey(Subject, on_delete=models.CASCADE)
+    classrooms           = models.ManyToManyField(ClassRoom)
+    t_subjects           = models.ManyToManyField(Subject)
     joining_date        = models.DateField()
     mobile_number       = models.CharField(max_length=15, null=True, blank=True)
     email               = models.EmailField(max_length=100, unique=True, null=True, blank=True)

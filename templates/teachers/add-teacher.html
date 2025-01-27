@@ -33,6 +33,12 @@
                                  </div>
                                  <div class="col-12 col-sm-6">
                                     <div class="form-group">
+                                       <label>Username</label>
+                                       <input type="text" class="form-control" name="u_name" required>
+                                    </div>
+                                 </div>
+                                 <div class="col-12 col-sm-6">
+                                    <div class="form-group">
                                        <label>Teacher Uid</label>
                                        <input type="text" class="form-control" name = "teacher_uid" required>
                                     </div>
@@ -55,7 +61,7 @@
                                        </div>
                                     </div>
                                  </div>
-                                 <div class="col-12 col-sm-6">
+                                 {% comment %} <div class="col-12 col-sm-6">
                                     <div class="form-group">
                                        <label>Subject</label>
                                        <select class="form-control" name="teacher_subj" required>
@@ -65,6 +71,36 @@
                                           
                                           {% endfor %}
                                        </select>
+                                    </div>
+                                 </div> {% endcomment %}
+                                 
+                                 <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                       <label>Subject</label> 
+                                       <select class="form-control selectpicker" multiple data-live-search="true" name="teacher_subj" required>
+                                          <!-- <option value="">Select Class</option> -->
+                                          {% for subject in subject %}
+                                             <option value="{{subject.id}}">{{subject.title}}</option>
+                                          
+                                          {% endfor %}
+                                       </select>
+                                    </div>
+                                 </div>
+                                 <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                       <label>Class</label>
+                                       <select class="form-control selectpicker" multiple data-live-search="true" name="classteach" required>
+                                          <!-- <option value="">Select Class</option> -->
+                                          {% for classrm in classroom %}
+                                             <option value="{{classrm.id}}">{{classrm.class_name}}</option>
+                                          
+                                          {% endfor %}
+                                       </select>
+                                       <!-- <select class="selectpicker" multiple data-live-search="true">
+                                       <option>Mustard</option>
+                                       <option>Ketchup</option>
+                                       <option>Relish</option>
+                                       </select> -->
                                     </div>
                                  </div>
                                  <div class="col-12 col-sm-6">

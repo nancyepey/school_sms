@@ -48,6 +48,18 @@
                                        </select>
                                     </div>
                                  </div>
+                                 <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                       <label>Resumption Year</label>
+                                       <input type="text" class="form-control" placeholder="Date Month, Year" name="resumptn_date" value="{{ subject.resumption }}" required>
+                                    </div>
+                                 </div>
+                                 <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                       <label>Description</label>
+                                       <input type="text" class="form-control" placeholder="Year1/Year2" name="academic_year" value="{{ subject.academic_year }}" required>
+                                    </div>
+                                 </div>
                                  {% comment %} <div class="col-12 col-sm-6">
                                     <div class="form-group">
                                        <label>Remarks</label>

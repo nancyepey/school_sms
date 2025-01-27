@@ -8,6 +8,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 # from sympy import Sum
 from django.db.models import Sum
 import decimal
+from teacher.models import Teacher
 from school.models import ClassRoom, Settings
 
 from .models import Eval, ReportCard
@@ -22,7 +23,8 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Image
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 import datetime
-import os
+import os , subprocess, platform
+
 from reportlab.lib.units import inch
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate
@@ -60,9 +62,11 @@ def report_card_list(request):
 def add_test(request):
     subject = Subject.objects.all()
     student = Student.objects.all()
+    teacher = Teacher.objects.all()
     context = {
         'subject':subject,
         'student':student,
+        'teacher':teacher,
     }
 
     if request.method == "POST":
@@ -72,13 +76,20 @@ def add_test(request):
         value = request.POST.get('value')
         coef = request.POST.get('coeff')
         subject = request.POST.get('subject')
-        teacher = "teacher"
+        # teacher = "teacher"
+        teacher = request.POST.get('teacher')
         remarks = request.POST.get('remarks')
-        added_by = "emnanlaptop"
+        added_by = request.user.username
 
         #get student class
         print('student')
         obj_student_class = Student.objects.get(id=student)
+
+        #get teacher class
+        print('teacher')
+        print(teacher)
+        obj_teacher_class = Teacher.objects.get(id=teacher)
+        print(obj_teacher_class)
 
         #get subject class
         print('subject')
@@ -92,7 +103,7 @@ def add_test(request):
             subject = obj_subject_class,
             observation = remarks,
             student = obj_student_class,
-            teacher = teacher,
+            teacher = obj_teacher_class,
             added_by = added_by,
         )
 
@@ -110,8 +121,9 @@ def edit_test(request, slug):
     # student = get_object_or_404(Student, id=slug)
     student = Student.objects.all()
     subject = Subject.objects.all()
+    teacher = Teacher.objects.all()
     # parent = student.parent if hasattr(student, 'parent') else None
-    context = {'eval':eval, 'student':student, 'subject':subject}
+    context = {'eval':eval, 'student':student, 'subject':subject, 'teacher':teacher,}
     if request.method == "POST":
         # first_name = request.POST.get('first_name')
         title = request.POST.get('title')
@@ -120,7 +132,7 @@ def edit_test(request, slug):
         value = request.POST.get('value')
         coef = request.POST.get('coeff')
         subject = request.POST.get('subject')
-        teacher = "teacher"
+        teacher = request.POST.get('teacher')
         remarks = request.POST.get('remarks')
 
         #get student class
@@ -131,6 +143,12 @@ def edit_test(request, slug):
         print('subject')
         obj_subject_class = Subject.objects.get(id=subject)
 
+        #get teacher class
+        print('teacher')
+        print(teacher)
+        obj_teacher_class = Teacher.objects.get(id=teacher)
+        print(obj_teacher_class)
+
         
         eval.title = title
         eval.titre = titre
@@ -139,8 +157,8 @@ def edit_test(request, slug):
         eval.subject = obj_subject_class
         eval.observation = remarks
         eval.student = obj_student_class
-        eval.teacher = teacher
-        eval.modified_by = "emnanlaptop"
+        eval.teacher = obj_teacher_class.name
+        eval.modified_by = request.user.username
         eval.save()
         
         
@@ -155,10 +173,10 @@ def edit_test(request, slug):
 def delete_test(request, slug):
     if request.method == "POST":
         #
-        student = get_object_or_404(Student, id = slug)
-        student.delete()
+        eval = get_object_or_404(Eval, id = slug)
+        eval.delete()
 
-        return redirect('_test')
+        return redirect('test_list')
     return HttpResponseForbidden()
 
 
@@ -190,7 +208,9 @@ def create_report_card(request):
     if request.method == "POST":
         student = request.POST.get('student')
         term = request.POST.get('term')
-        added_by = "emnanlaptop"
+        academic_yr = request.POST.get('academic_year')
+        resumptn = request.POST.get('resumptn_date')
+        added_by = request.user.username
 
         #get student class
         print('student')
@@ -307,7 +327,7 @@ def create_report_card(request):
                         # print('type')
                         # print(type(testa_value))
                         # print(type(testb_value))
-                        total_eval = testa_value + testb_value
+                        total_eval = decimal.Decimal(testa_value) + decimal.Decimal(testb_value) 
                         moyentt = total_eval / 2
                         # print(moyentt)
 
@@ -390,7 +410,9 @@ def create_report_card(request):
                 worst_avr = total_tot,
                 firstterm_avr = total_tot,
                 secondterm_avr = total_tot,
-                academic_year = '2023/2024',
+                # academic_year = '2023/2024',
+                academic_year = academic_yr,
+                resumption = resumptn,
                 # teacher = teacher,
                 added_by = added_by,
             )
@@ -447,10 +469,12 @@ def viewDocumentInvoice(request, slug):
         obj_report_card = ReportCard.objects.get(id=slug)
         studentId = obj_report_card.student.id
         obj_student_class = Student.objects.get(id=studentId)
+        print(obj_student_class.specialty)
 
         classroomId = obj_student_class.student_class_id
         classroom =  ClassRoom.objects.get(id=classroomId)
         subjects = Subject.objects.filter(classroom=classroomId)
+        print(subjects)
         obj_eval_class = Eval.objects.filter(student_id=studentId)
         # print(results)
         pass
@@ -473,7 +497,7 @@ def viewDocumentInvoice(request, slug):
     total_prof_tot = decimal.Decimal(0.0)
 
     #Get Client Settings
-    p_settings = Settings.objects.get(clientName='GILEAD TECHNICAL HIGH SCHOOL(Gilead Tech)')
+    p_settings = Settings.objects.get(clientName='GILEAD TECHNICAL HIGH SCHOOL')
 
     #get subjects
     term = obj_report_card.term
@@ -499,6 +523,8 @@ def viewDocumentInvoice(request, slug):
                 messages.error(request, 'Something went wrong')
                 return redirect('report_cards')
             else:
+                print("subject.title")
+                print(subject.title)
                 if(subject.category == 'General'):
                     print(f"General {subject.coef}")
                     total_gen_coeff = total_gen_coeff + decimal.Decimal(subject.coef)
@@ -516,7 +542,7 @@ def viewDocumentInvoice(request, slug):
                     testb = obj_eval_class.filter(title='Test2',subject_id=subject.id)
                     # print('first')
                     if not testa:
-                        print("no vale a")
+                        # print("no vale a")
                         testa_value = 0.0
                     else:
                         for test1 in testa:
@@ -524,7 +550,7 @@ def viewDocumentInvoice(request, slug):
                                 testa_value = test1.value
                                 #
                     if not testb:
-                        print("no vale b")
+                        # print("no vale b")
                         testb_value = 0.0
                     else:
                         for test2 in testb:
@@ -548,28 +574,31 @@ def viewDocumentInvoice(request, slug):
                     if(subject.category == 'Professional'):
                         total_prof_tot = total_prof_tot + moy_tot
                         #
-                    subject_value_cat.append([test1.subject.title,testa_value,testb_value, moyentt, moy_tot,subject.coef, test2.observation, subject.category, test1.teacher])
+                    # subject_value_cat.append([test1.subject.title,testa_value,testb_value, moyentt, moy_tot,subject.coef, test2.observation, subject.category, test1.teacher])
                     #
                 if(term == 'second'):
                     subjt_rang = "1"
                     testa = obj_eval_class.filter(title='Test3',subject_id=subject.id)
                     testb = obj_eval_class.filter(title='Test4',subject_id=subject.id)
+                    print(term)
+                    print(testa)
+                    print(testb)
                     # print('first')
                     if not testa:
-                        print("no vale a")
+                        # print("no vale a")
                         testa_value = 0.0
                     else:
                         for test1 in testa:
                             if(test1.subject_id == subject.id):
                                 testa_value = test1.value
                     if not testb:
-                        print("no vale b")
+                        # print("no vale b")
                         testb_value = 0.0
                     else:
                         for test2 in testb:
                             if(test2.subject_id == subject.id):
                                 testb_value = test2.value
-                    total_eval = testa_value + testb_value
+                    total_eval = decimal.Decimal(testa_value) + decimal.Decimal(testb_value)
                     moyentt = total_eval / 2
                     # print(moyentt)
 
@@ -579,7 +608,7 @@ def viewDocumentInvoice(request, slug):
                     moy_tot = moyentt  * int(subject.coef)
                     total_tot = total_tot + decimal.Decimal(moy_tot)
                     subj_moy_tot = f"{subject.title}_{subject.id}_{moyentt}_{moy_tot}"
-                    print(subj_moy_tot)
+                    # print(subj_moy_tot)
                     # print(testb)
                     if(subject.category == 'General'):
                         total_gen_tot = total_gen_tot + total_tot
@@ -589,10 +618,10 @@ def viewDocumentInvoice(request, slug):
                         subject_prof_tot = subject_prof_tot + float(moy_tot)
                         total_prof_tot = total_prof_tot + moy_tot
                         #
-                    if(test1.subject.title == "English Langauge"):
-                        print(subject.category)
+                    # if(test1.subject.title == "English Langauge"):
+                    #     print(subject.category)
                         #
-                    subject_value_cat.append([test1.subject.title,testa_value,testb_value, moyentt, subject.coef, moy_tot, test2.observation, subject.category, test1.teacher])
+                    # subject_value_cat.append([test1.subject.title,testa_value,testb_value, moyentt, subject.coef, moy_tot, test2.observation, subject.category, test1.teacher])
                     #
                 if(term == 'third'):
                     subjt_rang = "1"
@@ -600,14 +629,14 @@ def viewDocumentInvoice(request, slug):
                     testb = obj_eval_class.filter(title='Test6',subject_id=subject.id)
                     # print('first')
                     if not testa:
-                        print("no vale a")
+                        # print("no vale a")
                         testa_value = 0.0
                     else:
                         for test1 in testa:
                             if(test1.subject_id == subject.id):
                                 testa_value = test1.value
                     if not testb:
-                        print("no vale b")
+                        # print("no vale b")
                         testb_value = 0.0
                     else:
                         for test2 in testb:
@@ -630,6 +659,7 @@ def viewDocumentInvoice(request, slug):
                     if(subject.category == 'Professional'):
                         total_prof_tot = total_prof_tot + moy_tot
                         #
+                    # subject_value_cat.append([test1.subject.title,testa_value,testb_value, moyentt, moy_tot, subject.coef, test2.observation, subject.category,  test1.teacher])
                     subject_value_cat.append([test1.subject.title,testa_value,testb_value, moyentt, moy_tot, subject.coef, test2.observation, subject.category,  test1.teacher])
 
             # y = float(x.quantity) * float(x.price)
@@ -638,6 +668,10 @@ def viewDocumentInvoice(request, slug):
     gen_sub_moy = decimal.Decimal(subject_gen_tot, ) / total_gen_coeff
     prof_sub_moy = decimal.Decimal(subject_prof_tot, ) / total_prof_coeff
     prof_gen_tot_moy = decimal.Decimal(total_tot, ) / total_coeff
+
+    
+
+    # print(subject_value_cat)
 
 
 
@@ -683,9 +717,16 @@ def viewDocumentInvoice(request, slug):
       #Javascript delay is optional
 
     #Remember that location to wkhtmltopdf
-    path_wkthmltopdf = b'C:\wkhtmltopdf\\bin\wkhtmltopdf.exe'
-    config = pdfkit.configuration(wkhtmltopdf=path_wkthmltopdf)
+    # path_wkthmltopdf = b'C:\wkhtmltopdf\\bin\wkhtmltopdf.exe'
+    # config = pdfkit.configuration(wkhtmltopdf=path_wkthmltopdf)
     # config = pdfkit.configuration(wkhtmltopdf='C:/wkhtmltopdf/bin/wkhtmltopdf')
+    #
+    if platform.system() == "Windows":
+        config = pdfkit.configuration(wkhtmltopdf=os.environ.get("WKHTMLTOPDF_PATH", "C:\wkhtmltopdf\\bin\wkhtmltopdf.exe"))
+    else:
+        WKHTMLTOPDF_CMD = subprocess.Popen(["which", os.environ.get("WKHTMLTOPDF_PATH", "/app/bin/wkhtmltopdf")],
+        stdout=subprocess.PIPE).communicate()[0].strip()
+        config = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_CMD)
 
     #IF you have CSS to add to template
     css1 = os.path.join(settings.CSS_LOCATION, 'assets', 'css', 'bootstrap.min.css')
