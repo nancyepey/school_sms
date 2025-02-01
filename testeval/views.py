@@ -88,17 +88,17 @@ def add_test(request):
         added_by = request.user.username
 
         #get student class
-        print('student')
+        # print('student')
         obj_student_class = Student.objects.get(id=student)
 
         #get teacher class
-        print('teacher')
+        # print('teacher')
         print(teacher)
         obj_teacher_class = Teacher.objects.get(id=teacher)
-        print(obj_teacher_class)
+        # print(obj_teacher_class)
 
         #get subject class
-        print('subject')
+        # print('subject')
         obj_subject_class = Subject.objects.get(id=subject)
 
         test = Eval.objects.create(
@@ -143,11 +143,11 @@ def edit_test(request, slug):
         remarks = request.POST.get('remarks')
 
         #get student class
-        print('student')
+        # print('student')
         obj_student_class = Student.objects.get(id=student)
 
         #get subject class
-        print('subject')
+        # print('subject')
         obj_subject_class = Subject.objects.get(id=subject)
 
         #get teacher class
@@ -267,7 +267,7 @@ def cal_mark_class(request):
             return redirect('calculate_mark_class')
         
         if students:
-            print("in in")
+            # print("in in")
             # print(Student.objects.filter(student_class=get_class).count())
             if Student.objects.filter(student_class=get_class).count() > 1:
             #loop through the students and get their marks
@@ -280,20 +280,20 @@ def cal_mark_class(request):
                             # print(student_test.title)
                             get_testa_subj = Eval.objects.filter(student_id=student.id,subject_id = subject.id)
                             if get_testa_subj:
-                                print(get_testa_subj)
+                                # print(get_testa_subj)
                                 total = get_testa_subj.aggregate(s=Sum("value"))["s"]
                                 # print(total)
                                 if total  >= 0:
-                                    print(subject)
+                                    # print(subject)
                                     # print('{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef))
                                     get_test = '{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef)
                                     observation = appreciation_marks((total/ 2))
-                                    print(observation)
+                                    # print(observation)
                                     current_cal_marks = get_cal_marks.filter(term=term, classroom =student.student_class, specialty=student.specialty, student=student, subject=subject, is_actif=True)
                                     if current_cal_marks:
                                         for current_mark in current_cal_marks:
-                                            print(current_mark)
-                                            print(current_mark.is_actif)  
+                                            # print(current_mark)
+                                            # print(current_mark.is_actif)  
                                             current_mark.is_actif = False
                                             current_mark.modified_by = request.user.username
                                             current_mark.save()
@@ -317,16 +317,16 @@ def cal_mark_class(request):
                                 total = get_testa_subj.aggregate(s=Sum("value"))["s"]
                                 # print(total)
                                 if total  >= 0:
-                                    print(subject)
+                                    # print(subject)
                                     # print('{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef))
                                     get_test = '{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef)
                                     observation = appreciation_marks((total/ 2))
-                                    print(observation)
+                                    # print(observation)
                                     current_cal_marks = get_cal_marks.filter(term=term, classroom =student.student_class, specialty=student.specialty, student=student, subject=subject, is_actif=True)
                                     if current_cal_marks:
                                         for current_mark in current_cal_marks:
-                                            print(current_mark)
-                                            print(current_mark.is_actif)  
+                                            # print(current_mark)
+                                            # print(current_mark.is_actif)  
                                             current_mark.is_actif = False
                                             current_mark.modified_by = request.user.username
                                             current_mark.save()
@@ -346,20 +346,20 @@ def cal_mark_class(request):
                             # print(student_test.title)
                             get_testa_subj = Eval.objects.filter(student_id=student.id,subject_id = subject.id)
                             if get_testa_subj:
-                                print(get_testa_subj)
+                                # print(get_testa_subj)
                                 total = get_testa_subj.aggregate(s=Sum("value"))["s"]
                                 # print(total)
                                 if total  >= 0:
-                                    print(subject)
+                                    # print(subject)
                                     # print('{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef))
                                     get_test = '{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef)
                                     observation = appreciation_marks((total/ 2))
-                                    print(observation)
+                                    # print(observation)
                                     current_cal_marks = get_cal_marks.filter(term=term, classroom =student.student_class, specialty=student.specialty, student=student, subject=subject, is_actif=True)
                                     if current_cal_marks:
                                         for current_mark in current_cal_marks:
-                                            print(current_mark)
-                                            print(current_mark.is_actif)  
+                                            # print(current_mark)
+                                            # print(current_mark.is_actif)  
                                             current_mark.is_actif = False
                                             current_mark.modified_by = request.user.username
                                             current_mark.save()
@@ -394,20 +394,20 @@ def cal_mark_class(request):
                         # print(student_test.title)
                         get_testa_subj = Eval.objects.filter(student_id=students[0].id,subject_id = subject.id)
                         if get_testa_subj:
-                            print(get_testa_subj)
+                            # print(get_testa_subj)
                             total = get_testa_subj.aggregate(s=Sum("value"))["s"]
                             # print(total)
                             if total >= 0:
-                                print(subject)
+                                # print(subject)
                                 # print('{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef))
                                 get_test = '{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef)
                                 observation = appreciation_marks((total/ 2))
-                                print(observation)
+                                # print(observation)
                                 current_cal_marks = get_cal_marks.filter(term=term, classroom =students[0].student_class, specialty=students[0].specialty, student=students[0], subject=subject, is_actif=True)
                                 if current_cal_marks:
                                     for current_mark in current_cal_marks:
-                                        print(current_mark)
-                                        print(current_mark.is_actif)  
+                                        # print(current_mark)
+                                        # print(current_mark.is_actif)  
                                         current_mark.is_actif = False
                                         current_mark.modified_by = request.user.username
                                         current_mark.save()
@@ -429,15 +429,15 @@ def cal_mark_class(request):
                         # print(subject)
                         get_testa_subj = Eval.objects.filter(student_id=students[0].id,subject_id = subject.id)
                         if get_testa_subj:
-                            print(get_testa_subj)
+                            # print(get_testa_subj)
                             total = get_testa_subj.aggregate(s=Sum("value"))["s"]
                             # print(total)
                             if total >= 0:
-                                print(subject)
+                                # print(subject)
                                 # print('{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef))
                                 get_test = '{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef)
                                 observation = appreciation_marks((total/ 2))
-                                print(observation)
+                                # print(observation)
                                 current_cal_marks = get_cal_marks.filter(term=term, classroom =students[0].student_class, specialty=students[0].specialty, student=students[0], subject=subject, is_actif=True)
                                 if current_cal_marks:
                                     for current_mark in current_cal_marks:
@@ -464,7 +464,7 @@ def cal_mark_class(request):
                         # print(subject)
                         get_testa_subj = Eval.objects.filter(student_id=students[0].id,subject_id = subject.id)
                         if get_testa_subj:
-                            print(get_testa_subj)
+                            # print(get_testa_subj)
                             total = get_testa_subj.aggregate(s=Sum("value"))["s"]
                             # print(total)
                             if total >= 0:
@@ -472,12 +472,12 @@ def cal_mark_class(request):
                                 # print('{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef))
                                 get_test = '{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef)
                                 observation = appreciation_marks((total/ 2))
-                                print(observation)
+                                # print(observation)
                                 current_cal_marks = get_cal_marks.filter(term=term, classroom =students[0].student_class, specialty=students[0].specialty, student=students[0], subject=subject, is_actif=True)
                                 if current_cal_marks:
                                     for current_mark in current_cal_marks:
-                                        print(current_mark)
-                                        print(current_mark.is_actif)  
+                                        # print(current_mark)
+                                        # print(current_mark.is_actif)  
                                         current_mark.is_actif = False
                                         current_mark.modified_by = request.user.username
                                         current_mark.save()
@@ -1748,7 +1748,7 @@ def viewDocumentInvoice(request, slug):
                                 # print(moyentt)
 
                                 subj_moy = f"{subject.id}_{moyentt}_{subject.title}"
-                                print(subj_moy)
+                                # print(subj_moy)
                                 total_coeff = total_coeff + decimal.Decimal(testb_coef)
                                 # total
                                 moy_tot = moyentt  * int(testb_coef)

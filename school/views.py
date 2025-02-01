@@ -25,10 +25,10 @@ def dashboard(request):
     class_info = ClassRoom.objects.get(id=user_info.student_class.id)
     class_subjects = Subject.objects.filter(classroom=class_info.id)
     num_subjects = Subject.objects.filter(classroom=class_info.id).count()
-    print(num_subjects)
+    # print(num_subjects)
     #get number of subjects
     user_class = user_info.student_class.class_name
-    print(user_info.student_image.url)
+    # print(user_info.student_image.url)
     context = {
         'user_info': user_info,
         "user_class" : user_class,

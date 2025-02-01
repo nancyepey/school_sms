@@ -19,8 +19,8 @@ def add_teacher(request):
         'subject':subject,
         'classroom': classroom
     }
-    print(classroom)
-    print(subject)
+    # print(classroom)
+    # print(subject)
     # context = {}
 
     if request.method == "POST":
@@ -42,7 +42,7 @@ def add_teacher(request):
         # save teacher information
 
         #get teacher class
-        print(teacher_subj)
+        # print(teacher_subj)
         obj_teacher_subj = Subject.objects.get(id=teacher_subj)
         obj_classteach = ClassRoom.objects.get(id=classteach)
 
@@ -134,6 +134,8 @@ def edit_teacher(request,slug):
         modified_by = request.user.username
         teacher.save()
         # create_notification(request.user, f"Added Teacher:  {teacher.name}")
+
+        messages.success(request, f'{name}  Updated Successfully')
         
         return redirect("teacher_list")
     return render(request, "teachers/edit-teacher.html",{'teacher':teacher,  'subject':subject, 'classroom': classroom} )
@@ -151,7 +153,10 @@ def delete_teacher(request, slug):
     if request.method == "POST":
         #
         teacher = get_object_or_404(Teacher, id = slug)
+        name = teacher.name
         teacher.delete()
+
+        messages.error(request, f'{name}  Deleted Successfully')
 
         return redirect('teacher_list')
     return HttpResponseForbidden()

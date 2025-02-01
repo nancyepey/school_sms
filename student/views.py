@@ -311,6 +311,8 @@ def edit_student(request,slug):
         student.modified_by = request.user.username
         student.save()
         # create_notification(request.user, f"Added Student:  {student.name}")
+
+        messages.success(request, f'{name}  Updated Successfully')
         
         return redirect("student_list")
     return render(request, "students/edit-student.html",{'student':student, 'parent':parent, 'parents':parents, 'classroom':classroom, "specialties":specialties} )
@@ -328,7 +330,10 @@ def delete_student(request, slug):
     if request.method == "POST":
         #
         student = get_object_or_404(Student, id = slug)
+        name = student.name
         student.delete()
+
+        messages.error(request, f'{name} Deleted Successfully')
 
         return redirect('student_list')
     return HttpResponseForbidden()

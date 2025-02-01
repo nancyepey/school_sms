@@ -39,7 +39,7 @@ def add_subject(request):
         # 
 
         #get student class
-        print(classroom)
+        # print(classroom)
         # obj_student_class = ClassRoom.objects.filter(classroom)
 
         subject = Subject.objects.create(
@@ -80,7 +80,7 @@ def edit_subject(request, slug):
     # for team in mysubject_class:
     #     print(team)
     #     print(team.id)
-    print(subj_specialty_class)
+    # print(subj_specialty_class)
     context = {
         'classroom':classroom,
         'subject':subject,
@@ -114,32 +114,32 @@ def edit_subject(request, slug):
         subject.modified_by = modified_by
         subject.category = category
 
-        print("classroom")
-        print(classroom)
+        # print("classroom")
+        # print(classroom)
 
         count_class = 0
         for classr in classroom:
-            print(classr)
+            # print(classr)
             obj_class = ClassRoom.objects.get(id=classr)
             subject.classroom.add(obj_class)
             count_class += 1
-        print(count_class)
+        # print(count_class)
 
         count_specialty = 0
         for specialt in specialty:
-            print(specialt)
+            # print(specialt)
             specialty_obj_class = Specialty.objects.get(id=specialt)
             subject.specialty.add(specialty_obj_class)
             count_specialty += 1
-        print(count_specialty)
+        # print(count_specialty)
         
 
         # obj_class = ClassRoom.objects.get(id=classroom)
 
         # subject.classroom.add(obj_class)
 
-        print("specialty")
-        print(specialty)
+        # print("specialty")
+        # print(specialty)
 
         # specialty_obj_class = Specialty.objects.get(id=specialty)
         # print(specialty_obj_class)
