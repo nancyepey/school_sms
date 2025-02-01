@@ -17,6 +17,8 @@
                </div>
                <div class="row">
                   <div class="col-sm-12">
+                     <!-- Error and success messages -->
+                     
                      <div class="card">
                         <div class="card-body">
                            <form method="POST"   enctype="multipart/form-data">
@@ -89,6 +91,18 @@
                                  </div>
                                  <div class="col-12 col-sm-6">
                                     <div class="form-group">
+                                       <label>Specialty</label>
+                                       <select class="form-control" name="specialty_class" required>
+                                          <option value="">Select Specialty</option>
+                                          {% for specialty in specialties %}
+                                             <option value="{{specialty.id}}">{{specialty.name}}</option>
+                                          
+                                          {% endfor %}
+                                       </select>
+                                    </div>
+                                 </div>
+                                 <div class="col-12 col-sm-6">
+                                    <div class="form-group">
                                        <label>Religion</label>
                                        <input type="text" class="form-control" name="religion" required>
                                     </div>
@@ -135,68 +149,82 @@
                                        <select class="form-control" name="parents">
                                           <option value="">Select Parent</option>
                                           {% for parent in parents %}
-                                             <option value="{{parent.id}}">
-                                                {% if father_name %}
-                                                {{parent.father_name}}
-                                                {% endif %}
-                                                {% if mother_name %}
-                                                {{parent.mother_name}}
-                                                {% endif %}
-                                                {% if carer_name %}
-                                                {{parent.carer_name}}
-                                                {% endif %}
-                                             </option>
+                                          {% if parent.father_name %}
+                                          <option value="{{parent.id}}">
+                                             {{parent.father_name}}
+                                          </option>
+                                          
+                                          {% endif %}
+                                          {% if parent.mother_name and parent.father_name == null %}
+                                          
+                                          <option value="{{parent.id}}">
+                                             {{parent.mother_name}}
+                                          </option>
+                                          {% endif %}
+                                          {% if parent.carer_name %}
+                                          
+                                          
+                                          <option value="{{parent.id}}">
+                                             {{parent.carer_name}}
+                                          </option>
+                                          {% endif %}
+                                             {% comment %} <option value="{{parent.id}}">
+                                             </option> {% endcomment %}
                                           
                                           {% endfor %}
                                        </select>
                                     </div>
                                  </div>
+
+                                 <div class="col-12">
+                                    <h5 class="form-title"><span>OR</span></h5>
+                                 </div>
                                  <div class="col-12 col-sm-6">
                                     <div class="form-group">
                                        <label>Father's Name</label>
-                                       <input type="text" class="form-control" name="father_name" required>
+                                       <input type="text" class="form-control" name="father_name" >
                                     </div>
                                  </div>
                                  <div class="col-12 col-sm-6">
                                     <div class="form-group">
                                        <label>Father's Occupation</label>
-                                       <input type="text" class="form-control" name="father_occupation" required>
+                                       <input type="text" class="form-control" name="father_occupation" >
                                     </div>
                                  </div>
                                  <div class="col-12 col-sm-6">
                                     <div class="form-group">
                                        <label>Father's Mobile</label>
-                                       <input type="text" class="form-control" name="father_mobile" required>
+                                       <input type="text" class="form-control" name="father_mobile" >
                                     </div>
                                  </div>
                                  <div class="col-12 col-sm-6">
                                     <div class="form-group">
                                        <label>Father's Email</label>
-                                       <input type="email" class="form-control" name="father_email" required>
+                                       <input type="email" class="form-control" name="father_email" >
                                     </div>
                                  </div>
                                  <div class="col-12 col-sm-6">
                                     <div class="form-group">
                                        <label>Mother's Name</label>
-                                       <input type="text" class="form-control" name="mother_name" required>
+                                       <input type="text" class="form-control" name="mother_name" >
                                     </div>
                                  </div>
                                  <div class="col-12 col-sm-6">
                                     <div class="form-group">
                                        <label>Mother's Occupation</label>
-                                       <input type="text" class="form-control" name="mother_occupation" required>
+                                       <input type="text" class="form-control" name="mother_occupation" >
                                     </div>
                                  </div>
                                  <div class="col-12 col-sm-6">
                                     <div class="form-group">
                                        <label>Mother's Mobile</label>
-                                       <input type="text" class="form-control" name="mother_mobile" required>
+                                       <input type="text" class="form-control" name="mother_mobile" >
                                     </div>
                                  </div>
                                  <div class="col-12 col-sm-6">
                                     <div class="form-group">
                                        <label>Mother's Email</label>
-                                       <input type="email" class="form-control" name="mother_email" required>
+                                       <input type="email" class="form-control" name="mother_email" >
                                     </div>
                                  </div>
                                  <div class="col-12 col-sm-6">
@@ -226,13 +254,13 @@
                                  <div class="col-12 col-sm-6">
                                     <div class="form-group">
                                        <label>Present Address</label>
-                                       <textarea class="form-control" name="present_address" required></textarea>
+                                       <textarea class="form-control" name="present_address" ></textarea>
                                     </div>
                                  </div>
                                  <div class="col-12 col-sm-6">
                                     <div class="form-group">
                                        <label>Permanent Address</label>
-                                       <textarea class="form-control" name="permanent_address" required></textarea>
+                                       <textarea class="form-control" name="permanent_address" ></textarea>
                                     </div>
                                  </div>
                                  <div class="col-12">

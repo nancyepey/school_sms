@@ -28,7 +28,7 @@ class CustomUser(AbstractUser):
     has_sub            = models.BooleanField(default=True)
     company = models.CharField(max_length=30, blank=True)
     freespace = models.CharField(max_length=30, blank=True)
-    photo       = models.ImageField(upload_to='core/img/', blank=True)
+    photo       = models.ImageField(upload_to='core/img/', blank=True, default='default.png')
     
        # Fields for user roles
     is_student = models.BooleanField(default=False)

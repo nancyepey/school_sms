@@ -1,0 +1,202 @@
+{% extends 'home/base.html' %}
+{% load static %}
+{% block body %}
+   
+
+
+<div class="page-wrapper">
+<div class="content container-fluid">
+
+<div class="page-header">
+<div class="row">
+<div class="col-sm-12">
+<h3 class="page-title">
+    {% if user.is_authenticated %}
+    Welcome {{ user.username}}!
+    {% endif %}
+</h3>
+<ul class="breadcrumb">
+<li class="breadcrumb-item"><a href="{% url 'teacher_dashboard' %}">Dashboard</a></li>
+<li class="breadcrumb-item active">Teacher Dashboard</li>
+</ul>
+</div>
+</div>
+</div>
+
+
+<div class="row">
+<div class="col-xl-3 col-sm-6 col-12 d-flex">
+<div class="card bg-nine w-100">
+<div class="card-body">
+<div class="db-widgets d-flex justify-content-between align-items-center">
+<div class="db-icon">
+<i class="fas fa-book-open"></i>
+</div>
+<div class="db-info">
+<h3>
+   
+  
+</h3>
+<h6>Classroom</h6>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="col-xl-3 col-sm-6 col-12 d-flex">
+<div class="card bg-six w-100">
+<div class="card-body">
+<div class="db-widgets d-flex justify-content-between align-items-center">
+<div class="db-icon">
+<i class="fas fa-file-alt"></i>
+</div>
+<div class="db-info">
+{% comment %} <h3>{{ num_subjects}}</h3> {% endcomment %}
+<h6>All Subjects</h6>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="col-xl-3 col-sm-6 col-12 d-flex">
+<div class="card bg-ten w-100">
+<div class="card-body">
+<div class="db-widgets d-flex justify-content-between align-items-center">
+<div class="db-icon">
+<i class="fas fa-clipboard-list"></i>
+</div>
+<div class="db-info">
+<h3>2/6</h3>
+<h6>Test Recorded</h6>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+
+
+<div class="row">
+<div class="col-12 col-lg-12 col-xl-9">
+<div class="card flex-fill">
+<div class="card-header">
+<div class="row align-items-center">
+<div class="col-6">
+<h5 class="card-title">Subjects</h5>
+</div>
+<div class="col-6">
+    {% if user.is_admin and user.is_teacher %}
+<span class="float-right view-link"><a href="{% url 'subject_list' %}">View All Subjects</a></span>
+{% endif %}
+</div>
+</div>
+<div class="col-12 mt-4">
+    {% comment %} {% for class_subject in class_subjects %}
+    <h6>{{ class_subject}}</h6>
+    {% endfor %} {% endcomment %}
+</div>
+
+<div class="row">
+<div class="col-12 col-lg-12 col-xl-8 d-flex">
+<div class="card flex-fill">
+<div class="card-header">
+<div class="row align-items-center">
+<div class="col-12">
+<h5 class="card-title">Learning Activity</h5>
+</div>
+<div class="col-12">
+<ul class="list-inline-group text-right mb-0 pl-0">
+<li class="list-inline-item">
+<div class="form-group mb-0 amount-spent-select">
+<select class="form-control form-control-sm">
+<option>Weekly</option>
+<option>Monthly</option>
+<option>Yearly</option>
+</select>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="card-body">
+<div id="apexcharts-area"></div>
+</div>
+</div>
+</div>
+
+{% comment %} 
+<div class="col-12 col-lg-12 col-xl-4 d-flex">
+<div class="card flex-fill">
+<div class="card-header">
+<h5 class="card-title">Learning History</h5>
+</div>
+<div class="card-body">
+<div class="teaching-card">
+<ul class="activity-feed">
+<li class="feed-item">
+<div class="feed-date1">Sep 05, 9 am - 10 am (60min)</div>
+<span class="feed-text1"><a>Lorem ipsum dolor</a></span>
+<p><span>In Progress</span></p>
+</li>
+<li class="feed-item">
+<div class="feed-date1">Sep 04, 2 pm - 3 pm (70min)</div>
+<span class="feed-text1"><a>Et dolore magna</a></span>
+<p>Completed</p>
+</li>
+<li class="feed-item">
+<div class="feed-date1">Sep 02, 1 pm - 2 am (80min)</div>
+<span class="feed-text1"><a>Exercitation ullamco</a></span>
+<p><span>In Progress</span></p>
+</li>
+<li class="feed-item">
+<div class="feed-date1">Aug 30, 10 am - 12 pm (90min)</div>
+<span class="feed-text1"><a>Occaecat cupidatat</a></span>
+<p>Completed</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+{% endcomment %}
+
+</div>
+
+</div> 
+
+
+</div>
+
+<footer>
+<p>Copyright © 2025 GroupBarb</p>
+</footer>
+
+</div>
+
+</div>
+
+
+<script src="{%static 'assets/js/jquery-3.6.0.min.js' %}"></script>
+
+<script src="{%static 'assets/js/popper.min.js' %}"></script>
+<script src="{%static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
+
+<script src="{%static 'assets/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
+
+<script src="{%static 'assets/plugins/apexchart/apexcharts.min.js' %}"></script>
+<script src="{%static 'assets/plugins/apexchart/chart-data.js' %}"></script>
+
+<script src="{%static 'assets/plugins/simple-calendar/jquery.simple-calendar.js' %}"></script>
+<script src="{%static 'assets/js/calander.js' %}"></script>
+
+<script src="{%static 'assets/js/circle-progress.min.js' %}"></script>
+
+<script src="{%static 'assets/js/script.js' %}"></script>
+</body>
+
+<!-- Mirrored from preschool.dreamguystech.com/html-template/student-dashboard.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 28 Oct 2021 11:11:43 GMT -->
+</html>
+
+{% endblock %}

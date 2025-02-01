@@ -183,6 +183,9 @@ STATICFILES_DIRS = [BASE_DIR/'static']
 STATIC_ROOT = BASE_DIR/'assets'
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
+
 #  add this for authentication
 
 AUTH_USER_MODEL = 'core.CustomUser'  # Adjust 'core' to the app where CustomUser is defined

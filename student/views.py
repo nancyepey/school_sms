@@ -3,7 +3,7 @@ from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, render, redirect
 
 from core.models import CustomUser
-from school.models import ClassRoom
+from school.models import ClassRoom, Specialty
 #
 from .models import Parent, Student
 from django.contrib import messages
@@ -12,7 +12,13 @@ from django.contrib import messages
 
 def add_student(request):
     classroom = ClassRoom.objects.all()
-    context = {'classroom':classroom}
+    parents = Parent.objects.all()
+    specialties = Specialty.objects.all()
+    context = {
+        'classroom':classroom,
+        'parents':parents,
+        "specialties":specialties,
+    }
 
     if request.method == "POST":
         name = request.POST.get('student_name')
@@ -22,6 +28,7 @@ def add_student(request):
         gender = request.POST.get('gender')
         date_of_birth = request.POST.get('date_of_birth')
         student_class = request.POST.get('student_class')
+        specialty_class = request.POST.get('specialty_class')
         religion = request.POST.get('religion')
         joining_date = request.POST.get('joining_date')
         mobile_number = request.POST.get('mobile_number')
@@ -31,6 +38,7 @@ def add_student(request):
         # added_by = request.POST.get('created_by')
 
         # retrieve parent data from the form
+        parent_info = request.POST.get('parents')
         father_name = request.POST.get('father_name')
         father_occupation = request.POST.get('father_occupation')
         father_mobile = request.POST.get('father_mobile')
@@ -47,33 +55,38 @@ def add_student(request):
         permanent_address = request.POST.get('permanent_address')
         # added_by = request.POST.get('created_by')
 
-        #save parent info
-        if father_name == "" or mother_name == "":
-            parent = Parent.objects.create(
-                carer_name = carer_name,
-                carer_occupation = carer_occupation,
-                carer_mobile = carer_mobile,
-                carer_email = carer_email,
-                present_address = present_address,
-                permanent_address = permanent_address,
-                added_by = request.user.username,
-
-            )
-            # stu_email = carer_email
+        if parent_info:
+            #get parent
+            parent = Parent.objects.get(id=parent_info)
         else:
-            parent = Parent.objects.create(
-                father_name = father_name,
-                father_occupation = father_occupation,
-                father_mobile = father_mobile,
-                father_email = father_email,
-                mother_name = mother_name,
-                mother_occupation = mother_occupation,
-                mother_mobile = mother_mobile,
-                mother_email = mother_email,
-                present_address = present_address,
-                permanent_address = permanent_address,
-                added_by = request.user.username,
-            )
+            #creating a new parent
+            #save parent info
+            if father_name == "" or mother_name == "":
+                parent = Parent.objects.create(
+                    carer_name = carer_name,
+                    carer_occupation = carer_occupation,
+                    carer_mobile = carer_mobile,
+                    carer_email = carer_email,
+                    present_address = present_address,
+                    permanent_address = permanent_address,
+                    added_by = request.user.username,
+
+                )
+                # stu_email = carer_email
+            else:
+                parent = Parent.objects.create(
+                    father_name = father_name,
+                    father_occupation = father_occupation,
+                    father_mobile = father_mobile,
+                    father_email = father_email,
+                    mother_name = mother_name,
+                    mother_occupation = mother_occupation,
+                    mother_mobile = mother_mobile,
+                    mother_email = mother_email,
+                    present_address = present_address,
+                    permanent_address = permanent_address,
+                    added_by = request.user.username,
+                )
 
         
         if student_email == "":
@@ -89,6 +102,8 @@ def add_student(request):
         #get student class
         print(student_class)
         obj_student_class = ClassRoom.objects.get(id=student_class)
+        # specialty_class
+        obj_specialty_class = Specialty.objects.get(id=specialty_class)
 
         student = Student.objects.create(
             name = name,
@@ -96,6 +111,7 @@ def add_student(request):
             gender = gender,
             date_of_birth = date_of_birth,
             student_class = obj_student_class,
+            specialty = obj_specialty_class,
             religion = religion,
             joining_date = joining_date,
             mobile_number = mobile_number,
@@ -227,6 +243,8 @@ def edit_student(request,slug):
     student = get_object_or_404(Student, id=slug)
     parent = student.parent if hasattr(student, 'parent') else None
     classroom = ClassRoom.objects.all()
+    parents = Parent.objects.all()
+    specialties = Specialty.objects.all()
     if request.method == "POST":
         # first_name = request.POST.get('first_name')
         name = request.POST.get('name')
@@ -234,6 +252,7 @@ def edit_student(request,slug):
         gender = request.POST.get('gender')
         date_of_birth = request.POST.get('date_of_birth')
         student_class = request.POST.get('student_class')
+        specialty_class = request.POST.get('specialty_class')
         religion = request.POST.get('religion')
         joining_date = request.POST.get('joining_date')
         mobile_number = request.POST.get('mobile_number')
@@ -242,17 +261,28 @@ def edit_student(request,slug):
         student_image = request.FILES.get('student_image')  if request.FILES.get('student_image') else student.student_image
 
         # Retrieve parent data from the form
-        parent.father_name = request.POST.get('father_name')
-        parent.father_occupation = request.POST.get('father_occupation')
-        parent.father_mobile = request.POST.get('father_mobile')
-        parent.father_email = request.POST.get('father_email')
-        parent.mother_name = request.POST.get('mother_name')
-        parent.mother_occupation = request.POST.get('mother_occupation')
-        parent.mother_mobile = request.POST.get('mother_mobile')
-        parent.mother_email = request.POST.get('mother_email')
-        parent.present_address = request.POST.get('present_address')
-        parent.permanent_address = request.POST.get('permanent_address')
-        parent.save()
+        parent_info = request.POST.get('parents')
+
+        print(parent_info)
+
+        if parent_info:
+            #get parent
+            parent = Parent.objects.get(id=parent_info)
+        else:
+            #edit parent
+            if parent_info == "":
+                parent.father_name = request.POST.get('father_name')
+                parent.father_occupation = request.POST.get('father_occupation')
+                parent.father_mobile = request.POST.get('father_mobile')
+                parent.father_email = request.POST.get('father_email')
+                parent.mother_name = request.POST.get('mother_name')
+                parent.mother_occupation = request.POST.get('mother_occupation')
+                parent.mother_mobile = request.POST.get('mother_mobile')
+                parent.mother_email = request.POST.get('mother_email')
+                parent.present_address = request.POST.get('present_address')
+                parent.permanent_address = request.POST.get('permanent_address')
+
+                parent.save()
 
 #  update student information
 
@@ -263,8 +293,13 @@ def edit_student(request,slug):
         student.date_of_birth= date_of_birth
 
         student_class_obj = ClassRoom.objects.get(id=student_class)
+        # specialty_class
+        specialty_class_obj = Specialty.objects.get(id=specialty_class)
+
+        student.parent = parent
 
         student.student_class= student_class_obj
+        student.specialty= specialty_class_obj
 
 
         student.religion= religion
@@ -278,7 +313,7 @@ def edit_student(request,slug):
         # create_notification(request.user, f"Added Student:  {student.name}")
         
         return redirect("student_list")
-    return render(request, "students/edit-student.html",{'student':student, 'parent':parent, 'classroom':classroom} )
+    return render(request, "students/edit-student.html",{'student':student, 'parent':parent, 'parents':parents, 'classroom':classroom, "specialties":specialties} )
 
 
 def view_student(request, slug):

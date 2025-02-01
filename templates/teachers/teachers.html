@@ -43,7 +43,15 @@
                                        {% comment %} <td>{{ teacher.id}}</td>  {% endcomment %} 
                                        <td>
                                         <h2 class="table-avatar">
-                                           <a href="{% url 'view_teacher' teacher.id %}" class="avatar avatar-sm mr-2"><img class="avatar-img rounded-circle" src="{{ teacher.teacher_image.url }}" alt="User Image"></a>
+                                           <a href="{% url 'view_teacher' teacher.id %}" class="avatar avatar-sm mr-2"><img class="avatar-img rounded-circle" 
+                                             src="
+                                             {% comment %} {% if teacher.teacher_image.url %} {% endcomment %}
+                                             {% comment %} {{ teacher.teacher_image.url }} {% endcomment %}
+                                             {% comment %} {% else %} {% endcomment %}
+                                             /media/img/default.png
+                                             {% comment %} {% endif %} {% endcomment %}
+                                             "
+                                              alt="User Image"></a>
                                            <a href="{% url 'view_teacher' teacher.id %}">{{ teacher.first_name }} {{ teacher.last_name}}</a>
                                         </h2>
                                      </td>

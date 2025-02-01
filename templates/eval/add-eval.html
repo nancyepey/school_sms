@@ -84,10 +84,16 @@
                                        <label>Teacher</label>
                                        <select class="form-control" name="teacher" >
                                           <option >Select Teacher</option>
-                                          {% for teacher in teacher %}
-                                             <option value="{{teacher.id}}">{{teacher.name}}</option>
-                                          
-                                          {% endfor %}
+                                          {% if user.is_admin%}
+                                             {% for teacher in teacher %}
+                                                <option value="{{teacher.id}}">{{teacher.name}}</option>
+                                             
+                                             {% endfor %}
+                                          {% endif %}
+                                          {% if user.is_teacher%}
+                                                <option value="{{user.teacher_profile.id}}" selected>{{user.teacher_profile.name}}</option>
+                                             
+                                          {% endif %}
                                        </select>
                                     </div>
                                  </div>

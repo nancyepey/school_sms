@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse
 
 from core.models import CustomUser
+from teacher.models import Teacher
 from subject.models import Subject
 from student.models import Student
 # from .models import Notification
@@ -60,25 +61,25 @@ def admin_dashboard(request):
 
 def teacher_dashboard(request):
     company = Settings.objects.get(clientName='GILEAD TECHNICAL HIGH SCHOOL')
-    user_info = Student.objects.get(id=request.user.student_profile.id)
-    class_info = ClassRoom.objects.get(id=user_info.student_class.id)
-    class_subjects = Subject.objects.filter(classroom=class_info.id)
-    num_subjects = Subject.objects.filter(classroom=class_info.id).count()
-    print(num_subjects)
+    user_info = Teacher.objects.get(id=request.user.teacher_profile.id)
+    class_info = ClassRoom.objects.all()
+    # class_subjects = Subject.objects.filter(classroom=class_info.id)
+    # num_subjects = Subject.objects.filter(classroom=class_info.id).count()
+    # print(num_subjects)
     #get number of subjects
-    user_class = user_info.student_class.class_name
-    print(user_info.student_image.url)
+    # user_class = user_info.student_class.class_name
+    # print(user_info.student_image.url)
     context = {
         'user_info': user_info,
-        "user_class" : user_class,
+        # "user_class" : user_class,
         'company': company,
         "class_info" : class_info,
-        "class_subjects" : class_subjects,
-        "num_subjects" : num_subjects,
+        # "class_subjects" : class_subjects,
+        # "num_subjects" : num_subjects,
     }
     # unread_notification = Notification.objects.filter(user=request.user, is_read=False)
     # unread_notification_count = unread_notification.count()
-    return render(request, "dashboard/student-dashboard.html", context)
+    return render(request, "dashboard/teacher-dashboard.html", context)
 
 
 def class_list(request):

@@ -72,6 +72,22 @@
                                        </select>
                                     </div>
                                  </div>
+                                 <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                       <label>Specialty</label>
+                                       <select class="form-control" name="specialty_class" required>
+                                          <option value="">Select Specialty</option>
+                                          {% for specialty in specialties %}
+                                             <option value="{{specialty.id}}"
+                                             {% if student.specialty_id == specialty.id %}
+                                                selected
+                                                {% endif %}
+                                             >{{specialty.name}}</option>
+                                          
+                                          {% endfor %}
+                                       </select>
+                                    </div>
+                                 </div>
                                 <div class="col-12 col-sm-6">
                                     <div class="form-group">
                                         <label>Religion</label>
@@ -111,6 +127,65 @@
                                 </div>
                                 <div class="col-12">
                                     <h5 class="form-title"><span>Parent Information</span></h5>
+                                </div>
+
+                                <div class="col-12 col-sm-6">
+                                   <div class="form-group">
+                                      <label>Parent</label>
+                                      <select class="form-control" name="parents">
+                                         <option value="">Select Parent</option>
+                                         {% for parent in parents %}
+                                            {% if student.parent_id == parent.id %}
+                                                {% if parent.father_name and student.parent_id %}
+                                                <option value="{{parent.id}}">
+                                                    {{parent.father_name}}
+                                                </option>
+                                                
+                                                {% endif %}
+                                                {% if parent.mother_name and parent.father_name == null %}
+                                                
+                                                <option value="{{parent.id}}">
+                                                    {{parent.mother_name}}
+                                                </option>
+                                                {% endif %}
+                                                {% if parent.carer_name %}
+                                                
+                                                
+                                                <option value="{{parent.id}}">
+                                                    {{parent.carer_name}}
+                                                </option>
+                                                {% endif %}
+                                            {% else %}
+                                                    
+                                                {% if parent.father_name and student.parent_id %}
+                                                <option value="{{parent.id}}">
+                                                    {{parent.father_name}}
+                                                </option>
+                                                
+                                                {% endif %}
+                                                {% if parent.mother_name and parent.father_name == null %}
+                                                
+                                                <option value="{{parent.id}}">
+                                                    {{parent.mother_name}}
+                                                </option>
+                                                {% endif %}
+                                                {% if parent.carer_name %}
+                                                
+                                                
+                                                <option value="{{parent.id}}">
+                                                    {{parent.carer_name}}
+                                                </option>
+                                                {% endif %}
+                                                    {% comment %} <option value="{{parent.id}}">
+                                                    </option> {% endcomment %}
+                                            {% endif %}
+                                         {% endfor %}
+                                      </select>
+                                   </div>
+                                </div>
+
+                                <div class="col-12">
+                                   <h5 class="form-title"><span>OR</span></h5>
                                 </div>
                                 <div class="col-12 col-sm-6">
                                     <div class="form-group">

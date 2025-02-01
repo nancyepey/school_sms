@@ -15,6 +15,14 @@
                      </div>
                   </div>
                </div>
+               <!-- Error and success messages -->
+               {% if messages %}
+               <div class="alert alert-info">
+                  {% for message in messages %}
+                     <p>{{ message }}</p>
+                  {% endfor %}
+               </div>
+               {% endif %}
                <div class="row">
                   <div class="col-sm-12">
                      <div class="card">
@@ -56,7 +64,7 @@
                                  </div>
                                  <div class="col-12 col-sm-6">
                                     <div class="form-group">
-                                       <label>Description</label>
+                                       <label>Academic Year</label>
                                        <input type="text" class="form-control" placeholder="Year1/Year2" name="academic_year" value="{{ subject.academic_year }}" required>
                                     </div>
                                  </div>

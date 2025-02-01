@@ -39,8 +39,11 @@
                                  </thead>
                                  <tbody>
                                     {% for eval in eval_list %}
+                                    {% if eval.teacher_class.id == user.teacher_profile.id %}
+                                    {% comment %} <td>teacher id {{ eval}}</td> {% endcomment %}
+                                    {% comment %} <td>user teacher id{{ user.teacher_profile.name}}</td> {% endcomment %}
                                     <tr>
-                                       <td>{{ eval.id}}</td> 
+                                       <td>{{ forloop.counter}}</td> 
                                        <td>{{ eval.subject.title }}</td>
                                        <td>{{ eval.title}}</td> 
                                        <td>{{ eval.student.name }}</td>
@@ -48,6 +51,7 @@
                                        <td>{{ eval.coef}}</td> 
                                        <td>{{ eval.teacher }}</td>
                                        <td class="text-right">
+                                          {% comment %} {% if user.is_admin and eval.teacher_class.id == user.teacher_profile.id %} {% endcomment %}
                                           <div class="actions">
                                              <a href="{% url 'edit_test' eval.id %}" class="btn btn-sm bg-success-light mr-2">
                                                  <i class="fas fa-pen"></i>
@@ -59,9 +63,40 @@
                                                  </button>
                                              </form>
                                          </div>
+                                         {% comment %} {% endif %} {% endcomment %}
                                        </td>
                                     </tr>
+                                    {% endif %}
+                                    {% if user.is_admin %}
+                                    {% comment %} <td>teacher id {{ eval}}</td> {% endcomment %}
+                                    {% comment %} <td>user teacher id{{ user.teacher_profile.name}}</td> {% endcomment %}
+                                    <tr>
+                                       <td>{{ forloop.counter}}</td> 
+                                       <td>{{ eval.subject.title }}</td>
+                                       <td>{{ eval.title}}</td> 
+                                       <td>{{ eval.student.name }}</td>
+                                       <td>{{ eval.value}}</td>
+                                       <td>{{ eval.coef}}</td> 
+                                       <td>{{ eval.teacher }}</td>
+                                       <td class="text-right">
+                                          {% comment %} {% if user.is_admin and eval.teacher_class.id == user.teacher_profile.id %} {% endcomment %}
+                                          <div class="actions">
+                                             <a href="{% url 'edit_test' eval.id %}" class="btn btn-sm bg-success-light mr-2">
+                                                 <i class="fas fa-pen"></i>
+                                             </a>
+                                             <form action="{% url 'delete_test' eval.id %}" method="POST" style="display:inline;">
+                                                 {% csrf_token %}
+                                                 <button type="submit" class="btn btn-sm bg-danger-light" onclick="return confirm('Are you sure you want to delete this eval?');">
+                                                     <i class="fas fa-trash"></i>
+                                                 </button>
+                                             </form>
+                                         </div>
+                                         {% comment %} {% endif %} {% endcomment %}
+                                       </td>
+                                    </tr>
+                                    {% endif %}
                                     {% endfor %}
+                                    
                                  </tbody>
                               </table>
                            </div>

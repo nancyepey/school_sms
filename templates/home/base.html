@@ -18,11 +18,11 @@
       <div class="main-wrapper">
          <div class="header">
             <div class="header-left">
-               <a href="index.html" class="logo">
-               <img src="school/img/{{company.clientLogo}}" alt="Logo">
+               <a href="#" class="logo">
+               <img src="/media/img/stuvaultLOGO.png" alt="Logo">
                </a>
-               <a href="index.html" class="logo logo-small">
-               <img src="school/img/{{company.clientLogo}}" alt="Logo" width="30" height="30">
+               <a href="#" class="logo logo-small">
+               <img src="/media/img/stuvaultLOGO.png" alt="Logo" width="30" height="30">
                </a>
             </div>
             <a href="javascript:void(0);" id="toggle_btn">
@@ -76,14 +76,29 @@
                </li>
                <li class="nav-item dropdown has-arrow">
                   <a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown">
-                  <span class="user-img"><img class="rounded-circle" src="{{user_info.student_image.url}}" width="31" alt="{% if user.is_authenticated %}
-     {{ user.username}}
-    {% endif %}"></span>
+                  <span class="user-img"><img class="rounded-circle"
+                      src="
+                      {% if user_info.student_image.url %}
+                      {{user_info.student_image.url}}
+                      {% else %}
+                      /media/img/default.png
+                      {% endif %}
+                      "
+                       width="31" alt="{% if user.is_authenticated %}
+                        {{ user.username}}
+                        {% endif %}"></span>
                   </a>
                   <div class="dropdown-menu">
                      <div class="user-header">
                         <div class="avatar avatar-sm">
-                           <img src="{{user_info.student_image.url}}" alt="User Image" class="avatar-img rounded-circle">
+                           <img src="
+                           {% if user_info.student_image.url %}
+                           {{user_info.student_image.url}}
+                           {% else %}
+                           /media/img/default.png
+                           {% endif %}
+                           " 
+                           alt="User Image" class="avatar-img rounded-circle">
                         </div>
                         <div class="user-text">
                            <h6></h6>
@@ -133,6 +148,7 @@
                            {% endif %}
                         </ul>
                      </li>
+                     {% if not user.is_teacher %}
                      <li class="submenu">
                         <a href="#"><i class="fas fa-user-graduate"></i> <span> Students</span> <span class="menu-arrow"></span></a>
                         <ul>
@@ -145,6 +161,7 @@
                            {% endif %}
                         </ul>
                      </li>
+                     {% endif %}
                      {% if user.is_admin %}
                      <li class="submenu">
                         <a href="#"><i class="fas fa-chalkboard-teacher"></i> <span> Teachers</span> <span class="menu-arrow"></span></a>
@@ -182,6 +199,7 @@
                            <li><a href="{% url 'add_subject' %}">Subject Add</a></li>
                         </ul>
                      </li>
+                     {% endif %}
                      <li class="menu-title">
                         <span>Management</span>
                      </li>
@@ -190,8 +208,11 @@
                         <ul>
                            <li><a href="{% url 'test_list' %}">View All</a></li>
                            <li><a href="{% url 'add_test' %}">Create</a></li>
+                           <li><a href="{% url 'calculate_mark_class' %}">Calculate Marks</a></li>
+                           <li><a href="{% url 'classranking_class' %}">Class Ranking</a></li>
                         </ul>
                      </li>
+                     {% if user.is_admin %}
                      <li class="submenu">
                         <a href="#"><i class="fas fa-table"></i> <span> Report</span> <span class="menu-arrow"></span></a>
                         <ul>
@@ -217,6 +238,7 @@
                            <li><a href="add-salary.html">Add Salary</a></li>
                         </ul>
                      </li>
+                     {% endif %}
                      <li class="menu-title">
                         <span>Settings</span>
                      </li>
@@ -226,16 +248,17 @@
                            <li><a href="{% url 'company_details' %}">Company Details</a></li>
                         </ul>
                      </li>
-                     <li class="submenu">
+                     {% comment %} <li class="submenu">
                         <a href="#"><i class="fas fa-shield-alt"></i> <span> Authentication </span> <span class="menu-arrow"></span></a>
                         <ul>
                            <li><a href="{% url 'login' %}">Login</a></li>
                            <li><a href="{% url 'signup' %}">Register</a></li>
                            <li><a href="{% url 'forgot-password' %}">Forgot Password</a></li>
-                           {% comment %} <li><a href="error-404.html">Error Page</a></li> {% endcomment %}
+                            <li><a href="error-404.html">Error Page</a></li> 
                         </ul>
-                     </li>
-                     {% endif %}
+                     </li> 
+                     {% endcomment %}
+                     
                      
                      {% comment %} <li>
                         <a href="blank-page.html"><i class="fas fa-file"></i> <span>Blank Page</span></a>
@@ -287,6 +310,14 @@
                </div>
             </div>
          </div>
+
+         {% if messages %}
+         <ul class="messages">
+            {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+         </ul>
+         {% endif %}
 
 
          {% block body %}

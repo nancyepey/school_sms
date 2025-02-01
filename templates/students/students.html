@@ -20,6 +20,14 @@
                   </div>
                </div>
                <div class="row">
+                  {% if messages %}
+                     <div class="alert alert-info">
+                        {% for message in messages %}
+                           <p>{{ message }}</p>
+                        {% endfor %}
+                     </div>
+                     {% endif %}
+                     
                   <div class="col-sm-12">
                      <div class="card card-table">
                         <div class="card-body">
@@ -45,7 +53,13 @@
                                        <td>{{ student.name}}</td> 
                                        <td>
                                           <h2 class="table-avatar">
-                                             <a href="{% url 'view_student' student.id %}" class="avatar avatar-sm mr-2"><img class="avatar-img rounded-circle" src="{{ student.student_image.url }}" alt="User Image"></a>
+                                             <a href="{% url 'view_student' student.id %}" class="avatar avatar-sm mr-2"><img class="avatar-img rounded-circle" src="
+                                                {% comment %} {% if student.student_image.url == ""  %} {% endcomment %}
+                                                {% comment %} /media/img/default.png {% endcomment %}
+                                                {% comment %} {% else %} {% endcomment %}
+                                                {{ student.student_image.url }}
+                                                 {% comment %} {% endif %}  {% endcomment %}
+                                                 " alt="User Image"></a>
                                              <a href="{% url 'view_student' student.id %}">{{ student.first_name }} {{ student.last_name}}</a>
                                           </h2>
                                        </td>
