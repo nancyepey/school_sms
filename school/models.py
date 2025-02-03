@@ -60,11 +60,16 @@ class Settings(models.Model):
     clientName = models.CharField(null=True, blank=True, max_length=200)
     clientLogo = models.ImageField(default='default_logo.jpg', upload_to='school/img/')
     addressLine1 = models.CharField(null=True, blank=True, max_length=200)
+    exact_address = models.CharField(max_length=200, null=True, blank=True)
     # province = models.CharField(choices=PROVINCES, blank=True, max_length=100)
     postalCode = models.CharField(null=True, blank=True, max_length=10)
     phoneNumber = models.CharField(null=True, blank=True, max_length=100)
     emailAddress = models.CharField(null=True, blank=True, max_length=100)
     taxNumber = models.CharField(null=True, blank=True, max_length=100)
+    other                   = models.CharField(max_length=250, null=True, blank=True)
+    added_by                = models.CharField(max_length=100, null=True)
+    modified_by             = models.CharField(max_length=100, null=True, blank=True)
+    is_actif                = models.BooleanField(default=True)
 
 
     #Utility fields
