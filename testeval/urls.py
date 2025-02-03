@@ -20,5 +20,10 @@ urlpatterns = [
     path('delete_report/<str:slug>/', views.delete_report_card, name="del_report_card"),
     # path('reports/card/', views.generate_pdf, name="generate_pdf"),
 
+    #stats
+    path('consolidation/', views.consolidation, name="consolidation"),
+    path('non_consolidation/', views.report_card_list, name="report_cards"),
+
+
     path('reports/card/<str:slug>/', views.viewDocumentInvoice, name="viewDocumentInvoice"),
 ]

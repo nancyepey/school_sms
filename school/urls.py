@@ -16,7 +16,7 @@ urlpatterns = [
     #
     path('add_specialty/', views.add_specialty, name="add_specialty"),
     path('specialty/', views.specialty_list, name="specialty_list"),
-    path('edit/<str:slug>/', views.edit_specialty, name="edit_specialty"),
+    path('edit_specialty/<str:slug>/', views.edit_specialty, name="edit_specialty"),
     path('delete/<str:slug>/', views.del_specialty, name="delete_specialty"),
 
     #

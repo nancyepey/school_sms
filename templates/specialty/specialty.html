@@ -37,7 +37,7 @@
                                     <tr>
                                        {% comment %} <th>ID</th> {% endcomment %}
                                        <th>Name</th>
-                                       <th>Slug</th>
+                                       {% comment %} <th>Slug</th> {% endcomment %}
                                        {% comment %} <th>classroom </th> {% endcomment %}
                                        <th>Code</th>
                                        <th>Department</th>
@@ -48,7 +48,7 @@
                                     {% for specialty_l in specialty_list %}
                                     <tr>
                                        <td>{{ specialty_l.name}}</td>  
-                                       <td>{{ specialty_l.slug }}</td>
+                                       {% comment %} <td>{{ specialty_l.slug }}</td> {% endcomment %}
                                        {% comment %} <td>{{ specialty_l.classroom.class_name }}</td> {% endcomment %}
                                        <td>{{ specialty_l.code }}</td>
                                        <td>{{ specialty_l.department}}</td>

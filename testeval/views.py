@@ -662,7 +662,7 @@ def delete_report_card(request, slug):
         student_name =  report_card.student.name
         report_card.delete()
 
-        messages.success(request, f'{student_name} Record card')
+        messages.success(request, f'{student_name} Record card Deleted')
 
         return redirect('report_cards')
     return HttpResponseForbidden()
@@ -2643,3 +2643,127 @@ def ANCIENcreate_report_card(request):
 
     return render(request, "reports/add-card.html", context=context)
 
+
+
+#stats
+def consolidation(request):
+    student = Student.objects.all()
+    context = {
+        'student':student,
+    }
+    #consolidation
+    
+    
+    
+
+    #get student class
+    try:
+        # print('student')
+        obj_student_class = Student.objects.get(id=student)
+
+        classroomId = obj_student_class.student_class_id
+        classroom =  ClassRoom.objects.get(id=classroomId)
+        #get student class
+        print('student')
+        obj_student_class = Student.objects.get(id=student)
+        # print(obj_student_class.specialty)
+
+        classroomId = obj_student_class.student_class_id
+        classroom =  ClassRoom.objects.get(id=classroomId)
+        subjects = Subject.objects.filter(classroom=classroomId)
+        # print(subjects)
+        pass
+    except:
+        messages.error(request, 'Something went wrong')
+        return redirect('report_cards')
+    
+
+    #total coef
+    # total_coeff = 0.00
+    total_coeff = decimal.Decimal(0.0)
+    #
+    total_gen_coeff = decimal.Decimal(0.0)
+    total_prof_coeff = decimal.Decimal(0.0)
+
+    #total tot
+    # total_tot = 0.00
+    total_tot = decimal.Decimal(0.0)
+    #
+    total_gen_tot = decimal.Decimal(0.0)
+    total_prof_tot = decimal.Decimal(0.0)
+
+    #Get Client Settings
+    p_settings = Settings.objects.get(clientName='GILEAD TECHNICAL HIGH SCHOOL')
+
+    #get subjects
+    term = term
+
+    # Create an empty of subjects and marks
+    subject_value_cat = []
+
+    # Create an empty of subjects and marks
+    subj_cat = []
+
+    # Create an empty of gen et prof
+    subject_gen_tot = 0.0
+    subject_prof_tot = 0.0
+
+    subjt_rang = "1"
+
+    #Calculate the Avg Total
+    if len(subjects) > 0:
+        for subject in subjects:
+            # print(subject.coef)
+            if subject.coef is None:
+                # print('no subjj coef')
+                messages.error(request, 'Something went wrong')
+                return redirect('report_cards')
+            else:
+                print("test")
+                # follow_object = Teacher.objects.filter(classrooms = classroom, t_subjects = subjects)
+                # followers_of_teach = follow_object.t_subjects.all()
+                # print(follow_object)
+                # print("subject title")
+                # print(subject.title)
+                # print("subject term")
+                # print(obj_report_card.term)
+                
+            # 
+
+        
+
+        # print(subject_value_cat)
+
+
+
+        context = {}
+        context['subject_line'] = subject_value_cat
+        context['p_settings'] = p_settings
+        context['student'] = obj_student_class
+        context['classroom'] = classroom
+        context['total_coeff'] = total_coeff
+        context['total_tot'] = total_tot
+        context['total_gen_coeff'] = total_gen_coeff
+        context['total_prof_coeff'] = total_prof_coeff
+        context['gen_tot'] = total_gen_tot
+        context['subject_gen_tot'] = subject_gen_tot #
+        context['subj_cat'] = subj_cat
+        context['total_prof_tot'] = total_prof_tot
+        # context['avgTotal'] = "{:.2f}".format(invoiceTotal)
+
+        print(context)
+
+        # using now() to get current time
+        current_time = datetime.datetime.now()
+
+        
+
+        messages.success(request, f'{obj_student_class.name} Record Card added Successfully')
+        return redirect("report_cards")
+    student = Student.objects.all()
+    context = {
+        'student':student,
+    }
+
+    #Return
+    return render(request, "consolidation/non-consolidation.html", context=context)
