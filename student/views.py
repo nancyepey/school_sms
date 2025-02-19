@@ -165,6 +165,8 @@ def student_list(request):
         context = {
             'student_list': student_list,
             'classroom':classroom,
+            'class_selected': get_class.class_name,
+            'codeclass_selected': get_class.class_code,
         }
 
     return render(request, "students/students.html", context)

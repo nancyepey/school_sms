@@ -32,19 +32,28 @@
                      <div class="card card-table">
                         <form method="POST" class="form-inline">
                            {% csrf_token %}
-                           <div class="form-group ml-2 mr-2 mb-2">
+                           <div class="form-group ml-2 mr-2 mb-2 mt-2">
                               <label>View per Class</label>
                            </div>
-                           <div class="form-group mx-sm-3 mb-2">
+                           <div class="form-group mx-sm-3 mb-2 mt-2">
                               <select class="form-control" name="student_class" required>
-                                 <option value="all" selected >All</option>
+                                 <option value="all"  >All</option>
                                  {% for classrm in classroom %}
-                                    <option value="{{classrm.id}}">{{classrm.class_name}}</option>
+                                    {% if class_selected %}
+                                       {% if class_selected == classrm.class_name %}
+                                          <option value="{{classrm.id}}" selected>{{classrm.class_name}}</option>
+                                       {%  else  %} 
+                                          <option value="{{classrm.id}}">{{classrm.class_name}}</option>
+                                       {% endif %}
+                                    {%  else  %} 
+                                       <option value="{{classrm.id}}">{{classrm.class_name}}</option>
+                                    {% endif %}
+                                    {% comment %} <option value="{{classrm.id}}">{{classrm.class_name}}</option> {% endcomment %}
                                  
                                  {% endfor %}
                               </select>
                            </div>
-                           <button type="submit" class="btn btn-primary mb-2"><i class='fas fa-search' style='font-size:16px'></i></button>
+                           <button type="submit" class="btn btn-primary mb-2 mt-2"><i class='fas fa-search' style='font-size:16px'></i></button>
                          </form>
                         <div class="card-body">
                            <div class="table-responsive">

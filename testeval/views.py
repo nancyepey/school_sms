@@ -63,6 +63,8 @@ def eval_list(request):
         context = {
             'eval_list': eval_list,
             'classroom':classroom,
+            'class_selected': get_class.class_name,
+            'codeclass_selected': get_class.class_code,
         }
     return render(request, "eval/evals.html", context)
 
@@ -83,6 +85,8 @@ def report_card_list(request):
         context = {
             'report_card_list': report_card_list,
             'classroom':classroom,
+            'class_selected': get_class.class_name,
+            'codeclass_selected': get_class.class_code,
         }
     return render(request, "reports/report_card.html", context)
 

@@ -39,7 +39,15 @@
                               <select class="form-control" name="student_class" required>
                                  <option value="all" selected >All</option>
                                  {% for classrm in classroom %}
-                                    <option value="{{classrm.id}}">{{classrm.class_name}}</option>
+                                    {% if class_selected %}
+                                       {% if class_selected == classrm.class_name %}
+                                          <option value="{{classrm.id}}" selected>{{classrm.class_name}}</option>
+                                       {%  else  %} 
+                                          <option value="{{classrm.id}}">{{classrm.class_name}}</option>
+                                       {% endif %}
+                                    {%  else  %} 
+                                       <option value="{{classrm.id}}">{{classrm.class_name}}</option>
+                                    {% endif %}
                                  
                                  {% endfor %}
                               </select>
