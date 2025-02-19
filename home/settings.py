@@ -52,7 +52,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure--$@crdyu3i8k*q^jy4jo21k)d0kxq-21e)jx5cb_yi&-j*fix)'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = True
 # DEBUG = False
 
 ALLOWED_HOSTS = ["school-management-8p1f.onrender.com", '127.0.0.1', 'localhost']
@@ -154,12 +154,7 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
-
-CSS_LOCATION = os.path.join(BASE_DIR,'static')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -179,10 +174,30 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 #         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
 #     },
 # }
+
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/5.0/howto/static-files/
+
+# STATIC_URL = 'static/'
+
+# CSS_LOCATION = os.path.join(BASE_DIR,'static')
+
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR/'static']
 STATIC_ROOT = BASE_DIR/'assets'
+
+CSS_LOCATION = os.path.join(BASE_DIR,'static')
+
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+#prod conditions
+# if DEBUG:
+#     STATICFILES_DIRS = [os.path.join(BASE_DIR/'static')]
+# else:
+#     STATIC_ROOT = os.path.join(BASE_DIR/'static')
+
+
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'

@@ -21,8 +21,8 @@ urlpatterns = [
     # path('reports/card/', views.generate_pdf, name="generate_pdf"),
 
     #stats
-    path('consolidation/', views.consolidation, name="consolidation"),
-    path('non_consolidation/', views.report_card_list, name="report_cards"),
+    path('consolidation/', views.consolidation, name="consolidations"),
+    # path('non_consolidation/', views.report_card_list, name="report_cards"),
 
 
     path('reports/card/<str:slug>/', views.viewDocumentInvoice, name="viewDocumentInvoice"),

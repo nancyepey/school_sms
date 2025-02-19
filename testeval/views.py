@@ -8,6 +8,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 # from sympy import Sum
 from django.db.models import Sum
 import decimal
+from department.models import Department
 from teacher.models import Teacher
 from school.models import ClassRoom, Settings, Specialty
 
@@ -49,17 +50,40 @@ from django.db.models import Sum, F
 
 def eval_list(request):
     eval_list = Eval.objects.select_related('student').all()
+    classroom = ClassRoom.objects.all()
     context = {
         'eval_list': eval_list,
+        'classroom':classroom,
     }
+    if request.method == 'POST':
+        # print(request)
+        class_selected = request.POST.get('student_class')
+        get_class = ClassRoom.objects.get(id = class_selected)
+        eval_list = Eval.objects.filter( student__student_class=get_class )
+        context = {
+            'eval_list': eval_list,
+            'classroom':classroom,
+        }
     return render(request, "eval/evals.html", context)
 
 
 def report_card_list(request):
     report_card = ReportCard.objects.select_related('student').all()
+    
+    classroom = ClassRoom.objects.all()
     context = {
         'report_card_list': report_card,
+        'classroom':classroom,
     }
+    if request.method == 'POST':
+        # print(request)
+        class_selected = request.POST.get('student_class')
+        get_class = ClassRoom.objects.get(id = class_selected)
+        report_card_list = ReportCard.objects.filter( student__student_class=get_class )
+        context = {
+            'report_card_list': report_card_list,
+            'classroom':classroom,
+        }
     return render(request, "reports/report_card.html", context)
 
 
@@ -2647,101 +2671,167 @@ def ANCIENcreate_report_card(request):
 
 #stats
 def consolidation(request):
-    student = Student.objects.all()
+    students = Student.objects.all()
     context = {
-        'student':student,
+        'students':students,
     }
     #consolidation
-    
-    
-    
 
-    #get student class
-    try:
-        # print('student')
-        obj_student_class = Student.objects.get(id=student)
 
-        classroomId = obj_student_class.student_class_id
-        classroom =  ClassRoom.objects.get(id=classroomId)
+    if request.method == "POST":
+    
         #get student class
-        print('student')
-        obj_student_class = Student.objects.get(id=student)
-        # print(obj_student_class.specialty)
-
-        classroomId = obj_student_class.student_class_id
-        classroom =  ClassRoom.objects.get(id=classroomId)
-        subjects = Subject.objects.filter(classroom=classroomId)
-        # print(subjects)
-        pass
-    except:
-        messages.error(request, 'Something went wrong')
-        return redirect('report_cards')
-    
-
-    #total coef
-    # total_coeff = 0.00
-    total_coeff = decimal.Decimal(0.0)
-    #
-    total_gen_coeff = decimal.Decimal(0.0)
-    total_prof_coeff = decimal.Decimal(0.0)
-
-    #total tot
-    # total_tot = 0.00
-    total_tot = decimal.Decimal(0.0)
-    #
-    total_gen_tot = decimal.Decimal(0.0)
-    total_prof_tot = decimal.Decimal(0.0)
-
-    #Get Client Settings
-    p_settings = Settings.objects.get(clientName='GILEAD TECHNICAL HIGH SCHOOL')
-
-    #get subjects
-    term = term
-
-    # Create an empty of subjects and marks
-    subject_value_cat = []
-
-    # Create an empty of subjects and marks
-    subj_cat = []
-
-    # Create an empty of gen et prof
-    subject_gen_tot = 0.0
-    subject_prof_tot = 0.0
-
-    subjt_rang = "1"
-
-    #Calculate the Avg Total
-    if len(subjects) > 0:
-        for subject in subjects:
-            # print(subject.coef)
-            if subject.coef is None:
-                # print('no subjj coef')
-                messages.error(request, 'Something went wrong')
-                return redirect('report_cards')
-            else:
-                print("test")
-                # follow_object = Teacher.objects.filter(classrooms = classroom, t_subjects = subjects)
-                # followers_of_teach = follow_object.t_subjects.all()
-                # print(follow_object)
-                # print("subject title")
-                # print(subject.title)
-                # print("subject term")
-                # print(obj_report_card.term)
-                
+        try:
+            #les element du form
+            annee = request.POST.get('academic_year')
+            term = request.POST.get('school_term')
+            type = request.POST.get('type')
             # 
-
+            classrooms =  ClassRoom.objects.all()
+            specialties =  Specialty.objects.all()
+            num_specialties = Specialty.objects.all().count()
+            # print("num_specialties")
+            # print(num_specialties)
+            departments =  Department.objects.all()
+            # evaluations = Eval.objects.filter(term=term, academic_year=annee )
+            # print(subjects)
+            pass
+        except Exception as e:
+            messages.error(request, f' {e} Something went wrong')
+            return redirect('consolidations')
         
 
+        #get the number of students per class
+        #count number of female in class 1
+        count_girl_form1 = Student.objects.filter(gender="Female",student_class="1").count()
+        print(f"num of girls in form 1 is {count_girl_form1}")
+
+        count_male_form = 0
+        count_female_form = 0
+        count_form_total = 0
+        student_gender_count = []
+        data_non_consolidation = []
+        spec_count_male_form = 0
+        spec_count_female_form = 0
+
+        for classes in classrooms:
+            # print(classes)
+            for student in students:
+                if student.gender == "Male":
+                    count_male_form = Student.objects.filter(gender="Male",student_class=classes.id).count()
+                    
+                if student.gender == "Female":
+                    count_female_form = Student.objects.filter(gender="Female",student_class=classes.id).count()
+                
+            # print(f"num of females in form 1 is {count_female_form}")
+            # print(f"num of males in form 1 is {count_male_form}")
+            # count_form_total = count_female_form + count_male_form
+            # print(f"num of Students in {classes.class_name} is {count_form_total}")
+            count_form = Student.objects.filter(student_class=classes.id).count()
+            # print(f"NEW num of Students in {classes.class_name} is {count_form}")
+            student_gender_count.append([count_male_form,count_female_form,count_form,classes.class_name])
+            # student_gender_count.append([count_male_form,count_female_form,count_form,classes.class_name])
+        for specialty in specialties:
+            for classes in classrooms:
+                spec_count_male_form = Student.objects.filter(gender="Male",student_class=classes.id, specialty=specialty).count()
+                        
+                spec_count_female_form = Student.objects.filter(gender="Female",student_class=classes.id, specialty=specialty).count()
+                spec_count_form = Student.objects.filter(student_class=classes.id, specialty=specialty).count()
+            data_non_consolidation.append([specialty.name,spec_count_male_form,spec_count_female_form,spec_count_form])
+    
+
+        #total coef
+        # total_coeff = 0.00
+        total_coeff = decimal.Decimal(0.0)
+        #
+        total_gen_coeff = decimal.Decimal(0.0)
+        total_prof_coeff = decimal.Decimal(0.0)
+
+        #total tot
+        # total_tot = 0.00
+        total_tot = decimal.Decimal(0.0)
+        #
+        total_gen_tot = decimal.Decimal(0.0)
+        total_prof_tot = decimal.Decimal(0.0)
+
+        #Get Client Settings
+        p_settings = Settings.objects.get(clientName='GILEAD TECHNICAL HIGH SCHOOL')
+
+        #get subjects
+        term = term
+
+        #heading
+        pdf_heading = ""
+        
+        # if term == "first":
+        #     print(term)
+        # elif term == "second":
+        #     print(term)
+        #     #get the test relatives too students
+        # elif term == "third":
+        #     print(term)
+        
+        # if type == "consolidation":
+        #     print(type)
+        #     # pdf_heading = ""
+        # elif type == "non_consolidation":
+        #     print(type)
+        
+        if term == "second" and type == "consolidation":
+            pdf_heading = f"SECOND TERM GENERAL CONSOLIDATED STATISTICS, ACADEMIC YEAR {annee} "
+        if term == "frist" and type == "consolidation":
+            pdf_heading = f"FRIST TERM GENERAL CONSOLIDATED STATISTICS, ACADEMIC YEAR {annee} "
+        if term == "third" and type == "consolidation":
+            pdf_heading = f"THIRD TERM GENERAL CONSOLIDATED STATISTICS, ACADEMIC YEAR {annee} "
+        
+        if term == "second" and type == "non_consolidation":
+            pdf_heading = f"SECOND TERM GENERAL CONSOLIDATED STATISTICS, ACADEMIC YEAR {annee} "
+        if term == "frist" and type == "non_consolidation":
+            pdf_heading = f"FRIST TERM GENERAL CONSOLIDATED STATISTICS, ACADEMIC YEAR {annee} "
+        if term == "third" and type == "non_consolidation":
+            pdf_heading = f"THIRD TERM GENERAL CONSOLIDATED STATISTICS, ACADEMIC YEAR {annee} "
+
+        # Create an empty of subjects and marks
+        subject_value_cat = []
+
+        # Create an empty of subjects and marks
+        subj_cat = []
+
+        # Create an empty of gen et prof
+        subject_gen_tot = 0.0
+        subject_prof_tot = 0.0
+
+        subjt_rang = "1"
+
+        #Calculate the Avg Total
+        
+
+            
+
         # print(subject_value_cat)
+
+        # print(student_gender_count)
+        print(data_non_consolidation)
+
+        print("num_specialties")
+        num_specialties = num_specialties + 2
+        print(num_specialties)
 
 
 
         context = {}
-        context['subject_line'] = subject_value_cat
+        context['heading'] = pdf_heading
+        context['classrooms'] = classrooms
         context['p_settings'] = p_settings
-        context['student'] = obj_student_class
-        context['classroom'] = classroom
-        context['total_coeff'] = total_coeff
+        context['classroom'] = classrooms
+        context['stud_gen_count'] = student_gender_count
+        context['specialtys'] = specialties
+        context['num_specialtys'] = num_specialties
+        context['info_non_consolidation'] = data_non_consolidation
+
+        
+        
+
         context['total_tot'] = total_tot
         context['total_gen_coeff'] = total_gen_coeff
         context['total_prof_coeff'] = total_prof_coeff
@@ -2751,19 +2841,66 @@ def consolidation(request):
         context['total_prof_tot'] = total_prof_tot
         # context['avgTotal'] = "{:.2f}".format(invoiceTotal)
 
-        print(context)
+        # print(context)
 
         # using now() to get current time
         current_time = datetime.datetime.now()
 
-        
+        # return redirect("consolidations")
+        #The name of your PDF file
+        filename = f"{type}_{annee}_{current_time}.pdf"
 
-        messages.success(request, f'{obj_student_class.name} Record Card added Successfully')
-        return redirect("report_cards")
-    student = Student.objects.all()
-    context = {
-        'student':student,
-    }
+        #HTML FIle to be converted to PDF - inside your Django directory
+        template = get_template('reports/stats/pdf-consolidations.html')
+        if type == "consolidation":
+            template = get_template('reports/stats/pdf-consolidations.html')
+        if type == "non_consolidation":
+            template = get_template('reports/stats/pdf-non_consolidations.html')
+
+
+        #Render the HTML
+        html = template.render(context)
+
+        #Options - Very Important [Don't forget this]
+        options = {
+            'encoding': 'UTF-8',
+            'javascript-delay':'10', #Optional
+            # 'enable-local-file-access': None, #To be able to access CSS
+            'enable-local-file-access': None, #To be able to access CSS
+            'page-size': 'A4',
+            'orientation': 'Landscape',
+            'custom-header' : [
+                ('Accept-Encoding', 'gzip')
+            ],
+        }
+        #Javascript delay is optional
+
+        #Remember that location to wkhtmltopdf
+        # path_wkthmltopdf = b'C:\wkhtmltopdf\\bin\wkhtmltopdf.exe'
+        # config = pdfkit.configuration(wkhtmltopdf=path_wkthmltopdf)
+        # config = pdfkit.configuration(wkhtmltopdf='C:/wkhtmltopdf/bin/wkhtmltopdf')
+        #
+        if platform.system() == "Windows":
+            config = pdfkit.configuration(wkhtmltopdf=os.environ.get("WKHTMLTOPDF_PATH", "C:\wkhtmltopdf\\bin\wkhtmltopdf.exe"))
+        else:
+            WKHTMLTOPDF_CMD = subprocess.Popen(["which", os.environ.get("WKHTMLTOPDF_PATH", "/app/bin/wkhtmltopdf")],
+            stdout=subprocess.PIPE).communicate()[0].strip()
+            config = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_CMD)
+
+        #IF you have CSS to add to template
+        css1 = os.path.join(settings.CSS_LOCATION, 'assets', 'css', 'bootstrap.min.css')
+        # css2 = os.path.join(settings.CSS_LOCATION, 'assets', 'css', 'dashboard.css')
+
+        #Create the file
+        file_content = pdfkit.from_string(html, False, configuration=config, options=options)
+
+        #Create the HTTP Response
+        response = HttpResponse(file_content, content_type='application/pdf')
+        response['Content-Disposition'] = 'inline; filename = {}'.format(filename)
+
+        #Return
+        return response
+    
 
     #Return
-    return render(request, "consolidation/non-consolidation.html", context=context)
+    return render(request, "consolidation/type-consolidation.html", context=context)

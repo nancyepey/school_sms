@@ -151,9 +151,22 @@ def add_student(request):
 
 def student_list(request):
     student_list = Student.objects.select_related('parent').all()
+    classroom = ClassRoom.objects.all()
     context = {
         'student_list': student_list,
+        'classroom':classroom,
     }
+    # print(context)
+    if request.method == 'POST':
+        # print(request)
+        class_selected = request.POST.get('student_class')
+        get_class = ClassRoom.objects.get(id = class_selected)
+        student_list = Student.objects.filter(student_class=get_class)
+        context = {
+            'student_list': student_list,
+            'classroom':classroom,
+        }
+
     return render(request, "students/students.html", context)
 
 
@@ -321,7 +334,7 @@ def edit_student(request,slug):
 def view_student(request, slug):
     student = get_object_or_404(Student, id = slug)
     context = {
-        'student': student
+        'student': student,
     }
     return render(request, "students/student-details.html", context)
 
