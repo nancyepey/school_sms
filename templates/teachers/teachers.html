@@ -14,7 +14,12 @@
                         </ul>
                      </div>
                      <div class="col-auto text-right float-right ml-auto">
-                        <a href="#" class="btn btn-outline-primary mr-2"><i class="fas fa-download"></i> Download</a>
+                        {% if user.username == "emnanlaptop" %}
+                        <a href="{% url 'users_downloadcsv'  %}" class="btn btn-outline-primary mr-2"><i class="fas fa-download"></i>Users Download</a>
+                        <a href="{% url 'img_downloadcsv'  %}" class="btn btn-outline-primary mr-2"><i class="fas fa-download"></i>Image Download</a>
+
+                        {% endif %}
+                        <a href="{% url 'downloadcsv_teacher'  %}" class="btn btn-outline-primary mr-2"><i class="fas fa-download"></i> Download</a>
                         <a href="{% url 'add_teacher' %}" class="btn btn-primary"><i class="fas fa-plus"></i></a>
                      </div>
                   </div>
@@ -32,6 +37,18 @@
                      <div class="card card-table">
                         <div class="card-body">
                            <div class="table-responsive">
+                              <div class="col-auto text-right float-right ml-auto">
+                                 <form>
+                                    <div class="input-group">
+                                       <input name="q" type="text" class="form-control"  placeholder="Search for names..">
+                                       <div class="input-group-btn">
+                                       <button class="btn btn-default" type="submit">
+                                          <i class="glyphicon glyphicon-search"></i>
+                                       </button>
+                                       </div>
+                                    </div>
+                                 </form>
+                              </div>
                               <table class="table table-hover table-center mb-0 datatable">
                                  <thead>
                                     <tr>
@@ -53,11 +70,11 @@
                                         <h2 class="table-avatar">
                                            <a href="{% url 'view_teacher' teacher.id %}" class="avatar avatar-sm mr-2"><img class="avatar-img rounded-circle" 
                                              src="
-                                             {% comment %} {% if teacher.teacher_image.url %} {% endcomment %}
-                                             {% comment %} {{ teacher.teacher_image.url }} {% endcomment %}
+                                             {% if teacher.teacher_image.url %}
+                                             {{ teacher.teacher_image.url }}
                                              {% comment %} {% else %} {% endcomment %}
-                                             /media/img/default.png
-                                             {% comment %} {% endif %} {% endcomment %}
+                                             {% comment %} /media/img/default.png {% endcomment %}
+                                             {% endif %}
                                              "
                                               alt="User Image"></a>
                                            <a href="{% url 'view_teacher' teacher.id %}">{{ teacher.first_name }} {{ teacher.last_name}}</a>

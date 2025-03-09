@@ -66,17 +66,24 @@
                                 <div class="col-12 col-sm-6">
                                     <div class="form-group">
                                        <label>Subject</label> 
-                                       <select class="form-control selectpicker" multiple data-live-search="true" name="teacher_subj" required>
+                                       <select multiple class="form-control selectpicker" id="teacher_subj" name="teacher_subj" required>
                                           <!-- <option value="">Select Class</option> -->
                                           {% for tag in teacher.t_subjects.all  %}
                                             {% for subject in subject %}
                                                 {% comment %} {{ tag }} {% endcomment %}
                                                 {% if tag.id == subject.id %}
                                                 <option value="{{tag.id}}" selected>{{tag.title}}</option>
-                                                {% else %}
-                                                <option value="{{subject.id}}" >{{subject.title}}</option>
+                                                {% comment %} {% else %}
+                                                <option value="{{subject.id}}" >{{subject.title}}</option> {% endcomment %}
                                                 {% endif %}
                                             {% endfor %}
+                                             {% comment %} <option value="{{subject.id}}">{{subject.title}}</option> {% endcomment %}
+                                          
+                                          {% endfor %}
+                                          {% for subjs in subj_notselected_objects  %}
+                                            <option value="{{subjs.id}}" >{{subjs.title}}</option>
+                                            
+                                            
                                              {% comment %} <option value="{{subject.id}}">{{subject.title}}</option> {% endcomment %}
                                           
                                           {% endfor %}
@@ -92,13 +99,16 @@
                                             {% for classrm in classroom %}
                                                 {% comment %} <option value="{{classrm.id}}">{{classrm.class_name}}</option> {% endcomment %}
                                                 {% if teachclassroom.id == classrm.id %}
-                                                <option value="{{teachclassroom.id}}" selected>{{teachclassroom.class_name}}</option>
-                                                {% else %}
-                                                <option value="{{classrm.id}}" >{{classrm.class_name}}</option>
-                                                {% endif %}
+                                                <option value="{{classrm.id}}" selected>{{classrm.class_name}}</option>
+                                                {% comment %} {% else %}
+                                                <option value="{{classrm.id}}" >{{classrm.class_name}}</option> {% endcomment %}
+                                                
+                                                {% endif %} 
+                                                {% comment %} <option value="{{classrm.id}}" {% if teachclassroom.id == classrm.id %}selected{% endif %}>{{classrm.class_name}}</option> {% endcomment %}
                                             
                                             {% endfor %}
-                                          {% endfor %}
+                                          {% endfor %} 
+                                            
                                        </select>
                                        <!-- <select class="selectpicker" multiple data-live-search="true">
                                        <option>Mustard</option>

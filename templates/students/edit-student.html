@@ -60,6 +60,14 @@
                                         <input type="date" name="date_of_birth" class="form-control" value="{{ student.date_of_birth|date:'Y-m-d' }}">
                                     </div>
                                 </div>
+                                <div class="col-12 col-sm-6">
+                                   <div class="form-group">
+                                      <label>Place of Birth</label>
+                                      <div>
+                                         <input type="text" class="form-control" name="place_of_birth" value="{{ student.place_of_birth }}" >
+                                      </div>
+                                   </div>
+                                </div>
                                 
                                 <div class="col-12 col-sm-6">
                                     <div class="form-group">
@@ -80,6 +88,20 @@
                                        </select>
                                     </div>
                                  </div>
+                                
+                                 <div class="col-12 col-sm-6">
+                                     <div class="form-group">
+                                        <label>Status</label>
+                                        <select name="status" class="form-control">
+                                            {% if student.sch_status == None %}
+                                            <option value="">Select Status</option>
+                                            {% endif %}
+                                            <option value="new" {% if student.sch_status == 'new' %}selected{% endif %}>NEW</option>
+                                            <option value="old" {% if student.sch_status == 'old' %}selected{% endif %}>OLD</option>
+                                            <option value="repeat" {% if student.sch_status == 'repeat' %}selected{% endif %}>REPEAT</option>
+                                        </select>
+                                     </div>
+                                  </div>
                                  <div class="col-12 col-sm-6">
                                     <div class="form-group">
                                        <label>Specialty</label>
@@ -119,6 +141,12 @@
                                         <label>Admission Number</label>
                                         <input type="text" name="admission_number" class="form-control" value="{{ student.admission_number }}">
                                     </div>
+                                </div>
+                                <div class="col-12 col-sm-6">
+                                   <div class="form-group">
+                                      <label>Minsec Identification Number</label>
+                                      <input type="text" class="form-control" name="minsec_number" value="{{ student.minesec_ident_num }}" >
+                                   </div>
                                 </div>
                                 <div class="col-12 col-sm-6">
                                     <div class="form-group">
@@ -183,6 +211,12 @@
                                                 <option value="{{parent.id}}">
                                                     {{parent.carer_name}}
                                                 </option>
+
+                                                {% else %}
+
+                                                <option value="{{parent.id}}">
+                                                    {{parent.father_name}}
+                                                </option>
                                                 {% endif %}
                                                     {% comment %} <option value="{{parent.id}}">
                                                     </option> {% endcomment %}
@@ -194,6 +228,16 @@
 
                                 <div class="col-12">
                                    <h5 class="form-title"><span>OR</span></h5>
+                                </div>
+                                <div class="col-12">
+                                   <div class="form-group">
+                                      <label>Create a new Parent</label>
+                                      <select class="form-control" name="new_parent" >
+                                         <option value="">Select</option>
+                                         <option value="oui">YES</option>
+                                         <option value="non">NO</option>
+                                      </select>
+                                   </div>
                                 </div>
                                 <div class="col-12 col-sm-6">
                                     <div class="form-group">
@@ -242,6 +286,30 @@
                                         <label>Mother's Email</label>
                                         <input type="email" name="mother_email" class="form-control" value="{{ parent.mother_email }}">
                                     </div>
+                                </div>
+                                <div class="col-12 col-sm-6">
+                                   <div class="form-group">
+                                      <label>Carer's Name</label>
+                                      <input type="text" class="form-control" name="carer_name"  value="{{ parent.carer_name }}" >
+                                   </div>
+                                </div>
+                                <div class="col-12 col-sm-6">
+                                   <div class="form-group">
+                                      <label>Carer's Occupation</label>
+                                      <input type="text" class="form-control" name="carer_occupation" value="{{ parent.carer_occupation }}"  >
+                                   </div>
+                                </div>
+                                <div class="col-12 col-sm-6">
+                                   <div class="form-group">
+                                      <label>Carer's Mobile</label>
+                                      <input type="text" class="form-control" name="carer_mobile" value="{{ parent.carer_mobile }}" >
+                                   </div>
+                                </div>
+                                <div class="col-12 col-sm-6">
+                                   <div class="form-group">
+                                      <label>Carer's Email</label>
+                                      <input type="email" class="form-control" name="carer_email"  value="{{ parent.carer_email }}" >
+                                   </div>
                                 </div>
                                 <div class="col-12 col-sm-6">
                                     <div class="form-group">

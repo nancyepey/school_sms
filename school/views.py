@@ -1,5 +1,8 @@
+import csv
+import datetime
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse
+import pandas as pd
 
 from core.models import CustomUser
 from teacher.models import Teacher
@@ -11,6 +14,15 @@ from .models import ClassRoom, Settings, Specialty
 from .models import Settings
 from django.http import HttpResponseForbidden
 from django.contrib import messages
+#search
+from django.db.models import Q
+# csv
+import csv 
+from django.utils.text import slugify
+import os
+from tablib import Dataset
+from school.admin import ImageResource, SpecialtyResource, TeacherResource, UserprofileResource
+from school.forms import CSVImgImportForm, CSVSpecialtyImportForm, CSVStudsImportForm, CSVTeachImportForm, CSVUserImportForm
 
 
 
@@ -47,11 +59,13 @@ def admin_dashboard(request):
     classroom = ClassRoom.objects.all()
     count_class = ClassRoom.objects.all().count()
     count_subjects = Subject.objects.all().count()
+    count_students = Student.objects.all().count()
     context = {
         'company': company,
         "classroom" : classroom,
         "count_class" : count_class,
         "count_subjects" : count_subjects,
+        "count_students" : count_students,
     }
     # unread_notification = Notification.objects.filter(user=request.user, is_read=False)
     # unread_notification_count = unread_notification.count()
@@ -82,6 +96,140 @@ def teacher_dashboard(request):
     return render(request, "dashboard/teacher-dashboard.html", context)
 
 
+
+
+def import_export(request):
+    class_list = ClassRoom.objects.all()
+    specialty_list = Specialty.objects.all()
+    
+    form = CSVSpecialtyImportForm()
+    form_img = CSVImgImportForm()
+    form_usr = CSVUserImportForm()
+    form_teach = CSVTeachImportForm()
+    form_studs = CSVStudsImportForm()
+    context = {
+        'class_list': class_list,
+        'specialty_list': specialty_list,
+        'csv_specialty_import_form': form,
+        'csv_img_import_form': form_img,
+        'csv_usr_import_form': form_usr,
+        'csvteach_import_form': form_teach,
+        'csvstuds_import_form': form_studs,
+    }
+    
+    if request.method == 'POST':
+        # print(request)
+        # form_img = CSVImgImportForm(request.POST, request.FILES)
+        # if form_img.is_valid():
+        #     # print("importttttttttt")
+        #     csv_file = request.FILES['csv_file']
+        #     csv_reader = pd.read_excel(csv_file, engine="openpyxl")
+        #     # 
+
+        #     file = request.FILES['csv_file']
+        #     df = pd.read_excel(file)
+
+        #     """Rename the headeers in the excel file
+        #    to match Django models fields"""
+
+        #     #Call the Specialty Resource Model and make its instance
+        #     imgs_resource = ImageResource()
+
+        #     # Load the pandas dataframe into a tablib dataset
+        #     dataset = Dataset().load(csv_reader)
+        #     # dataset = Dataset().load(df)
+
+        #     # Call the import_data hook and pass the tablib dataset
+        #     result = imgs_resource.import_data(dataset,\
+        #      dry_run=True, raise_errors = True)
+            
+        #     if not result.has_errors():
+        #         result = imgs_resource.import_data(dataset, dry_run=False)
+        #         messages.success(request, "Images Data imported successfully")
+        #         # return redirect('index')
+        #         #
+            
+        #     else:
+        #         messages.error(request, "Not Imported Images Data")
+            #
+        
+        # user form import
+        form_usr = CSVUserImportForm(request.POST, request.FILES)
+        if form_usr.is_valid():
+            # print("importttttttttt")
+            csv_file = request.FILES['csv_file']
+            csv_reader = pd.read_excel(csv_file, engine="openpyxl")
+            # 
+
+            file = request.FILES['csv_file']
+            df = pd.read_excel(file)
+
+            """Rename the headeers in the excel file
+           to match Django models fields"""
+
+            #Call the Specialty Resource Model and make its instance
+            usrs_resource = UserprofileResource()
+
+            # Load the pandas dataframe into a tablib dataset
+            dataset = Dataset().load(csv_reader)
+            # dataset = Dataset().load(df)
+
+            # Call the import_data hook and pass the tablib dataset
+            result = usrs_resource.import_data(dataset,\
+             dry_run=True, raise_errors = True)
+            
+            if not result.has_errors():
+                result = usrs_resource.import_data(dataset, dry_run=False)
+                messages.success(request, "Users Data imported successfully")
+                # return redirect('index')
+                #
+            
+            else:
+                messages.error(request, "Not Imported Users Data")
+            #
+
+        # teacher
+        # form_teach = CSVTeachImportForm(request.POST, request.FILES)
+        # # teach form import
+        # if form_teach.is_valid():
+        #     # print("importttttttttt")
+        #     csv_file = request.FILES['csv_file']
+        #     csv_reader = pd.read_excel(csv_file, engine="openpyxl")
+        #     # 
+
+        #     file = request.FILES['csv_file']
+        #     df = pd.read_excel(file)
+
+        #     """Rename the headeers in the excel file
+        #    to match Django models fields"""
+
+        #     #Call the Teacher Resource Model and make its instance
+        #     teach_resource = TeacherResource()
+
+        #     # Load the pandas dataframe into a tablib dataset
+        #     dataset = Dataset().load(csv_reader)
+        #     # dataset = Dataset().load(df)
+
+        #     # Call the import_data hook and pass the tablib dataset
+        #     result = teach_resource.import_data(dataset,\
+        #      dry_run=True, raise_errors = True)
+            
+        #     if not result.has_errors():
+        #         result = teach_resource.import_data(dataset, dry_run=False)
+        #         messages.success(request, "Teacher Data imported successfully")
+        #         # return redirect('index')
+        #         #
+            
+        #     else:
+        #         messages.error(request, "Not Imported Teacher Data")
+        #     #
+    #
+
+    return render(request, "import_export/import_export.html", context)
+
+
+
+
 def class_list(request):
     class_list = ClassRoom.objects.all()
     context = {
@@ -96,7 +244,7 @@ def add_class(request):
         name      = request.POST.get('name')
         code      = request.POST.get('code')
         dept       = request.POST.get('dept')
-        added_by     = request.user.username,
+        added_by     = request.user.username
         # added_by = "emnanlaptop"
         # obj_student_class = ClassRoom.objects.filter(classroom)
 
@@ -108,7 +256,7 @@ def add_class(request):
         )
         classroom.save()
 
-        messages.success(request, 'Class added Successfully')
+        messages.success(request, f'{name} Class added Successfully')
         return redirect("class_list")
     return render(request, "class/add-class.html")
 
@@ -129,7 +277,7 @@ def edit_class(request, slug):
         name      = request.POST.get('name')
         code      = request.POST.get('code')
         dept       = request.POST.get('dept')
-        modified_by     = request.user.username,
+        modified_by     = request.user.username
 
         # 
         # obj_student_class = ClassRoom.objects.filter(classroom)
@@ -166,9 +314,57 @@ def del_class(request, slug):
 
 def specialty_list(request):
     specialty_list = Specialty.objects.all()
+    
+    form = CSVSpecialtyImportForm()
+
+    # search
+    if 'q' in request.GET:
+        search=request.GET['q']
+        specialty_list =  Specialty.objects.filter(Q(name__contains = search) | Q(code__contains = search) |  Q(department__contains = search)  )
+
     context = {
         'specialty_list': specialty_list,
+        'csv_specialty_import_form': form,
     }
+    
+    if request.method == 'POST':
+        # print(request)
+        form = CSVSpecialtyImportForm(request.POST, request.FILES)
+        if form.is_valid():
+            print("importttttttttt")
+            csv_file = request.FILES['csv_file']
+            csv_reader = pd.read_excel(csv_file, engine="openpyxl")
+            # 
+
+            file = request.FILES['csv_file']
+            df = pd.read_excel(file)
+
+            """Rename the headeers in the excel file
+           to match Django models fields"""
+
+            #Call the Specialty Resource Model and make its instance
+            specialties_resource = SpecialtyResource()
+
+            # Load the pandas dataframe into a tablib dataset
+            dataset = Dataset().load(csv_reader)
+            # dataset = Dataset().load(df)
+
+            # Call the import_data hook and pass the tablib dataset
+            result = specialties_resource.import_data(dataset,\
+             dry_run=True, raise_errors = True)
+            
+            if not result.has_errors():
+                result = specialties_resource.import_data(dataset, dry_run=False)
+                messages.success(request, "Specialty Data imported successfully")
+                # return Response({"status": "Specialty Data Imported Successfully"})
+                # return redirect('index')
+                #
+            
+            else:
+                messages.error(request, "Not Imported Specialty Data")
+            #
+    # 
+
     return render(request, "specialty/specialty.html", context)
 
 
@@ -224,9 +420,9 @@ def edit_specialty(request, slug):
         # obj_student_class = ClassRoom.objects.filter(classroom)
 
         
-        specialty.class_name = name
-        specialty.class_code = code
-        specialty.class_department = dept
+        specialty.name = name 
+        specialty.code = code
+        specialty.department = dept
         # description = description,
         specialty.modified_by = modified_by
 
@@ -264,3 +460,76 @@ def companySettings(request):
 
 
 
+
+def class_generate_csv(request): 
+    response = HttpResponse(content_type='text/csv') 
+    formatted_datetime = datetime.datetime.now()
+    file_name = f"classrooms_{formatted_datetime}.csv"
+    response['Content-Disposition'] = f'attachment; filename={file_name}'
+
+    response.write(u'\ufeff'.encode('utf8'))
+  
+    writer = csv.writer(response) 
+    writer.writerow(["CLASSROOM / CLASS NAME", "CLASS CODE",  "CLASS DEPARTMENT"]) 
+    # 
+
+    classrooms = ClassRoom.objects.all() 
+    for classroom in classrooms: 
+        print("classroom_")
+        # print(classroom)
+            
+        writer.writerow([ classroom.class_name, classroom.class_code, classroom.class_department]) 
+        # 
+  
+    return response 
+
+
+
+def specialty_generate_csv(request): 
+    response = HttpResponse(content_type='text/csv') 
+    formatted_datetime = datetime.datetime.now()
+    file_name = f"specialties_{formatted_datetime}.csv"
+    response['Content-Disposition'] = f'attachment; filename={file_name}'
+
+    response.write(u'\ufeff'.encode('utf8'))
+  
+    writer = csv.writer(response) 
+    writer.writerow(["NAME", " CODE",  " DEPARTMENT"]) 
+    # writer.writerow(["NAME", " CODE",  " DEPARTMENT"]) 
+    # 
+
+    specialty = Specialty.objects.all() 
+    for specialty in specialty: 
+        print("specialty_")
+        # print(specialty)
+            
+        writer.writerow([ specialty.name, specialty.code, specialty.department]) 
+        # 
+  
+    return response 
+
+
+def import_images(request):
+    class_list = ClassRoom.objects.all()
+    specialty_list = Specialty.objects.all()
+    
+    form = CSVSpecialtyImportForm()
+    context = {
+        'class_list': class_list,
+        'specialty_list': specialty_list,
+        'csv_specialty_import_form': form,
+    }
+    return render(request, "import_export/import_export.html", context)
+
+
+def import_users(request):
+    class_list = ClassRoom.objects.all()
+    specialty_list = Specialty.objects.all()
+    
+    form = CSVSpecialtyImportForm()
+    context = {
+        'class_list': class_list,
+        'specialty_list': specialty_list,
+        'csv_specialty_import_form': form,
+    }
+    return render(request, "import_export/import_export.html", context)

@@ -1,0 +1,220 @@
+{% extends 'home/base.html' %}
+{% load static %}
+{% block body %}
+   
+         <div class="page-wrapper">
+            <div class="content container-fluid">
+               <div class="page-header">
+                  <div class="row align-items-center">
+                     <div class="col">
+                        <h3 class="page-title">Import Export</h3>
+                        <ul class="breadcrumb">
+                           <li class="breadcrumb-item"><a href="">Dashboard</a></li>
+                           <li class="breadcrumb-item active">Import Export</li>
+                        </ul>
+                     </div>
+                     <div class="col-auto text-right float-right ml-auto">
+                        {% if user.username == "emnanlaptop" %}
+                        
+
+                        
+
+                                 <!-- The Modal -->
+                                 <div class="modal" id="csvimgModal">
+                                    <div class="modal-dialog">
+                                    <div class="modal-content">
+                                    
+                                       <!-- Modal Header -->
+                                       <div class="modal-header">
+                                          <h4 class="modal-title">CSV - Import Images Model</h4>
+                                          <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                       </div>
+                                       
+                                       <!-- Modal body -->
+                                       <form method="post" enctype="multipart/form-data">
+                                          <div class="modal-body">
+                                             <h6 class="card-subtitle mb-2 text-muted">Images CSV Files</h6>
+                                             {% csrf_token %}
+                                             {{ csv_img_import_form.as_p }}
+                                             
+                                          </div>
+                                          
+                                          <!-- Modal footer -->
+                                          <div class="modal-footer">
+                                             <button type="submit" class="btn btn-primary" >Import</button>
+                                             <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                                          </div>
+                                       </form>
+                                       
+                                    </div>
+                                    </div>
+                                 </div>
+
+                                 
+
+                                 <!-- The Modal -->
+                                 <div class="modal" id="csvusersModal">
+                                    <div class="modal-dialog">
+                                    <div class="modal-content">
+                                    
+                                       <!-- Modal Header -->
+                                       <div class="modal-header">
+                                          <h4 class="modal-title">CSV - Import Users</h4>
+                                          <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                       </div>
+                                       
+                                       <!-- Modal body -->
+                                       <form method="post" enctype="multipart/form-data">
+                                          <div class="modal-body">
+                                             <h6 class="card-subtitle mb-2 text-muted">Users CSV Files</h6>
+                                             {% csrf_token %}
+                                             {{ csv_usr_import_form.as_p }}
+                                             
+                                          </div>
+                                          
+                                          <!-- Modal footer -->
+                                          <div class="modal-footer">
+                                             <button type="submit" class="btn btn-primary" >Import</button>
+                                             <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                                          </div>
+                                       </form>
+                                       
+                                    </div>
+                                    </div>
+                                 </div>
+
+                                 <!-- The Modal -->
+                                 <div class="modal" id="csvstudsModal">
+                                    <div class="modal-dialog">
+                                    <div class="modal-content">
+                                    
+                                       <!-- Modal Header -->
+                                       <div class="modal-header">
+                                          <h4 class="modal-title">CSV - Import Students</h4>
+                                          <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                       </div>
+                                       
+                                       <!-- Modal body -->
+                                       <form method="post" enctype="multipart/form-data">
+                                          <div class="modal-body">
+                                             <h6 class="card-subtitle mb-2 text-muted">Students CSV Files</h6>
+                                             {% csrf_token %}
+                                             {{ csvstuds_import_form.as_p }}
+                                             
+                                          </div>
+                                          
+                                          <!-- Modal footer -->
+                                          <div class="modal-footer">
+                                             <button type="submit" class="btn btn-primary" >Import</button>
+                                             <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                                          </div>
+                                       </form>
+                                       
+                                    </div>
+                                    </div>
+                                 </div>
+
+                                 <!-- The Modal -->
+                                 <div class="modal" id="csvteachModal">
+                                    <div class="modal-dialog">
+                                    <div class="modal-content">
+                                    
+                                       <!-- Modal Header -->
+                                       <div class="modal-header">
+                                          <h4 class="modal-title">CSV - Import Teachers</h4>
+                                          <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                       </div>
+                                       
+                                       <!-- Modal body -->
+                                       <form method="post" enctype="multipart/form-data">
+                                          <div class="modal-body">
+                                             <h6 class="card-subtitle mb-2 text-muted">Teachers CSV Files</h6>
+                                             {% csrf_token %}
+                                             {{ csvteach_import_form.as_p }}
+                                             
+                                          </div>
+                                          
+                                          <!-- Modal footer -->
+                                          <div class="modal-footer">
+                                             <button type="submit" class="btn btn-primary" >Import</button>
+                                             <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                                          </div>
+                                       </form>
+                                       
+                                    </div>
+                                    </div>
+                                 </div>
+
+                        {% endif %}
+                     </div>
+                  </div>
+               </div>
+               <!-- Error and success messages -->
+               {% if messages %}
+               <div class="alert alert-info">
+                  {% for message in messages %}
+                     <p>{{ message }}</p>
+                  {% endfor %}
+               </div>
+               {% endif %}
+               <div class="row">
+                  <div class="col-sm-12">
+                    <div class="col-auto text-right float-right ml-auto mb-4">
+                        {% if user.username == "emnanlaptop" %}
+                        <a href="{% url 'users_downloadcsv'  %}" class="btn btn-outline-primary mr-2"><i class="fas fa-download"></i>Users Download</a>
+                        <a href="{% url 'img_downloadcsv'  %}" class="btn btn-outline-primary mr-2"><i class="fas fa-download"></i>Image Download</a>
+
+                        
+                        {% comment %} <a href="" class="btn btn-outline-primary mr-2"><i class="fas fa-import"></i>Import Images</a>
+                        <a href="" class="btn btn-outline-primary mr-2"><i class="fas fa-import"></i>Import User</a> {% endcomment %}
+                        {% comment %}  {% endcomment %}
+                        <button type="button" class="btn btn-outline-primary mr-2" data-toggle="modal" data-target="#csvimgModal">
+                            Import Images CSV
+                        </button>
+                        <button type="button" class="btn btn-outline-primary mr-2" data-toggle="modal" data-target="#csvusersModal">
+                            Import Users CSV
+                        </button>
+                        {% endif %}
+                    
+                    </div>
+
+                    
+                    <div class="col-auto text-right float-left ml-auto mb-4">
+                        {% if user.username == "emnanlaptop" %}
+                        <a href="{% url 'users_downloadcsv'  %}" class="btn btn-outline-primary mr-2"><i class="fas fa-download"></i>Users Download</a>
+                        <a href="{% url 'img_downloadcsv'  %}" class="btn btn-outline-primary mr-2"><i class="fas fa-download"></i>Image Download</a>
+
+                        
+                        {% comment %} <a href="" class="btn btn-outline-primary mr-2"><i class="fas fa-import"></i>Import Images</a>
+                        <a href="" class="btn btn-outline-primary mr-2"><i class="fas fa-import"></i>Import User</a> {% endcomment %}
+                        {% comment %}  {% endcomment %}
+                        <button type="button" class="btn btn-outline-primary mr-2" data-toggle="modal" data-target="#csvteachModal">
+                            Import Teachers CSV
+                        </button>
+                        <button type="button" class="btn btn-outline-primary mr-2" data-toggle="modal" data-target="#csvstudsModal">
+                            Import Students CSV
+                        </button>
+                        {% endif %}
+                    
+                    </div>
+                    
+                  </div>
+               </div>
+            </div>
+            <footer>
+               <p>Copyright © 2025 GroupBarb.</p>
+            </footer>
+         </div>
+      </div>
+      <script src="{%static 'assets/js/jquery-3.6.0.min.js' %}"></script>
+      <script src="{%static 'assets/js/popper.min.js' %}"></script>
+      <script src="{%static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
+      <script src="{%static 'assets/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
+      <script src="{%static 'assets/plugins/datatables/datatables.min.js' %}"></script>
+      <script src="{%static 'assets/js/script.js' %}"></script>
+   </body>
+   <!-- Mirrored from preschool.dreamguystech.com/html-template/teachers.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 28 Oct 2021 11:11:49 GMT -->
+</html>
+
+
+{% endblock %}

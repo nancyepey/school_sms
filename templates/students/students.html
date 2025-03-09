@@ -14,8 +14,49 @@
                         </ul>
                      </div>
                      <div class="col-auto text-right float-right ml-auto">
-                        <a href="#" class="btn btn-outline-primary mr-2"><i class="fas fa-download"></i> Download</a>
+                        {% if user.username == "emnanlaptop" %}
+                        <button type="button" class="btn btn-outline-primary mr-2" data-toggle="modal" data-target="#csvimportstudModal">
+                           Import Student CSV
+                         </button>
+
+                        {% endif %}
+                        
+                           <a href="{% url 'stud_csv' curent_rslt %}"  class="btn btn-outline-primary mr-2"><i class="fas fa-download"></i>
+                               Download
+                           </a>
+                        
                         <a href="{% url 'add_student' %}" class="btn btn-primary"><i class="fas fa-plus"></i></a>
+                     </div>
+
+                     <!-- The Modal -->
+                     <div class="modal" id="csvimportstudModal">
+                        <div class="modal-dialog">
+                        <div class="modal-content">
+                        
+                           <!-- Modal Header -->
+                           <div class="modal-header">
+                              <h4 class="modal-title">CSV - Import Students</h4>
+                              <button type="button" class="close" data-dismiss="modal">&times;</button>
+                           </div>
+                           
+                           <!-- Modal body -->
+                           <form method="post" enctype="multipart/form-data">
+                              <div class="modal-body">
+                                 <h6 class="card-subtitle mb-2 text-muted">Student CSV Files</h6>
+                                 {% csrf_token %}
+                                 {{ csv_import_form.as_p }}
+                                 
+                              </div>
+                              
+                              <!-- Modal footer -->
+                              <div class="modal-footer">
+                                 <button type="submit" class="btn btn-primary" >Import</button>
+                                 <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                              </div>
+                           </form>
+                           
+                        </div>
+                        </div>
                      </div>
                   </div>
                </div>
@@ -39,7 +80,7 @@
                               <select class="form-control" name="student_class" required>
                                  <option value="all" selected >All</option>
                                  {% for classrm in classroom %}
-                                    {% if class_selected %}
+                                    {% if class_selected  != 'all' %}
                                        {% if class_selected == classrm.class_name %}
                                           <option value="{{classrm.id}}" selected>{{classrm.class_name}}</option>
                                        {%  else  %} 
@@ -52,21 +93,59 @@
                                  {% endfor %}
                               </select>
                            </div>
+                           <div class="form-group ml-2 mr-2 mb-2">
+                              <label> per Specialty</label>
+                           </div>
+                           <div class="form-group mx-sm-3 mb-2">
+                              <select class="form-control" name="stud_specialty" required>
+                                 <option value="all"  >All</option>
+                                 {% for specialty in specialtys %}
+                                    {% if specialty_selected %}
+                                       {% if specialty_selected == specialty.name %}
+                                          <option value="{{specialty.id}}" selected>{{specialty.name}}</option>
+                                       {%  else  %} 
+                                          <option value="{{specialty.id}}">{{specialty.name}}</option>
+                                       {% endif %}
+                                    {%  else  %} 
+                                       <option value="{{specialty.id}}">{{specialty.name}}</option>
+                                    {% endif %}
+                                 
+                                 {% endfor %}
+                              </select>
+                           </div>
                            <button type="submit" class="btn btn-primary mb-2"><i class='fas fa-search' style='font-size:16px'></i></button>
                          </form>
                         <div class="card-body">
                            <div class="table-responsive">
-                              <table class="table table-hover table-center mb-0 datatable">
+                              {% comment %} <div id="autocomplete" class="autocomplete">
+                                 <input class="autocomplete-input" />
+                                 <ul class="autocomplete-result-list"></ul>
+                               </div> {% endcomment %}
+                              <div class="col-auto text-right float-right ml-auto">
+                                 <form>
+                                    <div class="input-group">
+                                       <input name="q" type="text" class="form-control" id="mystudInput" onkeyup="mystudFunction()" placeholder="Search for names..">
+                                       <div class="input-group-btn">
+                                       <button class="btn btn-default" type="submit">
+                                          <i class="glyphicon glyphicon-search"></i>
+                                       </button>
+                                       </div>
+                                    </div>
+                                 </form>
+                              </div>
+                              <table class="table table-hover table-center mb-0 datatable" id="studTable">
                                  <thead>
                                     <tr>
                                        <th>ID</th>
                                        <th>Pic</th>
                                        <th>Name</th>
                                        <th>Class</th>
+                                       <th>Specialty</th>
+                                       <th>Status</th>
                                        <th>DOB</th>
                                        <th>Parent Name</th>
                                        <!-- <th>Mobile Number</th> -->
-                                       <th>Address</th>
+                                       {% comment %} <th>Address</th> {% endcomment %}
                                        <th class="text-right">Action</th>
                                     </tr>
                                  </thead>
@@ -80,22 +159,30 @@
                                                 {% comment %} {% if student.student_image.url == ""  %} {% endcomment %}
                                                 {% comment %} /media/img/default.png {% endcomment %}
                                                 {% comment %} {% else %} {% endcomment %}
+                                                {% comment %} {{ student.student_image.url }} {% endcomment %}
+                                                {% if student.student_image.url != None %}
                                                 {{ student.student_image.url }}
+                                                
+                                                {% elif student.stud_image %}
+                                                https://imagedelivery.net/FGazjujafzdf38AXQFJ0qw/3f12d21f-02bc-44e7-2ce3-3b00f45fb600/thumbnailSmall
+                                                {% endif %}
                                                  {% comment %} {% endif %}  {% endcomment %}
                                                  " alt="User Image"></a>
                                              <a href="{% url 'view_student' student.id %}">{{ student.first_name }} {{ student.last_name}}</a>
                                           </h2>
                                        </td>
                                        <td>{{ student.name}}</td> 
-                                       <td>{{ student.student_class }}</td>
+                                       <td>{{ student.student_class.class_name }}</td>
+                                       <td>{{ student.specialty.name }}</td>
+                                       <td>{{ student.sch_status}}</td> 
                                        <td>{{ student.date_of_birth|date:"d M Y" }}</td>
-                                       {% if father_name == '' %}
+                                       {% if student.parent.father_name == None %}
                                        <td>{{ student.parent.carer_name }}</td>
                                        {% else %}
                                        <td>{{ student.parent.father_name }} / {{ student.parent.mother_name }}</td>
                                        {% endif %}
                                        <!-- <td>{{ student.mobile_number }}</td> -->
-                                       <td>{{ student.parent.present_address }}</td>
+                                       {% comment %} <td>{{ student.parent.present_address }}</td> {% endcomment %}
                                        <td class="text-right">
                                           <div class="actions">
                                              <a href="{% url 'edit_student' student.id %}" class="btn btn-sm bg-success-light mr-2">
@@ -130,6 +217,49 @@
       <script src="{%static 'assets/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
       <script src="{%static 'assets/plugins/datatables/datatables.min.js' %}"></script>
       <script src="{%static 'assets/js/script.js' %}"></script>
+
+      {% comment %} <script> {% endcomment %}
+         {% comment %} function mystudFunction() {
+           // Declare variables
+            var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("mystudInput");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("studTable");
+            tr = table.getElementsByTagName("tr");
+
+            // Loop through all table rows, and hide those who don't match the search query
+            for (i = 0; i < tr.length; i++) {
+               td = tr[i].getElementsByTagName("td")[0];
+               if (td) {
+                  txtValue = td.textContent || td.innerText;
+                  if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                  tr[i].style.display = "";
+                  } else {
+                  tr[i].style.display = "none";
+                  }
+               }
+            }
+         } {% endcomment %}
+
+         {% comment %} new Autocomplete('#autocomplete', {
+            search : input => {
+               console.log(input)
+               const url = `/get-names/?search=${input}`
+               return new Promise(resolve => {
+                  fetch(url)
+                  .then(response=>response.json())
+                  .then(data => {
+                     resolve(data.data)
+                  })
+               })
+            },
+            renderResult: (result, props) => {
+               console.log(props)
+            }
+         })
+         </script>
+         <script src="https://unpkg.com/@trevoreyre/autocomplete-js"></script> {% endcomment %}
+
    </body>
    <!-- Mirrored from preschool.dreamguystech.com/html-template/students.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 28 Oct 2021 11:11:49 GMT -->
 </html>

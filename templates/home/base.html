@@ -250,6 +250,15 @@
                            <li><a href="{% url 'company_details' %}">Company Details</a></li>
                         </ul>
                      </li>
+                     {% if user.username == "emnanlaptop" %}
+                     <li class="submenu">
+                        <a href="#" ><i class="fas fa-table"></i> <span> Import - Export</span> <span class="menu-arrow"></span></a>
+                        <ul>
+                           <li><a href="{% url 'import_exports_v' %}">Import - Export</a></li>
+                        </ul>
+                     </li>
+
+                        {% endif %}
                      {% comment %} <li class="submenu">
                         <a href="#"><i class="fas fa-shield-alt"></i> <span> Authentication </span> <span class="menu-arrow"></span></a>
                         <ul>

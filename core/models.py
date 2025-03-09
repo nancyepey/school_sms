@@ -10,11 +10,34 @@ from django.utils import timezone
 from teacher.models import Teacher
 from student.models import Student
 
+import uuid
+import pathlib
+
+#for image file handler
+def image_file_upload_handler(instance, filepath):
+    # instance_id = instance.id
+    print("instance_id")
+    # print(instance_id)
+    print(instance.username)
+    # if not instance.id:
+    #     instance_id = 1
+    instance_username = instance.username
+    if not instance.username:
+        instance_username = "uname"
+    filepath = pathlib.Path(filepath).resolve()
+    print("filepath")
+    print(filepath)
+    # print(instance, filepath)
+    fuuid = str(uuid.uuid1())
+    return f"userprof/{instance_username}/{fuuid}/{filepath.name}"
+
+
 #
 # Create your models here.
 class CustomUser(AbstractUser):
     username = models.CharField(max_length=100, unique=True)
-    email = models.EmailField(max_length=255, unique=True, db_index=True)
+    # email = models.EmailField(max_length=255, unique=True, db_index=True)
+    email = models.EmailField(max_length=255, blank=True, null=True, db_index=True)
     student_profile      = models.ForeignKey(Student, on_delete=models.CASCADE, blank=True, null=True)
     teacher_profile      = models.ForeignKey(Teacher, on_delete=models.CASCADE, blank=True, null=True)
     phone = models.CharField(max_length=30, blank=True)
@@ -28,7 +51,8 @@ class CustomUser(AbstractUser):
     has_sub            = models.BooleanField(default=True)
     company = models.CharField(max_length=30, blank=True)
     freespace = models.CharField(max_length=30, blank=True)
-    photo       = models.ImageField(upload_to='core/img/', blank=True, default='default.png')
+    # photo       = models.ImageField(upload_to='core/img/', blank=True, default='default.png')
+    photo       = models.ImageField(upload_to=image_file_upload_handler, blank=True, default='default.png')
     
        # Fields for user roles
     is_student = models.BooleanField(default=False)

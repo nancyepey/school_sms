@@ -43,6 +43,9 @@ from django.db.models import Sum
 from django.db.models.expressions import Window
 from django.db.models.functions import Rank
 from django.db.models import Sum, F
+#image cloudflare
+
+from images import services as image_services
 
 
 
@@ -1847,10 +1850,25 @@ def viewDocumentInvoice(request, slug):
     
 
     # print(subject_value_cat)
+    # get student image obj_student_class
+    def display_image( obj):
+        if obj.stud_image:
+            img_url = image_services.get_image_url_from_cloudflare(
+                obj.stud_image.cloudflare_id, variant="thumbnailSmall"
+                # obj.stud_image.cloudflare_id
+            )
+            print("obj")
+            return img_url
+        return "https://imagedelivery.net/FGazjujafzdf38AXQFJ0qw/834941c7-4e47-4404-a47c-c27bd18a4e00/thumbnailSmall"
+    myimage = display_image(obj_student_class)
+
+    meimage = "https://imagedelivery.net/FGazjujafzdf38AXQFJ0qw/834941c7-4e47-4404-a47c-c27bd18a4e00/thumbnailSmall"
 
 
 
     context = {}
+    context['testimag'] = meimage
+    context['onlinestudimag'] = myimage
     context['prof_sub_moy'] = round(prof_sub_moy, ndigits=2)
     context['prof_gen_tot_moy'] = round(prof_gen_tot_moy, ndigits=2)
     context['reportcard'] = obj_report_card
@@ -1883,15 +1901,6 @@ def viewDocumentInvoice(request, slug):
     html = template.render(context)
 
     #Options - Very Important [Don't forget this]
-    options = {
-          'encoding': 'UTF-8',
-          'javascript-delay':'10', #Optional
-          'enable-local-file-access': None, #To be able to access CSS
-          'page-size': 'A4',
-          'custom-header' : [
-              ('Accept-Encoding', 'gzip')
-          ],
-      }
       #Javascript delay is optional
 
     #Remember that location to wkhtmltopdf
@@ -1905,13 +1914,48 @@ def viewDocumentInvoice(request, slug):
         WKHTMLTOPDF_CMD = subprocess.Popen(["which", os.environ.get("WKHTMLTOPDF_PATH", "/app/bin/wkhtmltopdf")],
         stdout=subprocess.PIPE).communicate()[0].strip()
         config = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_CMD)
+    
+
+    # css
+    # html
+    _html = template.render(context)
+     # remove header
+    _html = _html[_html.find('<body>'):] 
+    new_header = '''<!DOCTYPE html>
+        <html>
+            <head>
+                <meta charset="utf-8" />
+        <style>
+        '''
 
     #IF you have CSS to add to template
     css1 = os.path.join(settings.CSS_LOCATION, 'assets', 'css', 'bootstrap.min.css')
+    css_path = os.path.join(settings.CSS_LOCATION, 'assets', 'css', 'bootstrap.min.css')
     # css2 = os.path.join(settings.CSS_LOCATION, 'assets', 'css', 'dashboard.css')
+
+    with open(css_path, 'r') as f:
+        new_header += f.read()
+    new_header += '\n</style>'
+    print(new_header)
+
+    # add head to html
+    _html = new_header + _html[_html.find('<body>'):]
+    # with open('../reports/cards/pdf-template.html', 'w') as f: f.write(_html)  # for debug
+
+    options = {
+          'encoding': 'UTF-8',
+          'javascript-delay':'10', #Optional
+        #   'enable-local-file-access': None, #To be able to access CSS
+          'enable-local-file-access': "", #To be able to access CSS
+          'page-size': 'A4',
+          'custom-header' : [
+              ('Accept-Encoding', 'gzip')
+          ],
+      }
 
     #Create the file
     file_content = pdfkit.from_string(html, False, configuration=config, options=options)
+    # file_content = pdfkit.from_string(_html, False, configuration=config, options=options)
 
     #Create the HTTP Response
     response = HttpResponse(file_content, content_type='application/pdf')

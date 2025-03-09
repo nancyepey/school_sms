@@ -8,4 +8,6 @@ urlpatterns = [
     # path('subjects/<str:slug>/', views.view_subject, name="view_subject"),
     path('edit/<str:slug>/', views.edit_subject, name="edit_subject"),
     path('delete/<str:slug>/', views.delete_subject, name="delete_subject"),
+    #csv export
+    path('csv_subjects/', views.subjects_generate_csv, name="downloadcsv_subject"),
 ]

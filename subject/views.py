@@ -1,17 +1,79 @@
+import csv
+import datetime
 from django.contrib import messages
-from django.http import HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 
+
+from subject.admin import SubjectResource
 from school.models import ClassRoom, Specialty
 from subject.models import Subject
+#search
+from django.db.models import Q
+# csv
+import csv 
+from django.utils.text import slugify
+import os
+from tablib import Dataset
+from school.admin import SpecialtyResource
+from subject.forms import CSVSubjectImportForm
+from django.http import HttpResponse
+import pandas as pd
 
 # Create your views here.
 
 def subject_list(request):
     subject_list = Subject.objects.prefetch_related('classroom').all()
+    
+    form = CSVSubjectImportForm()
+
+    # search
+    if 'q' in request.GET:
+        search=request.GET['q']
+        subject_list =  Subject.objects.filter(Q(title__contains = search) | Q(fr_title__contains = search) | Q(subject_code__contains = search) | Q(description__contains = search)  )
+
     context = {
         'subject_list': subject_list,
+        'csv_subject_import_form': form,
     }
+    # import
+    if request.method == 'POST':
+        # print(request)
+        form = CSVSubjectImportForm(request.POST, request.FILES)
+        if form.is_valid():
+            print("importttttttttt")
+            csv_file = request.FILES['csv_file']
+            csv_reader = pd.read_excel(csv_file, engine="openpyxl")
+            # 
+
+            file = request.FILES['csv_file']
+            df = pd.read_excel(file)
+
+            """Rename the headeers in the excel file
+           to match Django models fields"""
+
+            #Call the Subject Resource Model and make its instance
+            subjects_resource = SubjectResource()
+
+            # Load the pandas dataframe into a tablib dataset
+            dataset = Dataset().load(csv_reader)
+            # dataset = Dataset().load(df)
+
+            # Call the import_data hook and pass the tablib dataset
+            result = subjects_resource.import_data(dataset,\
+             dry_run=True, raise_errors = True)
+            
+            if not result.has_errors():
+                result = subjects_resource.import_data(dataset, dry_run=False)
+                messages.success(request, "Subject Data imported successfully")
+                # return Response({"status": "Subject Data Imported Successfully"})
+                # return redirect('index')
+                #
+            
+            else:
+                messages.error(request, "Not Imported Subject Data")
+            #
+
     return render(request, "subjects/subjects.html", context)
 
 
@@ -30,8 +92,8 @@ def add_subject(request):
         fr_title = request.POST.get('subject_title_fren')
         coef = request.POST.get('coeff')
         subject_code = request.POST.get('subject_code')
-        classroom = request.POST.get('subject_class[]')
-        specialty = request.POST.get('specialty[]')
+        classroom = request.POST.get('subject_class')
+        specialty = request.POST.get('specialty')
         description = request.POST.get('description')
         category = request.POST.get('category')
         # added_by = "emnanlaptop"
@@ -52,6 +114,28 @@ def add_subject(request):
             added_by = request.user.username,
         )
 
+        #
+
+        # count_class = 0
+        # print("classroom")
+        # print(classroom)
+        # for classr in classroom:
+        #     # print(classr)
+        #     obj_class = ClassRoom.objects.get(id=classr)
+        #     subject.classroom.add(obj_class)
+        #     count_class += 1
+        # # print(count_class)
+
+        # count_specialty = 0
+        # for specialt in specialty:
+        #     # print(specialt)
+        #     specialty_obj_class = Specialty.objects.get(id=specialt)
+        #     subject.specialty.add(specialty_obj_class)
+        #     count_specialty += 1
+
+
+        # print(count_specialty)
+
         # count = 0
         # for e in classroom:
         #     obj_class = ClassRoom.objects.get(id=e)
@@ -60,11 +144,14 @@ def add_subject(request):
         #     count += 1
 
         obj_class = ClassRoom.objects.get(id=classroom)
+        specialty_obj_class = Specialty.objects.get(id=specialty)
 
         subject.classroom.add(obj_class)
+        subject.specialty.add(specialty_obj_class)
+
         subject.save()
 
-        messages.success(request, 'Subject added Successfully')
+        messages.success(request, f'{title} Subject added Successfully')
         return redirect("subject_list")
     
     return render(request, "subjects/add-subject.html", context)
@@ -147,7 +234,7 @@ def edit_subject(request, slug):
         # subject.specialty.add(specialty_obj_class)
         subject.save()
 
-        messages.success(request, 'Subject updated Successfully')
+        messages.success(request, f'{title} Subject updated Successfully')
         return redirect("subject_list")
     
     return render(request, "subjects/edit-subject.html", context)
@@ -170,4 +257,31 @@ def delete_subject(request, slug):
 
         return redirect('subject_list')
     return HttpResponseForbidden()
+
+
+
+def subjects_generate_csv(request): 
+    response = HttpResponse(content_type='text/csv') 
+    formatted_datetime = datetime.datetime.now()
+    file_name = f"subjects_{formatted_datetime}.csv"
+    response['Content-Disposition'] = f'attachment; filename={file_name}'
+
+    response.write(u'\ufeff'.encode('utf8'))
+  
+    writer = csv.writer(response) 
+    writer.writerow(["title", "fr_title",  "coef", "subject_code", "description","category","slug","added_by" ]) 
+    # writer.writerow(["title", "fr_title",  "coef", "subject_code", "description","category" ]) 
+    # 
+
+    subjects = Subject.objects.all() 
+    for subjj in subjects: 
+        # print("subjj_")
+        # print(subjj)
+            
+        writer.writerow([ subjj.title, subjj.fr_title, subjj.coef,  subjj.subject_code, subjj.description, subjj.category, subjj.slug, subjj.added_by]) 
+        # writer.writerow([ subjj.title, subjj.fr_title, subjj.coef, subjj.description, subjj.category]) 
+        # 
+  
+    return response 
+
 

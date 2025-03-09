@@ -60,7 +60,7 @@
                          <div class="col-12 col-sm-6">
                            <div class="form-group">
                               <label>Specialty</label>
-                              <select class="form-control selectpicker" multiple data-live-search="true" name="specialty[]" >
+                              <select class="form-control selectpicker" multiple data-live-search="true" name="specialty" required>
                                  <!-- <option value="">Select Class</option> -->
                                  {% for specialty in specialty %}
                                     <option value="{{specialty.id}}">{{specialty.name}}</option>
@@ -79,7 +79,7 @@
                          <div class="col-12 col-sm-6">
                             <div class="form-group">
                                <label>Class</label>
-                               <select class="form-control selectpicker" multiple data-live-search="true" name="subject_class[]" required>
+                               <select class="form-control selectpicker" multiple data-live-search="true" name="subject_class" required>
                                   <!-- <option value="">Select Class</option> -->
                                   {% for classr in classroom %}
                                      <option value="{{classr.id}}">{{classr.class_name}}</option>

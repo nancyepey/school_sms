@@ -10,7 +10,19 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import dj_database_url
 from pathlib import Path, os
+from decouple import config as env_config
+
+# import cloudinary_storage
+
+
+#back up config
+try:
+    from decouple import config as env_config
+except ImportError:
+    import os
+    env_config = os.environ.get
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,10 +32,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-4=23-u*8$4&csao1)-ltu+y9f4spa)07ub07)0shg*)uvpaq21'
+# SECRET_KEY = 'django-insecure-4=23-u*8$4&csao1)-ltu+y9f4spa)07ub07)0shg*)uvpaq21'
+SECRET_KEY = env_config("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
+# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+# DEBUG = False
+# DEBUG = True
+# DEBUG = env_config("DJANGO_DEBUG", cast=bool, default=True)
 
 # ALLOWED_HOSTS = []
 """
@@ -51,9 +68,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure--$@crdyu3i8k*q^jy4jo21k)d0kxq-21e)jx5cb_yi&-j*fix)'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = True
-# DEBUG = False
+
 
 ALLOWED_HOSTS = ["school-management-8p1f.onrender.com", '127.0.0.1', 'localhost']
 
@@ -74,7 +89,17 @@ INSTALLED_APPS = [
     'department',
     'teacher',
     'testeval',
-    'core'
+    'core',
+
+
+    # 'cloudinary'
+    # 'cloudinary_storage'
+
+    'images',
+
+    'import_export',
+
+  
 ]
 
 MIDDLEWARE = [
@@ -121,6 +146,11 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# online DB
+DATABASES["default"] = dj_database_url.parse("postgresql://giltead_posql_render_user:hksRQhjfkQz0fb0hblDV95YnCkahL7F0@dpg-cv1l2ld6l47c73fg5l0g-a.oregon-postgres.render.com/giltead_posql_render")
+
+# postgresql://giltead_posql_render_user:hksRQhjfkQz0fb0hblDV95YnCkahL7F0@dpg-cv1l2ld6l47c73fg5l0g-a.oregon-postgres.render.com/giltead_posql_render
 
 
 # Password validation
@@ -183,9 +213,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CSS_LOCATION = os.path.join(BASE_DIR,'static')
 
+
+
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR/'static']
 STATIC_ROOT = BASE_DIR/'assets'
+
+if DEBUG == False:
+    STATIC_ROOT = "http://127.0.0.1:8000/static/assets"
 
 CSS_LOCATION = os.path.join(BASE_DIR,'static')
 
@@ -201,6 +236,49 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+
+# CLOUDFLARE_R2_BUCKET=env_config("CLOUDFLARE_R2_BUCKET", cast=str, default="gilead")
+# CLOUDFLARE_R2_ACCESS_KEY=env_config("CLOUDFLARE_R2_ACCESS_KEY")
+# CLOUDFLARE_R2_SECRET_KEY=env_config("CLOUDFLARE_R2_SECRET_KEY")
+# CLOUDFLARE_R2_BUCKET_ENDPOINT=env_config("CLOUDFLARE_R2_BUCKET_ENDPOINT")
+
+
+# CLOUDFLARE_R2_CONFIG_OPTIONS = {
+#     "bucket_name": CLOUDFLARE_R2_BUCKET,
+#     "access_key": CLOUDFLARE_R2_ACCESS_KEY,
+#     "secret_key": CLOUDFLARE_R2_SECRET_KEY,
+#     "endpoint_url": CLOUDFLARE_R2_BUCKET_ENDPOINT,
+#     "default_acl": "public-read",
+#     "signature_version": "s3v4",
+# }
+
+# django staticfiles config for storages
+# STORAGES = {
+#     # ...
+#     "default": {
+#         # "BACKEND": "storages.backends.s3.S3Storage", #from django-storages[s3]
+#         "BACKEND": "helpers.cloudflare.storages.MediaFileStorage", #from django-storages[s3]
+#         # "BACKEND": "storages.backends.s3.S3Storage",
+#         "OPTIONS": CLOUDFLARE_R2_CONFIG_OPTIONS,
+#         # "OPTIONS": {
+#         #     "bucket_name": CLOUDFLARE_R2_BUCKET,
+#         #     "location": "media", 
+#         # },
+#     },
+#     "staticfiles": {
+#         # "BACKEND": "storages.backends.s3.S3Storage",
+#         # "BACKEND": "helpers.cloudflare.storages.StaticFileStorage",
+#         # "BACKEND": "storages.backends.s3.S3Storage",
+#         # "OPTIONS": CLOUDFLARE_R2_CONFIG_OPTIONS,
+#         # "OPTIONS": {
+#         #     "bucket_name": CLOUDFLARE_R2_BUCKET,
+#         #     "location": "static", 
+#         # },
+#         "BACKEND": "helpers.cloudflare.storages.StaticFileStorage",
+#         "OPTIONS": CLOUDFLARE_R2_CONFIG_OPTIONS,
+#     }
+# }
+
 
 #  add this for authentication
 
@@ -223,3 +301,22 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # EMAIL_HOST_PASSWORD = 'your-email-password'  # Replace with your email password or app-specific password
 
 
+# CLOUDFLARE_STORAGE = {
+
+# }
+
+
+#try3
+CLOUDFLARE_ACCOUNT_ID=env_config("CLOUDFLARE_ACCOUNT_ID")
+CLOUDFLARE_API_KEY=env_config("CLOUDFLARE_API_KEY")
+CLOUDFLARE_ACCOUNT_HASH=env_config("CLOUDFLARE_ACCOUNT_HASH")
+CLOUDFLARE_IMAGES_DOMAIN=env_config("CLOUDFLARE_IMAGES_DOMAIN", default='imagedelivery.net')
+CLOUDFLARE_EMAIL=env_config("CLOUDFLARE_EMAIL")
+
+
+STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
+
+MEDIA_URL ='/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

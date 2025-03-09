@@ -1,5 +1,6 @@
 from django.db import models
 #
+from images.models import Image
 from school.models import ClassRoom
 from subject.models import Subject
 from django.utils.text import slugify
@@ -10,19 +11,26 @@ from django.utils.text import slugify
 class Teacher(models.Model):
     name                = models.TextField( null=True, blank=True)
     teacher_uid         = models.CharField(max_length=100, unique=True,null=True, blank=True)
+    usname              = models.CharField(max_length=100, null=True, blank=True)
+    idontknow           = models.CharField(max_length=100, unique=True,null=True, blank=True)
     gender              = models.CharField(max_length=100, choices=[('Male','Male'), ('Female', 'Female')])
-    date_of_birth       = models.DateField()
+    date_of_birth       = models.DateField(null=True, blank=True)
+
+    # userprofile
+    teachprofile_id     = models.CharField(max_length=20, null=True, blank=True)
+
     # Define a foreign key relationship with Teacher
     # Multiple Teacher can be assigned to one Subject
     # teacher_subj        = models.ForeignKey(Subject, on_delete=models.CASCADE)
     classrooms           = models.ManyToManyField(ClassRoom)
     t_subjects           = models.ManyToManyField(Subject)
-    joining_date        = models.DateField()
+    joining_date        = models.DateField(null=True, blank=True)
     mobile_number       = models.CharField(max_length=15, null=True, blank=True)
-    email               = models.EmailField(max_length=100, unique=True, null=True, blank=True)
+    email               = models.EmailField(max_length=100,  null=True, blank=True)
     section             = models.CharField(max_length=100)
     teacher_image       = models.ImageField(upload_to='teacher/img/', blank=True)
-    permanent_address   = models.TextField( null=True)
+    teach_image          = models.ForeignKey(Image, null=True, blank=True, on_delete=models.SET_NULL)
+    permanent_address   = models.TextField( null=True, blank=True)
     slug                = models.SlugField(max_length=255, unique=True, blank=True)
     added_by            = models.CharField(max_length=100, null=True)
     modified_by         = models.CharField(max_length=100, null=True, blank=True)

@@ -21,4 +21,12 @@ urlpatterns = [
 
     #
     path('company/', views.companySettings, name="company_details"),
+    #import export
+    path('import_export/', views.import_export, name="import_exports_v"),
+    #csv
+    path('csv_specialty/', views.specialty_generate_csv, name="csv_download_specialty"),
+    path('csv_class/', views.class_generate_csv, name="class_csv_download"),
+    #import
+    path('importcsv_img/', views.import_images, name="importcsv_img"),
+    path('importcsv_users/', views.import_users, name="importcsv_user"),
 ]
