@@ -14,6 +14,7 @@ import dj_database_url
 from pathlib import Path, os
 from decouple import config as env_config
 
+
 # import cloudinary_storage
 
 
@@ -67,6 +68,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure--$@crdyu3i8k*q^jy4jo21k)d0kxq-21e)jx5cb_yi&-j*fix)'
+# SECRET_KEY =  os.getenv('SECRET_KEY')
 
 
 
@@ -312,6 +314,17 @@ CLOUDFLARE_API_KEY=env_config("CLOUDFLARE_API_KEY")
 CLOUDFLARE_ACCOUNT_HASH=env_config("CLOUDFLARE_ACCOUNT_HASH")
 CLOUDFLARE_IMAGES_DOMAIN=env_config("CLOUDFLARE_IMAGES_DOMAIN", default='imagedelivery.net')
 CLOUDFLARE_EMAIL=env_config("CLOUDFLARE_EMAIL")
+#
+CLOUDFLARE_ACCOUNT_ID="bf4a9e29eb43a6e2ba9693463bf43826"
+CLOUDFLARE_API_KEY="1WeDSG7AjzQRF_O1_4X5K2JrsiLCj0qSLqHZ0B0N"
+CLOUDFLARE_ACCOUNT_HASH="FGazjujafzdf38AXQFJ0qw"
+CLOUDFLARE_IMAGES_DOMAIN="imagedelivery.net"
+CLOUDFLARE_EMAIL="nancydev.dev@gmail.com"
+# CLOUDFLARE_ACCOUNT_ID     =  os.getenv('CLOUDFLARE_ACCOUNT_ID')
+# CLOUDFLARE_API_KEY        =  os.getenv('CLOUDFLARE_API_KEY')
+# CLOUDFLARE_ACCOUNT_HASH   =  os.getenv('CLOUDFLARE_ACCOUNT_HASH')
+# CLOUDFLARE_IMAGES_DOMAIN  =  os.getenv('CLOUDFLARE_IMAGES_DOMAIN')
+# CLOUDFLARE_EMAIL          =  os.getenv('CLOUDFLARE_EMAIL')
 
 
 STATIC_URL = 'static/'
