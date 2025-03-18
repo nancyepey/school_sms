@@ -263,11 +263,11 @@ def edit_teacher(request,slug):
             date_of_birth = None
 
         # 
-        # print("subjs_names")
-        # print(teacher_subj)
+        print("subjs_names")
+        print(subjs_names)
 
-        subjs_names = teacher_subj
-        teacher.t_subjects.set(subjs_names)
+        # subjs_names = teacher_subj
+        teacher.t_subjects.set([subjs_names])
         
         # classteach_objects = []
         # for sub in classteach_names:
