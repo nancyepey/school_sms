@@ -24,13 +24,18 @@ from tablib import Dataset
 from school.admin import ImageResource, SpecialtyResource, TeacherResource, UserprofileResource
 from school.forms import CSVImgImportForm, CSVSpecialtyImportForm, CSVStudsImportForm, CSVTeachImportForm, CSVUserImportForm
 
+#login required
+from django.contrib.auth.decorators import login_required
 
 
 # Create your views here.
+@login_required
 def index(request):
     return render(request, "authentication/login.html")
     # return render(request, "home/index.html")
 
+
+@login_required
 def dashboard(request):
     company = Settings.objects.get(clientName='GILEAD TECHNICAL HIGH SCHOOL')
     user_info = Student.objects.get(id=request.user.student_profile.id)
@@ -54,6 +59,7 @@ def dashboard(request):
     return render(request, "dashboard/student-dashboard.html", context)
 
 
+@login_required
 def admin_dashboard(request):
     company = Settings.objects.get(clientName='GILEAD TECHNICAL HIGH SCHOOL')
     classroom = ClassRoom.objects.all()
@@ -72,7 +78,7 @@ def admin_dashboard(request):
     return render(request, "dashboard/admin-dashboard.html", context)
 
 
-
+@login_required
 def teacher_dashboard(request):
     company = Settings.objects.get(clientName='GILEAD TECHNICAL HIGH SCHOOL')
     user_info = Teacher.objects.get(id=request.user.teacher_profile.id)
@@ -97,7 +103,7 @@ def teacher_dashboard(request):
 
 
 
-
+@login_required
 def import_export(request):
     class_list = ClassRoom.objects.all()
     specialty_list = Specialty.objects.all()
@@ -229,7 +235,7 @@ def import_export(request):
 
 
 
-
+@login_required
 def class_list(request):
     class_list = ClassRoom.objects.all()
     context = {
@@ -238,6 +244,7 @@ def class_list(request):
     return render(request, "class/classes.html", context)
 
 
+@login_required
 def add_class(request):
 
     if request.method == "POST":
@@ -262,7 +269,7 @@ def add_class(request):
 
 
 
-
+@login_required
 def edit_class(request, slug):
     # classroom = ClassRoom.objects.get(id=slug)
     # context = {
@@ -298,7 +305,7 @@ def edit_class(request, slug):
         return redirect("class_list")
     return render(request, "class/edit-class.html", context) 
 
-
+@login_required
 def del_class(request, slug):
     if request.method == "POST":
         #
@@ -311,7 +318,7 @@ def del_class(request, slug):
 
 
 
-
+@login_required
 def specialty_list(request):
     specialty_list = Specialty.objects.all()
     
@@ -368,6 +375,8 @@ def specialty_list(request):
     return render(request, "specialty/specialty.html", context)
 
 
+
+@login_required
 def add_specialty(request):
 
     if request.method == "POST":
@@ -398,7 +407,7 @@ def add_specialty(request):
 
 
 
-
+@login_required
 def edit_specialty(request, slug):
     # classroom = ClassRoom.objects.get(id=slug)
     # context = {
@@ -440,6 +449,8 @@ def edit_specialty(request, slug):
     return render(request, "specialty/edit-specialty.html", context) 
 
 
+
+@login_required
 def del_specialty(request, slug):
     if request.method == "POST":
         #
@@ -451,7 +462,7 @@ def del_specialty(request, slug):
 
 
 
-
+@login_required
 def companySettings(request):
     company = Settings.objects.get(clientName='GILEAD TECHNICAL HIGH SCHOOL')
     context = {'company': company}
@@ -460,7 +471,7 @@ def companySettings(request):
 
 
 
-
+@login_required
 def class_generate_csv(request): 
     response = HttpResponse(content_type='text/csv') 
     formatted_datetime = datetime.datetime.now()
@@ -484,7 +495,7 @@ def class_generate_csv(request):
     return response 
 
 
-
+@login_required
 def specialty_generate_csv(request): 
     response = HttpResponse(content_type='text/csv') 
     formatted_datetime = datetime.datetime.now()
@@ -508,7 +519,7 @@ def specialty_generate_csv(request):
   
     return response 
 
-
+@login_required
 def import_images(request):
     class_list = ClassRoom.objects.all()
     specialty_list = Specialty.objects.all()
@@ -521,7 +532,7 @@ def import_images(request):
     }
     return render(request, "import_export/import_export.html", context)
 
-
+@login_required
 def import_users(request):
     class_list = ClassRoom.objects.all()
     specialty_list = Specialty.objects.all()

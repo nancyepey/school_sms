@@ -134,6 +134,7 @@ def eval_list(request):
     return render(request, "eval/evals.html", context)
 
 
+@login_required
 def report_card_list(request):
     report_card = ReportCard.objects.select_related('student').all()
     
@@ -163,7 +164,7 @@ def report_card_list(request):
 
 
 
-# @login_required
+@login_required
 def add_test(request):
     subject = Subject.objects.all()
     student = Student.objects.all()
@@ -274,7 +275,7 @@ def add_test(request):
 
 
 
-# @login_required
+@login_required
 def edit_test(request, slug):
     eval = get_object_or_404(Eval, id=slug)
     # student = get_object_or_404(Student, id=slug)
@@ -329,7 +330,7 @@ def edit_test(request, slug):
 
 
 
-# @login_required
+@login_required
 def delete_test(request, slug):
     if request.method == "POST":
         #
@@ -342,7 +343,7 @@ def delete_test(request, slug):
 
 
 #report card
-# @login_required
+@login_required
 def see_marks(request, student_id):
     queryset = Eval.objects.filter(student_id=student_id)
     total_marks = queryset.aggregate(total_marks=Sum('value'))
@@ -363,6 +364,7 @@ def see_marks(request, student_id):
 #     student = Student.objects.all()
 
 #appreciation
+@login_required
 def appreciation_marks(marks):
     if marks >= 0 and marks < 5:
         return "WEAK"
@@ -382,7 +384,7 @@ def appreciation_marks(marks):
         return "EXCELLENT"
 
 
-# @login_required
+@login_required
 def cal_mark_class(request):
     classrooms = ClassRoom.objects.all()
     subjects = Subject.objects.all()
@@ -809,7 +811,7 @@ def cal_mark_class(request):
 #     rank = list(marks).index(self) 
 #     return rank
 
-# @login_required
+@login_required
 def delete_report_card(request, slug):
     if request.method == "POST":
         #
@@ -822,7 +824,7 @@ def delete_report_card(request, slug):
         return redirect('report_cards')
     return HttpResponseForbidden()
 
-
+@login_required
 def all_classrank(request):
     testmoyspesubclass = TestMoySpecialtySubjClass.objects.all()
     get_class_rankings = ClassRanking.objects.all()
@@ -832,7 +834,7 @@ def all_classrank(request):
     }
     return render(request, "eval/call-classranks.html", context=context)
 
-# @login_required
+@login_required
 def cal_classranking(request):
     #base on the id of TestMoySpecialtySubjClass 
     # students have specialty
@@ -848,6 +850,17 @@ def cal_classranking(request):
     if request.method == "POST":
         get_classrooms = request.POST.get('get_classrooms')
         cur_term = request.POST.get('cur_term')
+
+        if get_classrooms:
+            #
+            #get all student in the class
+            students_call = Student.objects.get(student_class_id = get_classrooms.id)
+            if students_call:
+                print("stud")
+                for student in students_call:
+                    if cur_term == "first":
+                        print("in first")
+                        get_testa_subj = TestMoySpecialtySubjClass.objects.filter(classroom_id=get_classrooms,student_id=student.id,is_actif = True)
 
     
 
@@ -988,7 +1001,7 @@ def cal_classranking(request):
     return render(request, "eval/add_classrankx.html", context=context)
 
 
-# @login_required
+@login_required
 def create_report_card(request):
     # eval = Eval.objects.all()
     student = Student.objects.all()
@@ -1381,7 +1394,7 @@ def create_report_card(request):
 
 
 
-# @login_required
+@login_required
 def addReportCard(request):
     student = Student.objects.all()
     context = {

@@ -19,8 +19,15 @@ from django.db.models import Q
 # images
 from images.models import Image
 
+#login required
+from django.contrib.auth.decorators import login_required
+
+
+
 # Create your views here.
 
+
+@login_required
 def add_teacher(request):
     subject = Subject.objects.all()
     classroom = ClassRoom.objects.all()
@@ -144,7 +151,7 @@ def add_teacher(request):
     return render(request, "teachers/add-teacher.html", context=context)
 
 
-
+@login_required
 def teacher_list(request):
     teacher_list = Teacher.objects.all()
 
@@ -159,6 +166,7 @@ def teacher_list(request):
     return render(request, "teachers/teachers.html", context)
 
 
+@login_required
 def edit_teacher(request,slug):
     teacher = get_object_or_404(Teacher, id=slug)
     subject = Subject.objects.all()
@@ -336,6 +344,7 @@ def edit_teacher(request,slug):
     return render(request, "teachers/edit-teacher.html",{'teacher':teacher,  'subject':subject, 'classroom': classroom, 'class_notselected_objects':class_notselected_objects, 'subj_notselected_objects':subj_notselected_objects } )
 
 
+@login_required
 def view_teacher(request, slug):
     teacher = get_object_or_404(Teacher, id = slug)
     context = {
@@ -344,6 +353,7 @@ def view_teacher(request, slug):
     return render(request, "teachers/teacher-details.html", context)
 
 
+@login_required
 def delete_teacher(request, slug):
     if request.method == "POST":
         #
@@ -357,7 +367,7 @@ def delete_teacher(request, slug):
     return HttpResponseForbidden()
 
 
-
+@login_required
 def teacher_generate_csv(request): 
     response = HttpResponse(content_type='text/csv') 
     formatted_datetime = datetime.datetime.now()
@@ -390,6 +400,8 @@ def teacher_generate_csv(request):
     return response 
 
 
+
+@login_required
 def images_generate_csv(request): 
     response = HttpResponse(content_type='text/csv') 
     formatted_datetime = datetime.datetime.now()
@@ -412,7 +424,7 @@ def images_generate_csv(request):
   
     return response 
 
-
+@login_required
 def users_generate_csv(request): 
     response = HttpResponse(content_type='text/csv') 
     formatted_datetime = datetime.datetime.now()

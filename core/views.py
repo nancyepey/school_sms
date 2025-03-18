@@ -5,7 +5,8 @@ from django.contrib import messages
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils.crypto import get_random_string
-
+#login required
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 
@@ -86,7 +87,7 @@ def forgot_password_view(request):
     return render(request, 'authentication/forgot-password.html')  # Render forgot password template
 
 
-
+@login_required
 def reset_password_view(request, token):
     reset_request = PasswordResetRequest.objects.filter(token=token).first()
     
@@ -104,6 +105,7 @@ def reset_password_view(request, token):
     return render(request, 'authentication/reset_password.html', {'token': token})  # Render reset password template
 
 
+@login_required
 def logout_view(request):
     logout(request)
     messages.success(request, 'You have been logged out.')

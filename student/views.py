@@ -28,8 +28,14 @@ from student.utils_csv import get_lookup_fields, qs_to_dataset
 
 from images import services as image_services
 
+#login required
+from django.contrib.auth.decorators import login_required
+
+
+
 # Create your views here.
 
+@login_required
 def add_student(request):
     classroom = ClassRoom.objects.all()
     parents = Parent.objects.all()
@@ -253,6 +259,8 @@ def display_image( cloudflare_id):
     return "https://imagedelivery.net/FGazjujafzdf38AXQFJ0qw/834941c7-4e47-4404-a47c-c27bd18a4e00/thumbnailSmall"
     # myimage = display_image(obj_student_class)
 
+
+@login_required
 def student_list(request):
     student_list = Student.objects.select_related('parent').all()
     # print(student_list)
@@ -564,7 +572,7 @@ def student_list(request):
 #     return render(request, "students/edit-student.html", context)
 
 
-
+@login_required
 def edit_student(request,slug):
     student = get_object_or_404(Student, id=slug)
     parent = student.parent if hasattr(student, 'parent') else None
@@ -743,6 +751,7 @@ def edit_student(request,slug):
     return render(request, "students/edit-student.html",{'student':student, 'parent':parent, 'parents':parents, 'classroom':classroom, "specialties":specialties} )
 
 
+@login_required
 def view_student(request, slug):
     student = get_object_or_404(Student, id = slug)
     context = {
@@ -751,6 +760,7 @@ def view_student(request, slug):
     return render(request, "students/student-details.html", context)
 
 
+@login_required
 def delete_student(request, slug):
     if request.method == "POST":
         #
@@ -764,7 +774,7 @@ def delete_student(request, slug):
     return HttpResponseForbidden()
 
 
-
+@login_required
 def generate_csv(request, student_list): 
     response = HttpResponse(content_type='text/csv') 
     formatted_datetime = datetime.datetime.now()

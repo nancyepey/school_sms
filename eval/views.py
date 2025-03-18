@@ -9,6 +9,9 @@ from .models import Eval
 from student.models import Student
 from subject.models import Subject
 from django.contrib import messages
+#login required
+from django.contrib.auth.decorators import login_required
+
 
 
 # Create your views here.
@@ -20,6 +23,8 @@ from django.contrib import messages
 #     }
 #     return render(request, "eval/evals.html", context)
 
+
+@login_required
 def eval_list(request):
     eval_list = Eval.objects.select_related('student').all()
     classroom = ClassRoom.objects.all()
@@ -41,7 +46,7 @@ def eval_list(request):
     return render(request, "eval/evals.html", context)
 
 
-
+@login_required
 def add_test(request):
     subject = Subject.objects.all()
     student = Student.objects.all()

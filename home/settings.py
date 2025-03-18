@@ -333,3 +333,22 @@ STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
 
 MEDIA_URL ='/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+# added session expiratn
+# SESSION_EXPIRE_SECONDS = 3600  # 1 hour
+# SESSION_EXPIRE_SECONDS = 600  # 30min
+SESSION_EXPIRE_SECONDS = 600  # 30min
+# By default, the session will expire X seconds after the start of the session. To expire the session X seconds after the last activity, use the following setting:
+SESSION_EXPIRE_AFTER_LAST_ACTIVITY = True
+# By default, last activiy will be grouped per second. To group by different period use the following setting:
+# SESSION_EXPIRE_AFTER_LAST_ACTIVITY_GRACE_PERIOD = 60 # group by minute
+SESSION_EXPIRE_AFTER_LAST_ACTIVITY_GRACE_PERIOD = 60 # group by minute
+# To redirect to a custom URL define the following setting:
+SESSION_TIMEOUT_REDIRECT = 'authentication/login/'
+
+# 
+SESSION_COOKIE_AGE = 600
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_TIMEOUT_REDIRECT = 'authentication/login/'
+LOGIN_URL = '/authentication/login/'
