@@ -49,6 +49,26 @@
                                        <option value="{{classrm.id}}">{{classrm.class_name}}</option>
                                     {% endif %}
                                  
+                                 {% endfor %} 
+                              </select>
+                           </div>
+                           <div class="form-group ml-2 mr-2 mb-2">
+                              <label> per Specialty</label>
+                           </div>
+                           <div class="form-group mx-sm-3 mb-2">
+                              <select class="form-control" name="stud_specialty" required>
+                                 <option value="all"  >All</option>
+                                 {% for specialty in specialtys %}
+                                    {% if specialty_selected %}
+                                       {% if specialty_selected == specialty.name %}
+                                          <option value="{{specialty.id}}" selected>{{specialty.name}}</option>
+                                       {%  else  %} 
+                                          <option value="{{specialty.id}}">{{specialty.name}}</option>
+                                       {% endif %}
+                                    {%  else  %} 
+                                       <option value="{{specialty.id}}">{{specialty.name}}</option>
+                                    {% endif %}
+                                 
                                  {% endfor %}
                               </select>
                            </div>

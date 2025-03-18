@@ -38,6 +38,7 @@
                                        <label>Student</label>
                                        <select class="form-control" name="student" required>
                                           <option value="">Select Student</option>
+                                          <option value="all">All</option>
                                           {% for student in student %}
                                              <option value="{{student.id}}">{{student.name}}</option>
                                           
@@ -59,13 +60,25 @@
                                  <div class="col-12 col-sm-6">
                                     <div class="form-group">
                                        <label>Resumption Year</label>
-                                       <input type="text" class="form-control" placeholder="Date Month, Year" name="resumptn_date" value="{{ subject.resumption }}" required>
+                                       <input type="text" class="form-control" placeholder="Day Month, Year" name="resumptn_date"  required>
                                     </div>
                                  </div>
+                                 {% comment %} <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                       <label>Academic Year</label>
+                                       <input type="text" class="form-control" placeholder="Year1/Year2" name="academic_year"  required>
+                                    </div>
+                                 </div> {% endcomment %}
+                                 
                                  <div class="col-12 col-sm-6">
                                     <div class="form-group">
                                        <label>Academic Year</label>
-                                       <input type="text" class="form-control" placeholder="Year1/Year2" name="academic_year" value="{{ subject.academic_year }}" required>
+                                       <select class="form-control" name="academic_year" required>
+                                          <option value="">Academic Year</option>
+                                          <option value="2024/2025" selected>2024/2025</option>
+                                          {% comment %} <option value="2025/2026">2025/2026</option>
+                                          <option value="2026/2027">2026/2027</option> {% endcomment %}
+                                       </select>
                                     </div>
                                  </div>
                                  {% comment %} <div class="col-12 col-sm-6">

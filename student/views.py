@@ -24,6 +24,9 @@ import os
 from django.conf import settings
 from student.utils_csv import get_lookup_fields, qs_to_dataset
 # from django.http import HttpResponse #already imported above
+#image cloudflare
+
+from images import services as image_services
 
 # Create your views here.
 
@@ -239,6 +242,16 @@ def add_student(request):
     return render(request, "students/add-student.html", context=context)
 
 
+def display_image( cloudflare_id):
+    if cloudflare_id:
+        img_url = image_services.get_image_url_from_cloudflare(
+            cloudflare_id, variant="thumbnailSmall"
+            # obj.stud_image.cloudflare_id
+        )
+        print("obj")
+        return img_url
+    return "https://imagedelivery.net/FGazjujafzdf38AXQFJ0qw/834941c7-4e47-4404-a47c-c27bd18a4e00/thumbnailSmall"
+    # myimage = display_image(obj_student_class)
 
 def student_list(request):
     student_list = Student.objects.select_related('parent').all()
@@ -247,16 +260,31 @@ def student_list(request):
     classroom = ClassRoom.objects.all()
     specialtys = Specialty.objects.all()
     form = CSVImportForm()
+    displayimages = []
 
     # search
     if 'q' in request.GET:
         search=request.GET['q']
         # student_list =  Student.objects.filter(name__startswith = search )
         student_list =  Student.objects.filter(Q(name__contains = search) | Q(student_uid__contains = search) | Q(admission_number__contains = search)  | Q(minesec_ident_num__contains = search) )
+    
+        # for students in student_list:
+        #     if students.stud_image:
+        #         myimage = display_image(students.stud_image.cloudflare_id)
+        #         displayimages.append(myimage)
+
+    # for students in student_list:
+    #     if students.stud_image:
+    #         myimage = display_image(students.stud_image.cloudflare_id)
+    #         displayimages.append(myimage)
+    #         print("ok")
+    
+    # print(displayimages)
 
         
     context = {
         'student_list': student_list,
+        # 'imgs_student_list': displayimages,
         'classroom':classroom,
         'specialtys':specialtys,
         'csv_import_form': form,
@@ -325,13 +353,19 @@ def student_list(request):
         else: 
             class_selected = request.POST.get('student_class')
             specialty_selected = request.POST.get('stud_specialty')
+            displayimages = []
             if class_selected == "all":
                 get_class = ClassRoom.objects.all()
                 if specialty_selected == "all":
                     student_list = Student.objects.all()
+                    # for students in student_list:
+                    #     if students.stud_image:
+                    #         myimage = display_image(students.stud_image)
+                    #         displayimages.append(myimage)
                     get_specialty = Specialty.objects.all()
                     context = {
                         'student_list': student_list,
+                        # 'imgs_student_list': displayimages,
                         'classroom':classroom,
                         'class_selected': class_selected,
                         'get_specialty': get_specialty,
@@ -341,8 +375,13 @@ def student_list(request):
                 else:
                     get_specialty = Specialty.objects.get(id = specialty_selected)
                     student_list = Student.objects.filter(specialty= get_specialty)
+                    # for students in student_list:
+                    #     if students.stud_image:
+                    #         myimage = display_image(students.stud_image.cloudflare_id)
+                    #         displayimages.append(myimage)
                     context = {
                         'student_list': student_list,
+                        # 'imgs_student_list': displayimages,
                         'classroom':classroom,
                         'class_selected': class_selected,
                         'get_specialty': get_specialty,
@@ -356,9 +395,14 @@ def student_list(request):
                 if specialty_selected == "all":
                     get_specialty = Specialty.objects.all()
                     student_list = Student.objects.filter(student_class=get_class)
+                    # for students in student_list:
+                    #     if students.stud_image:
+                    #         myimage = display_image(students.stud_image.cloudflare_id)
+                    #         displayimages.append(myimage)
                     specialty_selected = "all"
                     context = {
                         'student_list': student_list,
+                        # 'imgs_student_list': displayimages,
                         'classroom':classroom,
                         'class_selected': get_class.class_name,
                         'get_specialty': get_specialty,
@@ -370,8 +414,13 @@ def student_list(request):
                 else:
                     get_specialty = Specialty.objects.get(id = specialty_selected)
                     student_list = Student.objects.filter(student_class=get_class, specialty= get_specialty)
+                    # for students in student_list:
+                    #     if students.stud_image:
+                    #         myimage = display_image(students.stud_image.cloudflare_id)
+                    #         displayimages.append(myimage)
                     context = {
                         'student_list': student_list,
+                        # 'imgs_student_list': displayimages,
                         'classroom':classroom,
                         'class_selected': get_class.class_name,
                         'get_specialty': get_specialty,
@@ -611,6 +660,7 @@ def edit_student(request,slug):
                 #edit parent
                 if parent_info == "":
                     parent.father_name = request.POST.get('father_name')
+                    print(parent.father_name)
                     parent.father_occupation = request.POST.get('father_occupation')
                     parent.father_mobile = request.POST.get('father_mobile')
                     parent.father_email = request.POST.get('father_email')

@@ -4,7 +4,7 @@ from . import views
 
 urlpatterns = [
     path('add_test/', views.add_test, name="add_test"),
-    path('evals/', views.eval_list, name="test_list"),
+    path('evals/', views.eval_list, name="test_list"), 
     path('edit/<str:slug>/', views.edit_test, name="edit_test"),
     path('delete/<str:slug>/', views.delete_test, name="delete_test"),
 
@@ -12,6 +12,10 @@ urlpatterns = [
     # path('get_marks/', views.get_marks, name="get_marks"),
     path('calculate_marks/', views.cal_mark_class, name="calculate_mark_class"),
     path('class_ranking/', views.cal_classranking, name="classranking_class"),
+    path('all_class_ranking/', views.all_classrank, name="all_classrank"),
+
+
+
 
     #reportcard
     path('reports/', views.report_card_list, name="report_cards"),
@@ -26,4 +30,12 @@ urlpatterns = [
 
 
     path('reports/card/<str:slug>/', views.viewDocumentInvoice, name="viewDocumentInvoice"),
+
+    #download
+    #csv
+    
+    path('csv_test/', views.tests_generate_csv, name="test_downloadcsv"),
+    path('report_csv/', views.reportcard_generate_csv, name="report_downloadcsv"),
+    path('ranking_csv/', views.ranking_generate_csv, name="ranking_downloadcsv"),
+    path('testmoyspecsubj_csv/', views.testmoyspecsubj_generate_csv, name="testmoyspecsubj_downloadcsv"),
 ]

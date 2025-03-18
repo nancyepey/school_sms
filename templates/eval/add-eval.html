@@ -41,15 +41,12 @@
                                  </div> {% endcomment %}
                                  <div class="col-12 col-sm-6">
                                     <div class="form-group">
-                                       <label>Title</label>
-                                       <select class="form-control" name="title" required>
-                                          <option value="">Select Test</option>
-                                          <option value="Test1">Test1</option>
-                                          <option value="Test2">Test2</option>
-                                          <option value="Test3">Test3</option>
-                                          <option value="Test4">Test4</option>
-                                          <option value="Test5">Test5</option>
-                                          <option value="Test6">Test6</option>
+                                       <label>Term</label>
+                                       <select class="form-control" name="term" required>
+                                          <option value="">Select Term</option>
+                                          <option value="First">First Term </option>
+                                          <option value="Second">Second Term</option>
+                                          <option value="Third">Third Term</option>
                                           {% comment %} <option value="Male">Male</option> {% endcomment %}
                                        </select>
                                     </div>
@@ -60,21 +57,6 @@
                                        <input type="text" class="form-control" name = "titre">
                                     </div>
                                  </div> {% endcomment %}
-                                 <div class="col-12 col-sm-6">
-                                    <div class="form-group">
-                                       <label>Titre (FR)</label>
-                                       <select class="form-control" name="titre" required>
-                                          <option value="">Select Eval</option>
-                                          <option value="Eval1">Eval1</option>
-                                          <option value="Eval2">Eval2</option>
-                                          <option value="Eval3">Eval3</option>
-                                          <option value="Eval4">Eval4</option>
-                                          <option value="Eval5">Eval5</option>
-                                          <option value="Eval6">Eval6</option>
-                                          {% comment %} <option value="Male">Male</option> {% endcomment %}
-                                       </select>
-                                    </div>
-                                 </div>
                                  <div class="col-12 col-sm-6">
                                     <div class="form-group">
                                        <label>Student</label>
@@ -113,8 +95,14 @@
                                  </div> {% endcomment %}
                                  <div class="col-12 col-sm-6">
                                     <div class="form-group">
-                                       <label>Value</label>
-                                       <input type="number" class="form-control" name = "value" required>
+                                       <label>Test1 Value (X.XX)</label>
+                                       <input type="number" min=0 step=0.01 class="form-control" name = "value" required>
+                                    </div>
+                                 </div>
+                                 <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                       <label>Test2 Value (X.XX)</label>
+                                       <input type="number" min=0 step=0.01 class="form-control" name = "value_two" >
                                     </div>
                                  </div>
                                  <div class="col-12 col-sm-6">
@@ -141,6 +129,7 @@
                                        <input type="text" class="form-control" name="remarks" required>
                                     </div>
                                  </div>
+                                 
                                  <div class="col-12">
                                     <button type="submit" class="btn btn-primary">Submit</button>
                                  </div>

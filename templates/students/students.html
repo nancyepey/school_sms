@@ -160,12 +160,17 @@
                                                 {% comment %} /media/img/default.png {% endcomment %}
                                                 {% comment %} {% else %} {% endcomment %}
                                                 {% comment %} {{ student.student_image.url }} {% endcomment %}
+                                                {% comment %} {% if imgs_student_list %}
+                                                {% for imgs in imgs_student_list %}
+                                                {{ imgs }}
+                                                {% endfor %}
+                                                {% endif %} {% endcomment %}
                                                 {% if student.student_image.url != None %}
                                                 {{ student.student_image.url }}
                                                 
                                                 {% elif student.stud_image %}
                                                 https://imagedelivery.net/FGazjujafzdf38AXQFJ0qw/3f12d21f-02bc-44e7-2ce3-3b00f45fb600/thumbnailSmall
-                                                {% endif %}
+                                                {% endif %} 
                                                  {% comment %} {% endif %}  {% endcomment %}
                                                  " alt="User Image"></a>
                                              <a href="{% url 'view_student' student.id %}">{{ student.first_name }} {{ student.last_name}}</a>

@@ -13,6 +13,9 @@ class Eval(models.Model):
     title              = models.CharField(max_length=100)
     titre              = models.CharField(max_length=100, null=True, blank=True)
     value                = models.DecimalField(max_digits=10, decimal_places=2) #
+    sec_title              = models.CharField(max_length=100, null=True, blank=True)
+    sec_titre              = models.CharField(max_length=100, null=True, blank=True)
+    sec_value                = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True) #
     coef                = models.DecimalField(max_digits=10, decimal_places=0) #
     subject_code        = models.CharField(max_length=100, unique=True,null=True, blank=True)
     # Define a foreign key relationship with eval
@@ -28,7 +31,7 @@ class Eval(models.Model):
 
     teacher_class        = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True, blank=True)
 
-    academic_year             = models.CharField(max_length=100, default="2023/2024")
+    academic_year             = models.CharField(max_length=100, default="2024/2025")
 
     added_by            = models.CharField(max_length=100, null=True)
     modified_by         = models.CharField(max_length=100, null=True, blank=True)
@@ -52,7 +55,7 @@ class TestMoySpecialtySubjClass(models.Model):
     test_avg           = models.DecimalField(max_digits=10, decimal_places=2) #
     subj_coef           = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True) #
     observation         = models.TextField( null=True, blank=True)
-    academic_year             = models.CharField(max_length=100, default="2023/2024")
+    academic_year             = models.CharField(max_length=100, default="2024/2025")
     freefield           = models.CharField(max_length=100, null=True, blank=True)
     added_by            = models.CharField(max_length=100, null=True)
     modified_by         = models.CharField(max_length=100, null=True, blank=True)
@@ -80,7 +83,7 @@ class ClassRanking(models.Model):
     # Multiple ranking can be assigned to one student
     student              = models.ForeignKey(Student, on_delete=models.CASCADE)
 
-    academic_year             = models.CharField(max_length=100, default="2023/2024")
+    academic_year             = models.CharField(max_length=100, default="2024/2025")
 
     freefield           = models.CharField(max_length=100, null=True, blank=True)
     freefield2           = models.CharField(max_length=100, null=True, blank=True)

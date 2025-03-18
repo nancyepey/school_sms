@@ -197,6 +197,38 @@
                         {% endif %}
                     
                     </div>
+
+                    
+                    <div class="col-auto text-right float-right ml-auto mb-4">
+                        {% if user.username == "emnanlaptop" %}
+                        <a href="{% url 'test_downloadcsv'  %}" class="btn btn-outline-primary mr-2"><i class="fas fa-download"></i>Tests Download</a>
+                        <a href="{% url 'report_downloadcsv'  %}" class="btn btn-outline-primary mr-2"><i class="fas fa-download"></i>Reports Download</a>
+
+                        <button type="button" class="btn btn-outline-primary mr-2" data-toggle="modal" data-target="#csvteachModal">
+                            Import Tests CSV
+                        </button>
+                        <button type="button" class="btn btn-outline-primary mr-2" data-toggle="modal" data-target="#csvstudsModal">
+                            Import Reports CSV
+                        </button>
+                        {% endif %}
+                    
+                    </div>
+
+                    
+                    <div class="col-auto text-right float-left ml-auto mb-4">
+                        {% if user.username == "emnanlaptop" %}
+                        <a href="{% url 'ranking_downloadcsv'  %}" class="btn btn-outline-primary mr-2"><i class="fas fa-download"></i>Ranking Download</a>
+                        <a href="{% url 'testmoyspecsubj_downloadcsv'  %}" class="btn btn-outline-primary mr-2"><i class="fas fa-download"></i>Test moy spec subj Download</a>
+
+                        <button type="button" class="btn btn-outline-primary mr-2" data-toggle="modal" data-target="#csvrankingModal">
+                            Import Ranking CSV
+                        </button>
+                        <button type="button" class="btn btn-outline-primary mr-2" data-toggle="modal" data-target="#csvtestmoyspecsubjModal">
+                            Import Test moy spec subj CSV
+                        </button>
+                        {% endif %}
+                    
+                    </div>
                     
                   </div>
                </div>

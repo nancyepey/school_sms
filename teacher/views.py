@@ -116,23 +116,25 @@ def add_teacher(request):
 
         user.save()
 
-        teacher.teachprofile_id = user.id
-        teacher.modified_by = request.user.username
-        # save image online
-        img_cloudflare_id = upload_image_to_cloudflare(teacher_image)
-        image = Image.objects.create(
-            title = f"{teacher.teacher_uid}_{teacher_uid}",
-            cloudflare_id = img_cloudflare_id,
-            added_by = request.user.username,
-        )
+        if teacher_image:
+            #
+            teacher.teachprofile_id = user.id
+            teacher.modified_by = request.user.username
+            # save image online
+            img_cloudflare_id = upload_image_to_cloudflare(teacher_image)
+            image = Image.objects.create(
+                title = f"{teacher.teacher_uid}_{teacher_uid}",
+                cloudflare_id = img_cloudflare_id,
+                added_by = request.user.username,
+            )
 
-        # studimage_class
-        obj_studimage_class = Image.objects.get(cloudflare_id=image.cloudflare_id)
+            # studimage_class
+            obj_studimage_class = Image.objects.get(cloudflare_id=image.cloudflare_id)
 
-        # open file 
-        teacher.teacher_image.open()
-        teacher.teach_image = obj_studimage_class
-        teacher.save()
+            # open file 
+            teacher.teacher_image.open()
+            teacher.teach_image = obj_studimage_class
+            teacher.save()
 
         messages.success(request, f' {name} Teacher added Successfully')
         return redirect("teacher_list")
@@ -433,3 +435,4 @@ def users_generate_csv(request):
         # 
   
     return response 
+

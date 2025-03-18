@@ -20,8 +20,13 @@ from subject.forms import CSVSubjectImportForm
 from django.http import HttpResponse
 import pandas as pd
 
-# Create your views here.
+#login required
+from django.contrib.auth.decorators import login_required
 
+
+
+# Create your views here.
+@login_required
 def subject_list(request):
     subject_list = Subject.objects.prefetch_related('classroom').all()
     
@@ -30,7 +35,7 @@ def subject_list(request):
     # search
     if 'q' in request.GET:
         search=request.GET['q']
-        subject_list =  Subject.objects.filter(Q(title__contains = search) | Q(fr_title__contains = search) | Q(subject_code__contains = search) | Q(description__contains = search)  )
+        subject_list =  Subject.objects.filter(Q(title__icontains = search) | Q(fr_title__icontains = search) | Q(subject_code__icontains = search) | Q(description__icontains = search)  )
 
     context = {
         'subject_list': subject_list,
@@ -77,7 +82,7 @@ def subject_list(request):
     return render(request, "subjects/subjects.html", context)
 
 
-
+@login_required
 def add_subject(request):
     classroom = ClassRoom.objects.all()
     specialty = Specialty.objects.all()
@@ -156,6 +161,8 @@ def add_subject(request):
     
     return render(request, "subjects/add-subject.html", context)
 
+
+@login_required
 def edit_subject(request, slug):
     subject = get_object_or_404(Subject, id=slug)
     classroom = ClassRoom.objects.all()
@@ -240,7 +247,7 @@ def edit_subject(request, slug):
     return render(request, "subjects/edit-subject.html", context)
 
 
-
+@login_required
 def view_subject(request, slug):
     subject = get_object_or_404(Subject, id = slug)
     context = {
@@ -249,6 +256,7 @@ def view_subject(request, slug):
     return render(request, "subjects/subject-details.html", context)
 
 
+@login_required
 def delete_subject(request, slug):
     if request.method == "POST":
         #
@@ -259,7 +267,7 @@ def delete_subject(request, slug):
     return HttpResponseForbidden()
 
 
-
+@login_required
 def subjects_generate_csv(request): 
     response = HttpResponse(content_type='text/csv') 
     formatted_datetime = datetime.datetime.now()

@@ -59,6 +59,9 @@
                                        <th>DOB</th>
                                        <!-- <th>Mobile Number</th> -->
                                        <th>Address</th>
+                                       <th>Username</th>
+                                       <th>Password</th>
+                                       <th>Address</th>
                                        <th class="text-right">Action</th>
                                     </tr>
                                  </thead>
@@ -69,13 +72,16 @@
                                        <td>
                                         <h2 class="table-avatar">
                                            <a href="{% url 'view_teacher' teacher.id %}" class="avatar avatar-sm mr-2"><img class="avatar-img rounded-circle" 
+                                             {% if teacher.teacher_image %}
                                              src="
-                                             {% if teacher.teacher_image.url %}
                                              {{ teacher.teacher_image.url }}
                                              {% comment %} {% else %} {% endcomment %}
                                              {% comment %} /media/img/default.png {% endcomment %}
-                                             {% endif %}
                                              "
+                                             {% else %}
+                                             src="teacher/img/defaultprof_0RJUmR2.png"
+                                              
+                                              {% endif %}
                                               alt="User Image"></a>
                                            <a href="{% url 'view_teacher' teacher.id %}">{{ teacher.first_name }} {{ teacher.last_name}}</a>
                                         </h2>
@@ -85,6 +91,10 @@
                                        <td>{{ teacher.date_of_birth|date:"d M Y" }}</td>
                                        
                                        <td>{{ teacher.permanent_address }}</td>
+                                       
+                                       <td>{{ teacher.usname }}</td>
+                                       
+                                       <td>{{ teacher.idontknow }}</td>
                                        <td class="text-right">
                                           <div class="actions">
                                              <a href="{% url 'edit_teacher' teacher.id %}" class="btn btn-sm bg-success-light mr-2">

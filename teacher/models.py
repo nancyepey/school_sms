@@ -27,7 +27,7 @@ class Teacher(models.Model):
     joining_date        = models.DateField(null=True, blank=True)
     mobile_number       = models.CharField(max_length=15, null=True, blank=True)
     email               = models.EmailField(max_length=100,  null=True, blank=True)
-    section             = models.CharField(max_length=100)
+    section             = models.CharField(max_length=100, null=True, blank=True)
     teacher_image       = models.ImageField(upload_to='teacher/img/', blank=True)
     teach_image          = models.ForeignKey(Image, null=True, blank=True, on_delete=models.SET_NULL)
     permanent_address   = models.TextField( null=True, blank=True)

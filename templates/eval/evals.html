@@ -53,6 +53,26 @@
                                  {% endfor %}
                               </select>
                            </div>
+                           <div class="form-group ml-2 mr-2 mb-2">
+                              <label> per Specialty</label>
+                           </div>
+                           <div class="form-group mx-sm-3 mb-2">
+                              <select class="form-control" name="stud_specialty" required>
+                                 <option value="all" >All</option>
+                                 {% for specialty in specialtys %}
+                                    {% if specialty_selected %}
+                                       {% if specialty_selected == specialty.name %}
+                                          <option value="{{specialty.id}}" selected>{{specialty.name}}</option>
+                                       {%  else  %} 
+                                          <option value="{{specialty.id}}">{{specialty.name}}</option>
+                                       {% endif %}
+                                    {%  else  %} 
+                                       <option value="{{specialty.id}}">{{specialty.name}}</option>
+                                    {% endif %}
+                                 
+                                 {% endfor %}
+                              </select>
+                           </div>
                            <button type="submit" class="btn btn-primary mb-2 mt-2"><i class='fas fa-search' style='font-size:16px'></i></button>
                          </form>
                         <div class="card-body">
@@ -61,26 +81,37 @@
                                  <thead>
                                     <tr>
                                        <th>ID</th>
+                                       <th>Term</th>
                                        <th>Subject</th>
-                                       <th>Title</th>
                                        <th>Student</th>
-                                       <th>Value</th>
+                                       <th>Test1 Value</th>
+                                       <th>Test2 Value</th>
                                        <th>Coef</th>
                                        <th>Teacher</th>
                                        <th class="text-right">Action</th>
                                     </tr>
                                  </thead>
                                  <tbody>
+                                    {% if eval_list  %}
                                     {% for eval in eval_list %}
                                     {% if eval.teacher_class.id == user.teacher_profile.id %}
                                     {% comment %} <td>teacher id {{ eval}}</td> {% endcomment %}
                                     {% comment %} <td>user teacher id{{ user.teacher_profile.name}}</td> {% endcomment %}
                                     <tr>
                                        <td>{{ forloop.counter}}</td> 
+                                       {% if eval.title == "Test1"  %}
+                                       <td>First</td>
+                                       {% endif %}
+                                       {% if eval.title == "Test3"  %}
+                                       <td>Second</td>
+                                       {% endif %}
+                                       {% if eval.title == "Test5"  %}
+                                       <td>Third</td>
+                                       {% endif %}
                                        <td>{{ eval.subject.title }}</td>
-                                       <td>{{ eval.title}}</td> 
                                        <td>{{ eval.student.name }}</td>
                                        <td>{{ eval.value}}</td>
+                                       <td>{{ eval.sec_value}}</td>
                                        <td>{{ eval.coef}}</td> 
                                        <td>{{ eval.teacher }}</td>
                                        <td class="text-right">
@@ -105,10 +136,19 @@
                                     {% comment %} <td>user teacher id{{ user.teacher_profile.name}}</td> {% endcomment %}
                                     <tr>
                                        <td>{{ forloop.counter}}</td> 
+                                       {% if eval.title == "Test1"  %}
+                                       <td>First</td>
+                                       {% endif %}
+                                       {% if eval.title == "Test3"  %}
+                                       <td>Second</td>
+                                       {% endif %}
+                                       {% if eval.title == "Test5"  %}
+                                       <td>Third</td>
+                                       {% endif %}
                                        <td>{{ eval.subject.title }}</td>
-                                       <td>{{ eval.title}}</td> 
                                        <td>{{ eval.student.name }}</td>
                                        <td>{{ eval.value}}</td>
+                                       <td>{{ eval.sec_value}}</td>
                                        <td>{{ eval.coef}}</td> 
                                        <td>{{ eval.teacher }}</td>
                                        <td class="text-right">
@@ -129,6 +169,8 @@
                                     </tr>
                                     {% endif %}
                                     {% endfor %}
+
+                                    {% endif %}
                                     
                                  </tbody>
                               </table>

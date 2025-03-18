@@ -139,7 +139,9 @@
                                     <div class="form-group">
                                         <label>Teacher Image</label>
                                         <input type="file" name="teacher_image" class="form-control">
+                                        {% if teacher.teacher_image %}
                                         <small>Current Image: {{ teacher.teacher_image.url }}</small>
+                                        {% endif %}
                                     </div>
                                 </div>
                                 <div class="col-12 col-sm-6">

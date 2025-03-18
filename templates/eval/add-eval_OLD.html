@@ -1,0 +1,164 @@
+{% extends 'home/base.html' %}
+{% load static %}
+{% block body %}
+   
+         <div class="page-wrapper">
+            <div class="content container-fluid">
+               <div class="page-header">
+                  <div class="row align-items-center">
+                     <div class="col">
+                        <h3 class="page-title">Add Evals</h3>
+                        <ul class="breadcrumb">
+                           <li class="breadcrumb-item"><a href="{% url 'test_list' %}">Evals</a></li>
+                           <li class="breadcrumb-item active">Add Evals</li>
+                        </ul>
+                     </div>
+                  </div>
+               </div>
+               <!-- Error and success messages -->
+               {% if messages %}
+               <div class="alert alert-info">
+                  {% for message in messages %}
+                     <p>{{ message }}</p>
+                  {% endfor %}
+               </div>
+               {% endif %}
+               <div class="row">
+                  <div class="col-sm-12">
+                     <div class="card">
+                        <div class="card-body">
+                           <form method="POST"   enctype="multipart/form-data">
+                              {% csrf_token %}
+                              <div class="row">
+                                 <div class="col-12">
+                                    <h5 class="form-title"><span>Test Information</span></h5>
+                                 </div>
+                                 {% comment %} <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                       <label>Title</label>
+                                       <input type="text" class="form-control" name="title" required>
+                                    </div>
+                                 </div> {% endcomment %}
+                                 <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                       <label>Title</label>
+                                       <select class="form-control" name="title" required>
+                                          <option value="">Select Test</option>
+                                          <option value="Test1">Test1</option>
+                                          <option value="Test2">Test2</option>
+                                          <option value="Test3">Test3</option>
+                                          <option value="Test4">Test4</option>
+                                          <option value="Test5">Test5</option>
+                                          <option value="Test6">Test6</option>
+                                          {% comment %} <option value="Male">Male</option> {% endcomment %}
+                                       </select>
+                                    </div>
+                                 </div>
+                                 {% comment %} <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                       <label>Titre (FR)</label>
+                                       <input type="text" class="form-control" name = "titre">
+                                    </div>
+                                 </div> {% endcomment %}
+                                 <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                       <label>Titre (FR)</label>
+                                       <select class="form-control" name="titre" required>
+                                          <option value="">Select Eval</option>
+                                          <option value="Eval1">Eval1</option>
+                                          <option value="Eval2">Eval2</option>
+                                          <option value="Eval3">Eval3</option>
+                                          <option value="Eval4">Eval4</option>
+                                          <option value="Eval5">Eval5</option>
+                                          <option value="Eval6">Eval6</option>
+                                          {% comment %} <option value="Male">Male</option> {% endcomment %}
+                                       </select>
+                                    </div>
+                                 </div>
+                                 <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                       <label>Student</label>
+                                       <select class="form-control" name="student" required>
+                                          <option value="">Select Student</option>
+                                          {% for student in student %}
+                                             <option value="{{student.id}}">{{student.name}}</option>
+                                          
+                                          {% endfor %}
+                                       </select>
+                                    </div>
+                                 </div>
+                                 <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                       <label>Teacher</label>
+                                       <select class="form-control" name="teacher" >
+                                          <option >Select Teacher</option>
+                                          {% if user.is_admin%}
+                                             {% for teacher in teacher %}
+                                                <option value="{{teacher.id}}">{{teacher.name}}</option>
+                                             
+                                             {% endfor %}
+                                          {% endif %}
+                                          {% if user.is_teacher%}
+                                                <option value="{{user.teacher_profile.id}}" selected>{{user.teacher_profile.name}}</option>
+                                             
+                                          {% endif %}
+                                       </select>
+                                    </div>
+                                 </div>
+                                 {% comment %} <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                       <label>Teacher</label>
+                                       <input type="text" class="form-control" name="teacher" >
+                                    </div>
+                                 </div> {% endcomment %}
+                                 <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                       <label>Value</label>
+                                       <input type="number" min=0 step=0.01 class="form-control" name = "value" required>
+                                    </div>
+                                 </div>
+                                 <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                       <label>Coef</label>
+                                       <input type="number" class="form-control" name = "coeff" required>
+                                    </div>
+                                 </div>
+                                 <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                       <label>Subject</label>
+                                       <select class="form-control" name="subject" required>
+                                          <option value="">Select Subject</option>
+                                          {% for subject in subject %}
+                                             <option value="{{subject.id}}">{{subject.title}}</option>
+                                          
+                                          {% endfor %}
+                                       </select>
+                                    </div>
+                                 </div>
+                                 <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                       <label>Remarks</label>
+                                       <input type="text" class="form-control" name="remarks" required>
+                                    </div>
+                                 </div>
+                                 <div class="col-12">
+                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                 </div>
+                              </div>
+                           </form>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+      <script src="{%static 'assets/js/jquery-3.6.0.min.js' %}"></script>
+      <script src="{%static 'assets/js/popper.min.js' %}"></script>
+      <script src="{%static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
+      <script src="{%static 'assets/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
+      <script src="{%static 'assets/js/script.js' %}"></script>
+   </body>
+   <!-- Mirrored from preschool.dreamguystech.com/html-template/add-eval.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 28 Oct 2021 11:11:50 GMT -->
+</html>
+{% endblock %}
