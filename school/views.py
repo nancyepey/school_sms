@@ -81,7 +81,8 @@ def admin_dashboard(request):
 @login_required
 def teacher_dashboard(request):
     company = Settings.objects.get(clientName='GILEAD TECHNICAL HIGH SCHOOL')
-    user_info = Teacher.objects.get(id=request.user.teacher_profile.id)
+    if request.user.teacher_profile.id:
+        user_info = Teacher.objects.get(id=request.user.teacher_profile.id)
     class_info = ClassRoom.objects.all()
     # class_subjects = Subject.objects.filter(classroom=class_info.id)
     # num_subjects = Subject.objects.filter(classroom=class_info.id).count()
