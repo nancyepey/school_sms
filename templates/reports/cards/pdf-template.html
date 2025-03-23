@@ -197,7 +197,7 @@
 					</div>
 					<div class="col-md-4" style="padding-right:1.5em;">
 						<p style="padding-top:1px; margin-top:0px; font-size:1px;"></p>
-						<p style="text-decoration: underline; font-size:20px; font-weight: 900;">2023/2024</p>
+						<p style="text-decoration: underline; font-size:20px; font-weight: 900;">{{report_card.academic_year}}</p>
 					</div>
 					<div class="col-md-4" style="padding:0px; margin-top:10px;">
 						{% comment %} <p style="padding:0px; margin:0px; font-size:16px;">Resumption</p>
@@ -207,7 +207,7 @@
 					</div>
 					<div class="col-md-4">
 						<p style="padding-top:1px; margin-top:0px; font-size:1px;"></p>
-						<p style="text-decoration: underline; font-size:20px; font-weight: 900;">16 April, 2024</p>
+						<p style="text-decoration: underline; font-size:20px; font-weight: 900;">{{report_card.resumption}}</p>
 					</div>
 					
 				</div>
@@ -518,7 +518,7 @@
 										<p style="padding:0px; margin:0px; font-size:16px; ">Rang</p>
 									</div>
 									<div class="col-2" style="padding-left:30px; ">
-										<p style="padding:6px; margin:0px; font-weight:bold; font-size:22px; text-align:center; margin-bottom: -1em;  margin-top: 0em;">1</p>
+										<p style="padding:6px; margin:0px; font-weight:bold; font-size:22px; text-align:center; margin-bottom: -1em;  margin-top: 0em;">{{ mi_rank }}</p>
 										<p style="padding:0px; margin:0px; font-size:16px; ">_______</p>
 									</div>
 									<div class="col-2" style=" border-right-style: hidden; padding-left:30px; ">
@@ -526,7 +526,7 @@
 										{% comment %} <p style="padding:0px; margin:0px; font-size:16px; ">__________</p> {% endcomment %}
 									</div>
 									<div class="col-2" style="padding-left:30px; ">
-										<p style="padding:6px; margin:0px; font-weight:bold; text-align:center; font-size:22px; margin-bottom: -1em;  margin-top: 0em;">1</p>
+										<p style="padding:6px; margin:0px; font-weight:bold; text-align:center; font-size:22px; margin-bottom: -1em;  margin-top: 0em;">{{spec_class_count_stud}}</p>
 										<p style="padding:0px; margin:0px; font-size:16px; ">______</p>
 									</div>
 								</div>
@@ -553,7 +553,7 @@
 										<p style="padding-right:30px; margin:0px; font-size:15px; margin-bottom: -1em;  margin-top: 0em;">1st / 1e</p>
 									</div>
 									<div class="col-4" style=" ">
-										<p style="padding-right:30px; margin:0px; font-weight:bold; font-size:16px; text-align:center; margin-bottom: -1em;  margin-top: 0em;"><u>{{ prof_gen_tot_moy }}</u> /20</p>
+										<p style="padding-right:30px; margin:0px; font-weight:bold; font-size:16px; text-align:center; margin-bottom: -1em;  margin-top: 0em;"><u>{{ report_card.firstterm_avr }}</u> /20</p>
 										{% comment %} <p style="padding:0px; margin:0px; font-size:16px; ">________</p> {% endcomment %}
 									</div>
 								</div>
@@ -562,7 +562,7 @@
 										<p style="padding-right:30px; margin:0px; font-size:15px; margin-bottom: -1em;  margin-top: 0em;">2nd / 2e</p>
 									</div>
 									<div class="col-4" style=" ">
-										<p style="padding-right:30px; margin:0px; font-weight:bold; font-size:16px; text-align:center; margin-bottom: -1em;  margin-top: 0em;"><u>{{ prof_gen_tot_moy }}</u> /20</p>
+										<p style="padding-right:30px; margin:0px; font-weight:bold; font-size:16px; text-align:center; margin-bottom: -1em;  margin-top: 0em;"><u>{{ report_card.secondterm_avr }}</u> /20</p>
 										{% comment %} <span style="padding:0px; margin:0px; font-size:16px; ">/20</span> {% endcomment %}
 										
 									</div>
@@ -572,7 +572,7 @@
 										<p style="padding-right:30px; margin:0px; font-size:15px; margin-bottom: -1em;  margin-top: 0em;">3rd / 3e</p>
 									</div>
 									<div class="col-4" style=" ">
-										<p style="padding-right:30px;  margin:0px; font-weight:bold; font-size:16px; text-align:center; margin-bottom: -1em;  margin-top: 0em;">___<u></u> /20</p>
+										<p style="padding-right:30px;  margin:0px; font-weight:bold; font-size:16px; text-align:center; margin-bottom: -1em;  margin-top: 0em;"><u>{{report_card.thirdterm_avr}}</u> /20</p>
 										
 									</div>
 								</div>
@@ -599,7 +599,7 @@
 										<p style="padding-right:30px; margin:0px; font-size:15px; margin-bottom: -1em;  margin-top: 0em;">1st / 1e</p>
 									</div>
 									<div class="col-4" style=" ">
-										<p style="padding-right:30px; margin:0px; font-weight:bold; font-size:16px; text-align:center; margin-bottom: -1em;  margin-top: 0em;">__<u>8</u>__ </p>
+										<p style="padding-right:30px; margin:0px; font-weight:bold; font-size:16px; text-align:center; margin-bottom: -1em;  margin-top: 0em;"><u>{{report_card.first_subj_passed}}</u> </p>
 										{% comment %} <p style="padding:0px; margin:0px; font-size:16px; ">________</p> {% endcomment %}
 									</div>
 								</div>
@@ -608,7 +608,7 @@
 										<p style="padding-right:30px; margin:0px; font-size:15px; margin-bottom: -1em;  margin-top: 0em;">2nd / 2e</p>
 									</div>
 									<div class="col-4" style=" ">
-										<p style="padding-right:30px; margin:0px; font-weight:bold; font-size:16px; text-align:center; margin-bottom: -1em;  margin-top: 0em;">__<u>8</u>__ </p>
+										<p style="padding-right:30px; margin:0px; font-weight:bold; font-size:16px; text-align:center; margin-bottom: -1em;  margin-top: 0em;"><u>{{report_card.second_subj_passed}}</u> </p>
 										{% comment %} <span style="padding:0px; margin:0px; font-size:16px; "></span> {% endcomment %}
 										
 									</div>
@@ -618,7 +618,7 @@
 										<p style="padding-right:30px; margin:0px; font-size:15px; margin-bottom: -1em;  margin-top: 0em;">3rd / 3e</p>
 									</div>
 									<div class="col-4" style=" ">
-										<p style="padding-right:30px;  margin:0px; font-weight:bold; font-size:16px; text-align:center; margin-bottom: -1em;  margin-top: 0em;">_____<u></u> </p>
+										<p style="padding-right:30px;  margin:0px; font-weight:bold; font-size:16px; text-align:center; margin-bottom: -1em;  margin-top: 0em;"><u>{{report_card.third_subj_passed}}</u> </p>
 										
 									</div>
 								</div>

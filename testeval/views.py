@@ -9,11 +9,13 @@ from django.shortcuts import get_object_or_404, render, redirect
 # from sympy import Sum
 from django.db.models import Sum
 import decimal
+
+from django.db.models import Count, Max
 from department.models import Department
 from teacher.models import Teacher
 from school.models import ClassRoom, Settings, Specialty
 
-from .models import ClassRanking, Eval, ReportCard, TestMoySpecialtySubjClass
+from .models import ClassRanking, Eval, ReportCard, SchoolClasRanking, TestMoySpecialtySubjClass
 from student.models import Student
 from subject.models import Subject
 from django.contrib import messages
@@ -68,7 +70,7 @@ def eval_list(request):
     if request.method == 'POST':
         # print(request)
         class_selected = request.POST.get('student_class')
-        print(class_selected)
+        # print(class_selected)
         # if class_selected == "all":
         #     context = {
         #         'eval_list': eval_list,
@@ -136,7 +138,7 @@ def eval_list(request):
 
 @login_required
 def report_card_list(request):
-    report_card = ReportCard.objects.select_related('student').all()
+    report_card = ReportCard.objects.select_related('student').filter(is_actif=True)
     
     classroom = ClassRoom.objects.all()
     specialtys = Specialty.objects.all()
@@ -219,7 +221,7 @@ def add_test(request):
 
         #get teacher class
         # print('teacher')
-        print(teacher)
+        # print(teacher)
         obj_teacher_class = Teacher.objects.get(id=teacher)
         # print(obj_teacher_class)
 
@@ -234,8 +236,8 @@ def add_test(request):
             messages.error(request, f'{obj_student_class.name}-- {obj_subject_class.title} --- Already exist')
             return redirect("test_list")
         else:
-            print(value_two)
-            if float(value_two) > 0:
+            # print(value_two)
+            if float(value_two) >= 0:
                 value1 = value_two
                 #test
                 test = Eval.objects.create(
@@ -304,10 +306,10 @@ def edit_test(request, slug):
         obj_subject_class = Subject.objects.get(id=subject)
 
         #get teacher class
-        print('teacher')
-        print(teacher)
+        # print('teacher')
+        # print(teacher)
         obj_teacher_class = Teacher.objects.get(id=teacher)
-        print(obj_teacher_class)
+        # print(obj_teacher_class)
 
         
         eval.title = title
@@ -364,23 +366,22 @@ def see_marks(request, student_id):
 #     student = Student.objects.all()
 
 #appreciation
-@login_required
 def appreciation_marks(marks):
-    if marks >= 0 and marks < 5:
+    if marks >= 0.00 and marks < 5.00:
         return "WEAK"
-    if marks >= 5 and marks < 8:
+    if marks >= 5.00 and marks < 8.00:
         return "POOR"
-    if marks >= 8 and marks < 10:
+    if marks >= 8.00 and marks < 10.00:
         return "BELOW AVERAGE"
-    if marks == 10:
+    if marks == 10.00:
         return "FAIRLY GOOD"
-    if marks > 10 and marks < 12:
+    if marks > 10.00 and marks < 12.00:
         return "AVERAGE"
-    if marks >= 12 and marks < 15:
+    if marks >= 12.00 and marks < 15.00:
         return "GOOD"
-    if marks >= 15 and marks < 17:
+    if marks >= 15.00 and marks < 17.00:
         return "VERY GOOD"
-    if marks >= 17 and marks < 20:
+    if marks >= 17.00 and marks < 20.00:
         return "EXCELLENT"
 
 
@@ -396,6 +397,7 @@ def cal_mark_class(request):
     get_testb = decimal.Decimal(0.0)
     get_test = decimal.Decimal(0.0)
     observation = ""
+    current_aced_year = "2024/2025"
 
     if request.method == "POST":
         #
@@ -404,7 +406,7 @@ def cal_mark_class(request):
             classroom = request.POST.get('classroom')
             term = request.POST.get('term')
             added_by = request.user.username
-            # print(added_by)
+            # print(added_by)request.user.username
             # print()
 
             get_class = ClassRoom.objects.get(id = classroom)
@@ -423,384 +425,652 @@ def cal_mark_class(request):
             messages.error(request, 'Something went wrong')
             return redirect('calculate_mark_class')
         
-        if students:
-            # print("in in")
-            # print(Student.objects.filter(student_class=get_class).count())
+
+        # print("classroom")
+        # print(classroom)
+        if classroom:
+            # print("inn class")
+            get_class = ClassRoom.objects.get(id = classroom)
+            # class_subj = Subject.classroom.classroom_id
             if Student.objects.filter(student_class=get_class).count() > 1:
-            #loop through the students and get their marks
-            # obj_eval_class = Eval.objects.filter(student_id=studentId)
-            # print(students)
-                for student in students:
-                    # print(student)
-                    for subject in subjects:
-                        if term == "first":
-                            # print(student_test.title)
-                            get_testa_subj = Eval.objects.filter(student_id=student.id,subject_id = subject.id)
-                            if get_testa_subj:
-                                # print(get_testa_subj)
-                                total = get_testa_subj.aggregate(s=Sum("value"))["s"]
-                                # print(total)
-                                if total  >= 0:
-                                    # print(subject)
-                                    # print('{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef))
-                                    get_test = '{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef)
-                                    observation = appreciation_marks((total/ 2))
-                                    # print(observation)
-                                    current_cal_marks = get_cal_marks.filter(term=term, classroom =student.student_class, specialty=student.specialty, student=student, subject=subject, is_actif=True)
-                                    if current_cal_marks:
-                                        for current_mark in current_cal_marks:
-                                            # print(current_mark)
-                                            # print(current_mark.is_actif)  
-                                            current_mark.is_actif = False
-                                            current_mark.modified_by = request.user.username
-                                            current_mark.save()
-                                    
-                                    mark_subj = TestMoySpecialtySubjClass.objects.create(
-                                        term = term,
-                                        classroom = student.student_class,
-                                        specialty = student.specialty,
-                                        student = student,
-                                        subject = subject,
-                                        test_avg = get_test,
-                                        subj_coef = get_testa_subj[0].coef,
-                                        observation = observation,
-                                        added_by = added_by,
-                                    )
-                        if term == "second":
-                            # print(student_test.title)
-                            get_testa_subj = Eval.objects.filter(student_id=student.id,subject_id = subject.id)
-                            if get_testa_subj:
-                                print(get_testa_subj)
-                                total = get_testa_subj.aggregate(s=Sum("value"))["s"]
-                                # print(total)
-                                if total  >= 0:
-                                    # print(subject)
-                                    # print('{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef))
-                                    get_test = '{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef)
-                                    observation = appreciation_marks((total/ 2))
-                                    # print(observation)
-                                    current_cal_marks = get_cal_marks.filter(term=term, classroom =student.student_class, specialty=student.specialty, student=student, subject=subject, is_actif=True)
-                                    if current_cal_marks:
-                                        for current_mark in current_cal_marks:
-                                            # print(current_mark)
-                                            # print(current_mark.is_actif)  
-                                            current_mark.is_actif = False
-                                            current_mark.modified_by = request.user.username
-                                            current_mark.save()
-                                    
-                                    mark_subj = TestMoySpecialtySubjClass.objects.create(
-                                        term = term,
-                                        classroom = student.student_class,
-                                        specialty = student.specialty,
-                                        student = student,
-                                        subject = subject,
-                                        test_avg = get_test,
-                                        subj_coef = get_testa_subj[0].coef,
-                                        observation = observation,
-                                        added_by = added_by,
-                                    )
-                        if term == "third":
-                            # print(student_test.title)
-                            get_testa_subj = Eval.objects.filter(student_id=student.id,subject_id = subject.id)
-                            if get_testa_subj:
-                                # print(get_testa_subj)
-                                total = get_testa_subj.aggregate(s=Sum("value"))["s"]
-                                # print(total)
-                                if total  >= 0:
-                                    # print(subject)
-                                    # print('{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef))
-                                    get_test = '{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef)
-                                    observation = appreciation_marks((total/ 2))
-                                    # print(observation)
-                                    current_cal_marks = get_cal_marks.filter(term=term, classroom =student.student_class, specialty=student.specialty, student=student, subject=subject, is_actif=True)
-                                    if current_cal_marks:
-                                        for current_mark in current_cal_marks:
-                                            # print(current_mark)
-                                            # print(current_mark.is_actif)  
-                                            current_mark.is_actif = False
-                                            current_mark.modified_by = request.user.username
-                                            current_mark.save()
-                                    
-                                    mark_subj = TestMoySpecialtySubjClass.objects.create(
-                                        term = term,
-                                        classroom = student.student_class,
-                                        specialty = student.specialty,
-                                        student = student,
-                                        subject = subject,
-                                        test_avg = get_test,
-                                        subj_coef = get_testa_subj[0].coef,
-                                        observation = observation,
-                                        added_by = added_by,
-                                    )
-                    # #get evaluations of the student based on the term
-                    # obj_tests_class = Eval.objects.filter(student_id=student.id)
-                    # #looping through the tests of a student
-                    # for student_test in obj_tests_class:
-                    #     # print(student_test)
-                    #     if term == "first":
-                    #         print(student_test.title)
-                    #     if term == "second":
-                    #         print(student_test.title)
-                    #     if term == "third":
-                    #         print(student_test.title)
-            else:
-                # obj_tests_class = Eval.objects.filter(student_id=students[0].id)
-                #looping through the tests of a student
-                for subject in subjects:
-                    if term == "first":
-                        # print(student_test.title)
-                        get_testa_subj = Eval.objects.filter(student_id=students[0].id,subject_id = subject.id)
-                        if get_testa_subj:
-                            # print(get_testa_subj)
-                            total = get_testa_subj.aggregate(s=Sum("value"))["s"]
-                            # print(total)
-                            if total >= 0:
-                                # print(subject)
-                                # print('{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef))
-                                get_test = '{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef)
-                                observation = appreciation_marks((total/ 2))
-                                # print(observation)
-                                current_cal_marks = get_cal_marks.filter(term=term, classroom =students[0].student_class, specialty=students[0].specialty, student=students[0], subject=subject, is_actif=True)
-                                if current_cal_marks:
-                                    for current_mark in current_cal_marks:
-                                        # print(current_mark)
-                                        # print(current_mark.is_actif)  
-                                        current_mark.is_actif = False
-                                        current_mark.modified_by = request.user.username
-                                        current_mark.save()
-                                
-                                mark_subj = TestMoySpecialtySubjClass.objects.create(
-                                    term = term,
-                                    classroom = students[0].student_class,
-                                    specialty = students[0].specialty,
-                                    student = students[0],
-                                    subject = subject,
-                                    test_avg = get_test,
-                                    subj_coef = get_testa_subj[0].coef,
-                                    observation = observation,
-                                    added_by = added_by,
-                                )
-                    if term == "second":
-                        # print(student_test.title)
-                        # print(count)
-                        # print(subject)
-                        get_testa_subj = Eval.objects.filter(student_id=students[0].id,subject_id = subject.id)
-                        if get_testa_subj:
-                            # print(get_testa_subj)
-                            total = get_testa_subj.aggregate(s=Sum("value"))["s"]
-                            # print(total)
-                            if total >= 0:
-                                # print(subject)
-                                # print('{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef))
-                                get_test = '{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef)
-                                observation = appreciation_marks((total/ 2))
-                                # print(observation)
-                                current_cal_marks = get_cal_marks.filter(term=term, classroom =students[0].student_class, specialty=students[0].specialty, student=students[0], subject=subject, is_actif=True)
-                                if current_cal_marks:
-                                    for current_mark in current_cal_marks:
-                                        print(current_mark)
-                                        print(current_mark.is_actif)  
-                                        current_mark.is_actif = False
-                                        current_mark.modified_by = request.user.username
-                                        current_mark.save()
-                                
-                                mark_subj = TestMoySpecialtySubjClass.objects.create(
-                                    term = term,
-                                    classroom = students[0].student_class,
-                                    specialty = students[0].specialty,
-                                    student = students[0],
-                                    subject = subject,
-                                    test_avg = get_test,
-                                    subj_coef = get_testa_subj[0].coef,
-                                    observation = observation,
-                                    added_by = added_by,
-                                )
-                    if term == "third":
-                        # print(student_test.title)
-                        # print(count)
-                        # print(subject)
-                        get_testa_subj = Eval.objects.filter(student_id=students[0].id,subject_id = subject.id)
-                        if get_testa_subj:
-                            # print(get_testa_subj)
-                            total = get_testa_subj.aggregate(s=Sum("value"))["s"]
-                            # print(total)
-                            if total >= 0:
-                                print(subject)
-                                # print('{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef))
-                                get_test = '{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef)
-                                observation = appreciation_marks((total/ 2))
-                                # print(observation)
-                                current_cal_marks = get_cal_marks.filter(term=term, classroom =students[0].student_class, specialty=students[0].specialty, student=students[0], subject=subject, is_actif=True)
-                                if current_cal_marks:
-                                    for current_mark in current_cal_marks:
-                                        # print(current_mark)
-                                        # print(current_mark.is_actif)  
-                                        current_mark.is_actif = False
-                                        current_mark.modified_by = request.user.username
-                                        current_mark.save()
-                                
-                                mark_subj = TestMoySpecialtySubjClass.objects.create(
-                                    term = term,
-                                    classroom = students[0].student_class,
-                                    specialty = students[0].specialty,
-                                    student = students[0],
-                                    subject = subject,
-                                    test_avg = get_test,
-                                    subj_coef = get_testa_subj[0].coef,
-                                    observation = observation,
-                                    added_by = added_by,
-                                )
-                        # print('{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef))
+                # print("class stud")
+                class_students = Student.objects.filter(student_class=get_class)
+                # print(class_students)
+                for student in class_students:
+                    does_stud_has_test = Eval.objects.filter(student_id=student.id, academic_year=current_aced_year)
+                    if does_stud_has_test:
+                        #
+                        # print("has test marks")
+                        # print("student")
+                        # print(student)
+                        # print(subjs)
+                        # print(subjs.title)
+                        # print("Subject.classroom")
+                        # print(Subject.classroom)
+                        # print("Subject.classroom.classroom_id")
+                        # print(Subject.classroom.through.objects.all())
+                        #
+                        # subjects = Subject.classroom.through.objects.all()
+                        subjects = Subject.classroom.through.objects.filter(classroom_id=classroom)
                         
-                        # if student_test.subject_id == subject.id:
-                        #     print(f"{student_test.title}------{student_test.value}-----{subject}")
-                        #     # print(count)
-                        #     count = count + 1
-                        #     print(subject)
-                        #     get_testa_subj = Eval.objects.filter(student_id=students[0].id,subject_id = subject.id)
-                        #     total = get_testa_subj.aggregate(s=Sum("value"))["s"]
-                        #     print('{:0.2f}'.format((total/ 2)* student_test.coef))
-                # count = 0
-                # for student_test in obj_tests_class:
-                    ##NEW
-                    # count = 0
-                    # array_for_vals = []
-                    # for subject in subjects:
-                    #     if student_test.subject_id == subject.id:
-                    #         count = count + 1
-                    #         print(student_test.subject_id)
-                    #         # if student_test.title == "Test3":
-                    #         #     print(student_test.title)
-                            # array_for_vals.append([student_test.subject_id, subject.title, student_test.value, students[0].name])
-                            # array_for_vals.append(f"{student_test.subject_id}_{subject.title}_{student_test.value}_{students[0].name}")
-                    # print(array_for_vals)
-                    # print(array_for_vals[0][1])
-                    # for array_for_val in array_for_vals:
-                    #     # print(array_for_val)
-                    #     for subject in subjects:
-                    #         if array_for_vals[0][0] == subject.id:
-                    #             print(subject)
-                    ##OLD
-                    # if term == "first":
-                    #     print(student_test.title)
-                    # if term == "second":
-                    #     # print(student_test.title)
-                    #     count = 0
-                    #     get_testa_stud = ""
-                    #     get_testb_stud = ""
-                    #     for subject in subjects:
-                    #         # print(count)
+                        if subjects:
+                            # print("in sub")
+                            # print(subjects)
                             
-                    #         if student_test.subject_id == subject.id:
-                    #             print(f"{student_test.title}------{student_test.value}-----{subject}")
-                    #             # print(count)
-                    #             count = count + 1
+                            for subjs in subjects:
+                                subj = Subject.objects.get(id=subjs.subject_id)
+                                # if subjs.subject_id == 74:
+                                    
+                                    # print(f"subject 74 is------------------{subj.title}")
+                                # subj = Subject.objects.get(id=subjs.subject_id)
+                                # print("subjs")
+                                # print(subj)
+                                # print(f"subject {subj}--- with it {subj.id}")
+                                # print(f"subject {subj}--- with it {subjs.subject_id}")
+                                # print(subj)
+                                # print('studt')
+                                # print(student)
+                                if term == "first":
+                                    # print("first")
+                                    # 
+                                    # print(student_test.title)
+                                    # get_testa_subj = Eval.objects.filter(title="Test1",student_id=student.id,subject_id = subj.id, academic_year=current_aced_year)
+                                    get_testa = Eval.objects.filter(title="Test1",student_id=student.id,subject_id = subj.id, academic_year=current_aced_year).first()
+                                    # print(get_testa)
+                                    if get_testa:
+                                        # print("we here")
+                                        # print(f"test {get_testa.title}--- test1 {get_testa.value} --- test2: {get_testa.sec_value} with it {subjs.subject_id} subject {subj}--- with it {subjs.subject_id}")
+                                        # print(f"test {get_testa.title}--- with it {subjs.subject_id}")
+                                        # print(f"test1: {get_testa.value} --- test2: {get_testa.sec_value}")
+                                        # test1_val = decimal.Decimal(0.00)
+                                        # test2_val = decimal.Decimal(0.00)
+                                        # if get_testa.sec_value:
+                                        #     test2_val = get_testa.sec_value
+                                        # if get_testa.value:
+                                        #     test1_val = get_testa.value
+                                        # subj_avg = (test1_val + test2_val) / 2
+                                        subj_avg = (get_testa.value + get_testa.sec_value) / 2
+                                        # 
+                                        observation = appreciation_marks(subj_avg)
+                                        # print(f"subj Average:  --- {subj_avg}--- {subj.title}---- {observation}")
+                                        grade_tot_subj = subj_avg * get_testa.coef
+                                        # print(f"subj Average:  --- {subj_avg}--- {subj.title} --- {grade_tot_subj}---- {observation}")
+                                        # current_cal_marks = TestMoySpecialtySubjClass.objects.filter(term=term, classroom =classroom, specialty=student.specialty, student=student, subject=subj, is_actif=True)
+                                        current_mark = TestMoySpecialtySubjClass.objects.filter(term=term, classroom =classroom, specialty=student.specialty, student=student, subject=subj, is_actif=True).first()
+                                        if current_mark:
+                                            current_mark.is_actif = False
+                                            current_mark.modified_by = request.user.username
+                                            current_mark.save()
+                                            mark_subj = TestMoySpecialtySubjClass.objects.create(
+                                                term = term,
+                                                classroom = student.student_class,
+                                                specialty = student.specialty,
+                                                student = student,
+                                                subject = subj,
+                                                test_avg = grade_tot_subj,
+                                                subj_coef = get_testa.coef,
+                                                observation = observation,
+                                                added_by = added_by,
+                                            )
+                                            # for current_mark in current_cal_marks:
+                                            #     # print(current_mark)
+                                            #     # print(current_mark.is_actif)  
+                                            #     current_mark.is_actif = False
+                                            #     current_mark.modified_by = request.user.username
+                                            #     current_mark.save()
+                                                # mark_subj = TestMoySpecialtySubjClass.objects.create(
+                                                #     term = term,
+                                                #     classroom = student.student_class,
+                                                #     specialty = student.specialty,
+                                                #     student = student,
+                                                #     subject = subj,
+                                                #     test_avg = grade_tot_subj,
+                                                #     subj_coef = get_testa.coef,
+                                                #     observation = observation,
+                                                #     added_by = added_by,
+                                                # )
+                                        else:
+                                            # 
+                                            mark_subj = TestMoySpecialtySubjClass.objects.create(
+                                                term = term,
+                                                classroom = student.student_class,
+                                                specialty = student.specialty,
+                                                student = student,
+                                                subject = subj,
+                                                test_avg = grade_tot_subj,
+                                                subj_coef = get_testa.coef,
+                                                observation = observation,
+                                                added_by = added_by,
+                                            )
+
+                                        # if mark_subj:
+                                        #     # good
+                                        #     messages.success(request, f'Test Average per Subject Created Successfully')
+                                        #     return redirect("calculate_mark_class")
+                                        # else:
+                                        #     # erreur
+                                        #     messages.error(request, f'An error occurred during creation')
+                                        #     return redirect("calculate_mark_class")
+                                    
+                                    # if get_testa_subj:
+                                    #     print("get_testa_subj innnnnnn")
+                                    #     print(get_testa_subj)
+                                    # #     # 
+                                    # #     for test_marks in get_testa_subj:
+                                    # #         #
+                                    #         print(f"test {test_marks.title}--- with it {subjs.subject_id}")
+                                    #         print(f"test1: {test_marks.value} --- test2: {test_marks.sec_value}")
+                                    # #         subj_avg = (test_marks.value + test_marks.sec_value) / 2
+                                    #         print(f"subj Average:  --- {subj_avg}--- {subj.title} ")
+                                    
+                                if term == "second":
+                                    # print("second")
+                                    # 
+                                    get_testa = Eval.objects.filter(title="Test3",student_id=student.id,subject_id = subj.id, academic_year=current_aced_year).first()
+                                    # print(get_testa)
+                                    if get_testa:
+                                        subj_avg = (get_testa.value + get_testa.sec_value) / 2
+                                        # 
+                                        observation = appreciation_marks(subj_avg)
+                                        grade_tot_subj = subj_avg * get_testa.coef
+                                        # print(f"subj Average:  --- {subj_avg}--- {subj.title} --- {grade_tot_subj}---- {observation}")
+                                        current_mark = TestMoySpecialtySubjClass.objects.filter(term=term, classroom =classroom, specialty=student.specialty, student=student, subject=subj, is_actif=True).first()
+                                        if current_mark:
+                                            current_mark.is_actif = False
+                                            current_mark.modified_by = request.user.username
+                                            current_mark.save()
+                                            mark_subj = TestMoySpecialtySubjClass.objects.create(
+                                                term = term,
+                                                classroom = student.student_class,
+                                                specialty = student.specialty,
+                                                student = student,
+                                                subject = subj,
+                                                test_avg = grade_tot_subj,
+                                                subj_coef = get_testa.coef,
+                                                observation = observation,
+                                                added_by = added_by,
+                                            )
+                                        else:
+                                            # 
+                                            mark_subj = TestMoySpecialtySubjClass.objects.create(
+                                                term = term,
+                                                classroom = student.student_class,
+                                                specialty = student.specialty,
+                                                student = student,
+                                                subject = subj,
+                                                test_avg = grade_tot_subj,
+                                                subj_coef = get_testa.coef,
+                                                observation = observation,
+                                                added_by = added_by,
+                                            )
+                                    
+                                if term == "third":
+                                    # print("third")
+                                    # 
+                                    get_testa = Eval.objects.filter(title="Test5",student_id=student.id,subject_id = subj.id, academic_year=current_aced_year).first()
+                                    # print(get_testa)
+                                    if get_testa:
+                                        subj_avg = (get_testa.value + get_testa.sec_value) / 2
+                                        # 
+                                        observation = appreciation_marks(subj_avg)
+                                        grade_tot_subj = subj_avg * get_testa.coef
+                                        # print(f"subj Average:  --- {subj_avg}--- {subj.title} --- {grade_tot_subj}---- {observation}")
+                                        current_mark = TestMoySpecialtySubjClass.objects.filter(term=term, classroom =classroom, specialty=student.specialty, student=student, subject=subj, is_actif=True).first()
+                                        if current_mark:
+                                            current_mark.is_actif = False
+                                            current_mark.modified_by = request.user.username
+                                            current_mark.save()
+                                            mark_subj = TestMoySpecialtySubjClass.objects.create(
+                                                term = term,
+                                                classroom = student.student_class,
+                                                specialty = student.specialty,
+                                                student = student,
+                                                subject = subj,
+                                                test_avg = grade_tot_subj,
+                                                subj_coef = get_testa.coef,
+                                                observation = observation,
+                                                added_by = added_by,
+                                            )
+                                        else:
+                                            # 
+                                            mark_subj = TestMoySpecialtySubjClass.objects.create(
+                                                term = term,
+                                                classroom = student.student_class,
+                                                specialty = student.specialty,
+                                                student = student,
+                                                subject = subj,
+                                                test_avg = grade_tot_subj,
+                                                subj_coef = get_testa.coef,
+                                                observation = observation,
+                                                added_by = added_by,
+                                            )
+
+                        # else:
+                        #     # no student
+                        #     messages.error(request, f'NO STUDENT')
+                        #     return redirect("calculate_mark_class")
+                    # else:
+                    #     # no subj
+                    #     messages.error(request, f'NO STUDENT HAS NO TEST')
+                    #     return redirect("calculate_mark_class")
+
+            elif Student.objects.filter(student_class=get_class).count() == 1:
+                # one student
+                # print("one student")
+                class_students = Student.objects.filter(student_class=get_class)
+                # print(class_students)
+            else:
+                # no student
+                messages.error(request, f'NO STUDENT')
+                return redirect("calculate_mark_class")
+
+
+        messages.success(request, f'Classroom Marks Calculated successfully')
+        return redirect("calculate_mark_class")
+        
+        # if students:
+        #     # print("in in")
+        #     # print(Student.objects.filter(student_class=get_class).count())
+        #     if Student.objects.filter(student_class=get_class).count() > 1:
+        #         #loop through the students and get their marks
+        #         # obj_eval_class = Eval.objects.filter(student_id=studentId)
+        #         # print(students)
+                # print("many stud")
+        #         for student in students:
+        #             # print(student)
+                    # print("many stud, in stud")
+        #             subjects = Subject.objects.all()
+        #             for subject in subjects:
+                        # print("many stud in stud in subj")
+        #                 if term == "first":
+                            # print("first")
+        #                     # print(student_test.title)
+        #                     get_testa_subj = Eval.objects.filter(student_id=student.id,subject_id = subject.id)
+        #                     if get_testa_subj:
+                                # print("get_testa_subj")
+                                # print(get_testa_subj)
+        #         messages.success(request, f'OK NO GOOD')
+        #         return redirect("calculate_mark_class")
+        #                         # print(get_testa_subj)
+        #                         # total = get_testa_subj.aggregate(s=Sum("value"))["s"]
+        #                         # # print(total)
+        #                         # if total  >= 0:
+        #                         #     # print(subject)
+        #                         #     # print('{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef))
+        #                         #     get_test = '{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef)
+        #                         #     observation = appreciation_marks((total/ 2))
+        #                         #     # print(observation)
+        #                         #     current_cal_marks = get_cal_marks.filter(term=term, classroom =student.student_class, specialty=student.specialty, student=student, subject=subject, is_actif=True)
+        #                         #     if current_cal_marks:
+        #                         #         for current_mark in current_cal_marks:
+        #                         #             # print(current_mark)
+        #                         #             # print(current_mark.is_actif)  
+        #                         #             current_mark.is_actif = False
+        #                         #             current_mark.modified_by = request.user.username
+        #                         #             current_mark.save()
+                                    
+        #                         #     mark_subj = TestMoySpecialtySubjClass.objects.create(
+        #                         #         term = term,
+        #                         #         classroom = student.student_class,
+        #                         #         specialty = student.specialty,
+        #                         #         student = student,
+        #                         #         subject = subject,
+        #                         #         test_avg = get_test,
+        #                         #         subj_coef = get_testa_subj[0].coef,
+        #                         #         observation = observation,
+        #                         #         added_by = added_by,
+        #                         #     )
+        #                 # if term == "second":
+        #                 #     # print(student_test.title)
+        #                 #     get_testa_subj = Eval.objects.filter(student_id=student.id,subject_id = subject.id)
+        #                 #     if get_testa_subj:
+                        #         print(get_testa_subj)
+        #                 #         total = get_testa_subj.aggregate(s=Sum("value"))["s"]
+        #                 #         # print(total)
+        #                 #         if total  >= 0:
+        #                 #             # print(subject)
+        #                 #             # print('{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef))
+        #                 #             get_test = '{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef)
+        #                 #             observation = appreciation_marks((total/ 2))
+        #                 #             # print(observation)
+        #                 #             current_cal_marks = get_cal_marks.filter(term=term, classroom =student.student_class, specialty=student.specialty, student=student, subject=subject, is_actif=True)
+        #                 #             if current_cal_marks:
+        #                 #                 for current_mark in current_cal_marks:
+        #                 #                     # print(current_mark)
+        #                 #                     # print(current_mark.is_actif)  
+        #                 #                     current_mark.is_actif = False
+        #                 #                     current_mark.modified_by = request.user.username
+        #                 #                     current_mark.save()
+                                    
+        #                 #             mark_subj = TestMoySpecialtySubjClass.objects.create(
+        #                 #                 term = term,
+        #                 #                 classroom = student.student_class,
+        #                 #                 specialty = student.specialty,
+        #                 #                 student = student,
+        #                 #                 subject = subject,
+        #                 #                 test_avg = get_test,
+        #                 #                 subj_coef = get_testa_subj[0].coef,
+        #                 #                 observation = observation,
+        #                 #                 added_by = added_by,
+        #                 #             )
+        #                 # if term == "third":
+        #                 #     # print(student_test.title)
+        #                 #     get_testa_subj = Eval.objects.filter(student_id=student.id,subject_id = subject.id)
+        #                 #     if get_testa_subj:
+        #                 #         # print(get_testa_subj)
+        #                 #         total = get_testa_subj.aggregate(s=Sum("value"))["s"]
+        #                 #         # print(total)
+        #                 #         if total  >= 0:
+        #                 #             # print(subject)
+        #                 #             # print('{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef))
+        #                 #             get_test = '{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef)
+        #                 #             observation = appreciation_marks((total/ 2))
+        #                 #             # print(observation)
+        #                 #             current_cal_marks = get_cal_marks.filter(term=term, classroom =student.student_class, specialty=student.specialty, student=student, subject=subject, is_actif=True)
+        #                 #             if current_cal_marks:
+        #                 #                 for current_mark in current_cal_marks:
+        #                 #                     # print(current_mark)
+        #                 #                     # print(current_mark.is_actif)  
+        #                 #                     current_mark.is_actif = False
+        #                 #                     current_mark.modified_by = request.user.username
+        #                 #                     current_mark.save()
+                                    
+        #                 #             mark_subj = TestMoySpecialtySubjClass.objects.create(
+        #                 #                 term = term,
+        #                 #                 classroom = student.student_class,
+        #                 #                 specialty = student.specialty,
+        #                 #                 student = student,
+        #                 #                 subject = subject,
+        #                 #                 test_avg = get_test,
+        #                 #                 subj_coef = get_testa_subj[0].coef,
+        #                 #                 observation = observation,
+        #                 #                 added_by = added_by,
+        #                 #             )
+        #             # #get evaluations of the student based on the term
+        #             # obj_tests_class = Eval.objects.filter(student_id=student.id)
+        #             # #looping through the tests of a student
+        #             # for student_test in obj_tests_class:
+        #             #     # print(student_test)
+        #             #     if term == "first":
+                    #         print(student_test.title)
+        #             #     if term == "second":
+                    #         print(student_test.title)
+        #             #     if term == "third":
+                    #         print(student_test.title)
+        #     else:
+        #         # obj_tests_class = Eval.objects.filter(student_id=students[0].id)
+        #         #looping through the tests of a student
+        #         for subject in subjects:
+                    # print("stud innn")
+        #             if term == "first":
+                        # print("innnn")
+        #                 # print(student_test.title)
+        #                 get_testa_subj = Eval.objects.filter(student_id=student.id,subject_id = subject.id)
+        #                 if get_testa_subj:
+                    #         print("get_testa_subj")
+                    #         print(get_testa_subj)
+                    # print("done")
+        #                 # get_testa_subj = Eval.objects.filter(student_id=students[0].id,subject_id = subject.id)
+        #                 # if get_testa_subj:
+        #                 #     # print(get_testa_subj)
+        #                 #     total = get_testa_subj.aggregate(s=Sum("value"))["s"]
+        #                 #     # print(total)
+        #                 #     if total >= 0:
+        #                 #         # print(subject)
+        #                 #         # print('{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef))
+        #                 #         get_test = '{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef)
+        #                 #         observation = appreciation_marks((total/ 2))
+        #                 #         # print(observation)
+        #                 #         current_cal_marks = get_cal_marks.filter(term=term, classroom =students[0].student_class, specialty=students[0].specialty, student=students[0], subject=subject, is_actif=True)
+        #                 #         if current_cal_marks:
+        #                 #             for current_mark in current_cal_marks:
+        #                 #                 # print(current_mark)
+        #                 #                 # print(current_mark.is_actif)  
+        #                 #                 current_mark.is_actif = False
+        #                 #                 current_mark.modified_by = request.user.username
+        #                 #                 current_mark.save()
+                                
+        #                 #         mark_subj = TestMoySpecialtySubjClass.objects.create(
+        #                 #             term = term,
+        #                 #             classroom = students[0].student_class,
+        #                 #             specialty = students[0].specialty,
+        #                 #             student = students[0],
+        #                 #             subject = subject,
+        #                 #             test_avg = get_test,
+        #                 #             subj_coef = get_testa_subj[0].coef,
+        #                 #             observation = observation,
+        #                 #             added_by = added_by,
+        #                 #         )
+        #             # if term == "second":
+        #             #     # print(student_test.title)
+        #             #     # print(count)
+        #             #     # print(subject)
+        #             #     get_testa_subj = Eval.objects.filter(student_id=students[0].id,subject_id = subject.id)
+        #             #     if get_testa_subj:
+        #             #         # print(get_testa_subj)
+        #             #         total = get_testa_subj.aggregate(s=Sum("value"))["s"]
+        #             #         # print(total)
+        #             #         if total >= 0:
+        #             #             # print(subject)
+        #             #             # print('{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef))
+        #             #             get_test = '{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef)
+        #             #             observation = appreciation_marks((total/ 2))
+        #             #             # print(observation)
+        #             #             current_cal_marks = get_cal_marks.filter(term=term, classroom =students[0].student_class, specialty=students[0].specialty, student=students[0], subject=subject, is_actif=True)
+        #             #             if current_cal_marks:
+        #             #                 for current_mark in current_cal_marks:
+                    #                     print(current_mark)
+                    #                     print(current_mark.is_actif)  
+        #             #                     current_mark.is_actif = False
+        #             #                     current_mark.modified_by = request.user.username
+        #             #                     current_mark.save()
+                                
+        #             #             mark_subj = TestMoySpecialtySubjClass.objects.create(
+        #             #                 term = term,
+        #             #                 classroom = students[0].student_class,
+        #             #                 specialty = students[0].specialty,
+        #             #                 student = students[0],
+        #             #                 subject = subject,
+        #             #                 test_avg = get_test,
+        #             #                 subj_coef = get_testa_subj[0].coef,
+        #             #                 observation = observation,
+        #             #                 added_by = added_by,
+        #             #             )
+        #             # if term == "third":
+        #             #     # print(student_test.title)
+        #             #     # print(count)
+        #             #     # print(subject)
+        #             #     get_testa_subj = Eval.objects.filter(student_id=students[0].id,subject_id = subject.id)
+        #             #     if get_testa_subj:
+        #             #         # print(get_testa_subj)
+        #             #         total = get_testa_subj.aggregate(s=Sum("value"))["s"]
+        #             #         # print(total)
+        #             #         if total >= 0:
                     #             print(subject)
-                    #             get_testa_subj = Eval.objects.filter(student_id=students[0].id,subject_id = subject.id)
-                    #             total = get_testa_subj.aggregate(s=Sum("value"))["s"]
+        #             #             # print('{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef))
+        #             #             get_test = '{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef)
+        #             #             observation = appreciation_marks((total/ 2))
+        #             #             # print(observation)
+        #             #             current_cal_marks = get_cal_marks.filter(term=term, classroom =students[0].student_class, specialty=students[0].specialty, student=students[0], subject=subject, is_actif=True)
+        #             #             if current_cal_marks:
+        #             #                 for current_mark in current_cal_marks:
+        #             #                     # print(current_mark)
+        #             #                     # print(current_mark.is_actif)  
+        #             #                     current_mark.is_actif = False
+        #             #                     current_mark.modified_by = request.user.username
+        #             #                     current_mark.save()
+                                
+        #             #             mark_subj = TestMoySpecialtySubjClass.objects.create(
+        #             #                 term = term,
+        #             #                 classroom = students[0].student_class,
+        #             #                 specialty = students[0].specialty,
+        #             #                 student = students[0],
+        #             #                 subject = subject,
+        #             #                 test_avg = get_test,
+        #             #                 subj_coef = get_testa_subj[0].coef,
+        #             #                 observation = observation,
+        #             #                 added_by = added_by,
+        #             #             )
+
+
+        #                         # 
+        #                     # 
+        #                 # 
+        #             # 
+        #         messages.success(request, f'OK NO GOOD')
+        #         return redirect("calculate_mark_class")
+        #                 # print('{:0.2f}'.format((total/ 2)* get_testa_subj[0].coef))
+                        
+        #                 # if student_test.subject_id == subject.id:
+                        #     print(f"{student_test.title}------{student_test.value}-----{subject}")
+        #                 #     # print(count)
+        #                 #     count = count + 1
+                        #     print(subject)
+        #                 #     get_testa_subj = Eval.objects.filter(student_id=students[0].id,subject_id = subject.id)
+        #                 #     total = get_testa_subj.aggregate(s=Sum("value"))["s"]
+                        #     print('{:0.2f}'.format((total/ 2)* student_test.coef))
+        #         # count = 0
+        #         # for student_test in obj_tests_class:
+        #             ##NEW
+        #             # count = 0
+        #             # array_for_vals = []
+        #             # for subject in subjects:
+        #             #     if student_test.subject_id == subject.id:
+        #             #         count = count + 1
+                    #         print(student_test.subject_id)
+        #             #         # if student_test.title == "Test3":
+                    #         #     print(student_test.title)
+        #                     # array_for_vals.append([student_test.subject_id, subject.title, student_test.value, students[0].name])
+        #                     # array_for_vals.append(f"{student_test.subject_id}_{subject.title}_{student_test.value}_{students[0].name}")
+        #             # print(array_for_vals)
+        #             # print(array_for_vals[0][1])
+        #             # for array_for_val in array_for_vals:
+        #             #     # print(array_for_val)
+        #             #     for subject in subjects:
+        #             #         if array_for_vals[0][0] == subject.id:
+                    #             print(subject)
+        #             ##OLD
+        #             # if term == "first":
+                    #     print(student_test.title)
+        #             # if term == "second":
+        #             #     # print(student_test.title)
+        #             #     count = 0
+        #             #     get_testa_stud = ""
+        #             #     get_testb_stud = ""
+        #             #     for subject in subjects:
+        #             #         # print(count)
+                            
+        #             #         if student_test.subject_id == subject.id:
+                    #             print(f"{student_test.title}------{student_test.value}-----{subject}")
+        #             #             # print(count)
+        #             #             count = count + 1
+                    #             print(subject)
+        #             #             get_testa_subj = Eval.objects.filter(student_id=students[0].id,subject_id = subject.id)
+        #             #             total = get_testa_subj.aggregate(s=Sum("value"))["s"]
                     #             print('{:0.2f}'.format((total/ 2)* student_test.coef))
-                                # if student_test.title == "Test3":
-                                #     count = count + 1
-                                #     # print(count)
-                                #     get_testa = student_test.value
-                                # if student_test.title == "Test4":
-                                #     count = count + 1
-                                #     # print(count)
-                                #     get_testb = student_test.value
-                                # print(count)
-                                # if count == 2 and (get_testb > 0.0 and get_testa > 0.0):
-                                #     get_test = ((get_testa + get_testb) / 2) * student_test.coef
+        #                         # if student_test.title == "Test3":
+        #                         #     count = count + 1
+        #                         #     # print(count)
+        #                         #     get_testa = student_test.value
+        #                         # if student_test.title == "Test4":
+        #                         #     count = count + 1
+        #                         #     # print(count)
+        #                         #     get_testb = student_test.value
+        #                         # print(count)
+        #                         # if count == 2 and (get_testb > 0.0 and get_testa > 0.0):
+        #                         #     get_test = ((get_testa + get_testb) / 2) * student_test.coef
                                 #     print(f"{get_test}------{students[0]}")
-                            # get_testa_subj = Eval.objects.filter(student_id=students[0].id,subject_id = subject.id, title = "Test3")
-                            # print(get_testa_subj)
-                            # if get_testa_subj:
+        #                     # get_testa_subj = Eval.objects.filter(student_id=students[0].id,subject_id = subject.id, title = "Test3")
+        #                     # print(get_testa_subj)
+        #                     # if get_testa_subj:
                             #     print(get_testa_subj)
-                            #     get_testa = get_testa_subj.value
-                            # if student_test.title == "Test3":
-                            #     get_testa = student_test.value
-                            #     get_testa_stud = student_test.student_id
+        #                     #     get_testa = get_testa_subj.value
+        #                     # if student_test.title == "Test3":
+        #                     #     get_testa = student_test.value
+        #                     #     get_testa_stud = student_test.student_id
                             #     print(student_test.student_id)
-                            # if student_test.title == "Test4":
-                            #     get_testb = student_test.value
-                            #     get_testb_stud = student_test.student_id
-                            # if get_testa_stud == get_testb_stud:
+        #                     # if student_test.title == "Test4":
+        #                     #     get_testb = student_test.value
+        #                     #     get_testb_stud = student_test.student_id
+        #                     # if get_testa_stud == get_testb_stud:
                             #     print("same student")
-                            #     get_test = ((get_testa + get_testb) / 2) * student_test.coef
+        #                     #     get_test = ((get_testa + get_testb) / 2) * student_test.coef
                             #     print(get_test)
-                            # print(subject)
-                            # print(student_test.subject_id)
-                            # print(subject.id)
-                            # if student_test.title == "Test3":
-                            #     get_testa = student_test.value
-                            #     if student_test.subject_id == subject.id:
+        #                     # print(subject)
+        #                     # print(student_test.subject_id)
+        #                     # print(subject.id)
+        #                     # if student_test.title == "Test3":
+        #                     #     get_testa = student_test.value
+        #                     #     if student_test.subject_id == subject.id:
                             #         print("Test3")
                             #         print(get_testa)
-                            #         get_test = ((get_testa + get_testb) / 2) * student_test.coef
+        #                     #         get_test = ((get_testa + get_testb) / 2) * student_test.coef
                             #         print(get_test)
                             #         print(subject)
-                            # if student_test.title == "Test4":
-                            #     get_testb = student_test.value
-                            #     # print("Test4")
-                            #     # print(get_testb)
-                            #     if student_test.subject_id == subject.id:
+        #                     # if student_test.title == "Test4":
+        #                     #     get_testb = student_test.value
+        #                     #     # print("Test4")
+        #                     #     # print(get_testb)
+        #                     #     if student_test.subject_id == subject.id:
                             #         print("Test4")
                             #         print(get_testb)
-                            #         get_test = ((get_testa + get_testb) / 2) * student_test.coef
+        #                     #         get_test = ((get_testa + get_testb) / 2) * student_test.coef
                             #         print(get_test)
                             #         print(subject)
-                            #     # print(get_test)
-                            #     # print(students[0])
-                            #     # print(students[0].student_class)
-                            #     # print(students[0].specialty)
-                            #     observation = appreciation_marks(get_testa)
-                                #
-                                ####
-                                # if get_testb > 0.0 and get_testa > 0.0:
-                                #     get_test = ((get_testa + get_testb) / 2) * student_test.coef
-                                #     # print("info")
+        #                     #     # print(get_test)
+        #                     #     # print(students[0])
+        #                     #     # print(students[0].student_class)
+        #                     #     # print(students[0].specialty)
+        #                     #     observation = appreciation_marks(get_testa)
+        #                         #
+        #                         ####
+        #                         # if get_testb > 0.0 and get_testa > 0.0:
+        #                         #     get_test = ((get_testa + get_testb) / 2) * student_test.coef
+        #                         #     # print("info")
                                 #     print(subject)
-                                #     # print(get_test)
-                                #     # print(students[0])
-                                #     # print(students[0].student_class)
-                                #     # print(students[0].specialty)
-                                #     observation = appreciation_marks(get_testa)
-                                    # print(observation)
+        #                         #     # print(get_test)
+        #                         #     # print(students[0])
+        #                         #     # print(students[0].student_class)
+        #                         #     # print(students[0].specialty)
+        #                         #     observation = appreciation_marks(get_testa)
+        #                             # print(observation)
 
-                                    # current_cal_marks = get_cal_marks.filter(term="second", classroom =students[0].student_class, specialty=students[0].specialty, student=students[0], subject=subject, is_actif=True)
-                                    # if current_cal_marks:
-                                    #     for current_mark in current_cal_marks:
+        #                             # current_cal_marks = get_cal_marks.filter(term="second", classroom =students[0].student_class, specialty=students[0].specialty, student=students[0], subject=subject, is_actif=True)
+        #                             # if current_cal_marks:
+        #                             #     for current_mark in current_cal_marks:
                                     #         print(current_mark)
                                     #         print(current_mark.is_actif)  
-                                    #         current_mark.is_actif = False
-                                    #         current_mark.modified_by = request.user.username
-                                    #         current_mark.save()
+        #                             #         current_mark.is_actif = False
+        #                             #         current_mark.modified_by = request.user.username
+        #                             #         current_mark.save()
                                     
-                                    # mark_subj = TestMoySpecialtySubjClass.objects.create(
-                                    #     term = term,
-                                    #     classroom = students[0].student_class,
-                                    #     specialty = students[0].specialty,
-                                    #     student = students[0],
-                                    #     subject = subject,
-                                    #     test_avg = get_test,
-                                    #     observation = observation,
-                                    #     added_by = added_by,
-                                    # )
-                        # print(count)
+        #                             # mark_subj = TestMoySpecialtySubjClass.objects.create(
+        #                             #     term = term,
+        #                             #     classroom = students[0].student_class,
+        #                             #     specialty = students[0].specialty,
+        #                             #     student = students[0],
+        #                             #     subject = subject,
+        #                             #     test_avg = get_test,
+        #                             #     observation = observation,
+        #                             #     added_by = added_by,
+        #                             # )
+        #                 # print(count)
 
-                        # messages.success(request, 'Subject Marks added Successfully')
-                        # return redirect("calculate_mark_class")
+        #                 # messages.success(request, 'Subject Marks added Successfully')
+        #                 # return redirect("calculate_mark_class")
 
                                 
-                    # if term == "third":
+        #             # if term == "third":
                     #     print(student_test.title)
 
-                    # print(student_test)
+        #             # print(student_test)
                             
                         
-        else:
-            messages.error(request, 'No Student')
-            return redirect('calculate_mark_class')
+        # else:
+        #     messages.error(request, 'No Student')
+        #     return redirect('calculate_mark_class')
         
+
     
 
     return render(request, "eval/call-results-class.html", context=context)
@@ -827,7 +1097,7 @@ def delete_report_card(request, slug):
 @login_required
 def all_classrank(request):
     testmoyspesubclass = TestMoySpecialtySubjClass.objects.all()
-    get_class_rankings = ClassRanking.objects.all()
+    get_class_rankings = ClassRanking.objects.filter(is_actif=True)
     context = {
         'testmoy': testmoyspesubclass,
         'class_rankings':get_class_rankings,
@@ -845,153 +1115,302 @@ def cal_classranking(request):
     students = Student.objects.all()
     #get all class ranking
     get_class_rankxs = ClassRanking.objects.all()
+    current_academic_year = "2024/2025"
+
+
 
 
     if request.method == "POST":
+        # print("in post")
+        total_coef = 0.00
         get_classrooms = request.POST.get('get_classrooms')
+        # print(get_classrooms)
         cur_term = request.POST.get('cur_term')
+        # print(cur_term)
 
         if get_classrooms:
+            # print("in get_classrooms")
             #
             #get all student in the class
-            students_call = Student.objects.get(student_class_id = get_classrooms.id)
+            students_call = Student.objects.filter(student_class_id = get_classrooms)
             if students_call:
-                print("stud")
+                # print("stud")
                 for student in students_call:
                     if cur_term == "first":
-                        print("in first")
-                        get_testa_subj = TestMoySpecialtySubjClass.objects.filter(classroom_id=get_classrooms,student_id=student.id,is_actif = True)
+                        # print("in first")
+                        get_testa_subj = TestMoySpecialtySubjClass.objects.filter(term=cur_term,classroom_id=get_classrooms,student_id=student.id,is_actif = True)
+                        # print(get_testa_subj)
+                        # get total coeff
+                        if get_testa_subj:
+                            # print("in gg")
+                            # print(get_testa_subj)
+                            total_coef = get_testa_subj.aggregate(tot_coeff=Sum('subj_coef'))
+                            total_testavg = get_testa_subj.aggregate(tot_testavg=Sum('test_avg'))
+                            # print("tot coef")
+                            # print(total_coef)
+                            # print(total_coef.get("tot_coeff"))
+                            tt_coeff = total_coef.get("tot_coeff")
+                            # print("tot testavg")
+                            # print(total_testavg)
+                            # print(total_testavg.get("tot_testavg"))
+                            tot_testavg = total_testavg.get("tot_testavg")
+                            student_avg = float('{:0.2f}'.format(tot_testavg  / tt_coeff))
+                            avg_observatn = appreciation_marks(student_avg)
+                            # print(f"{total_coef}-----{total_testavg}---{student_avg}--of specialty:{student.specialty.name}--thus {avg_observatn}")
+                            current_class_rankxs = ClassRanking.objects.filter(term=cur_term, classroom =student.student_class, specialty_id=student.specialty.id, student=student, academic_year=current_academic_year, is_actif=True)
+                            if current_class_rankxs:
+                                for class_rankx in current_class_rankxs:
+                                    # print(class_rankx)
+                                    # print(class_rankx.is_actif)  
+                                    class_rankx.is_actif = False
+                                    class_rankx.modified_by = request.user.username
+                                    class_rankx.save()
+                                    class_ranking = ClassRanking.objects.create(
+                                        term = cur_term,
+                                        classroom = student.student_class,
+                                        specialty = student.specialty,
+                                        total_coeff = tt_coeff,
+                                        total_marks = tot_testavg,
+                                        total_avg = student_avg,
+                                        observation = avg_observatn,
+                                        student = student,
+                                        added_by = request.user.username,
+                                    )
+                            else:
+                                class_ranking = ClassRanking.objects.create(
+                                    term = cur_term,
+                                    classroom = student.student_class,
+                                    specialty = student.specialty,
+                                    total_coeff = tt_coeff,
+                                    total_marks = tot_testavg,
+                                    total_avg = student_avg,
+                                    observation = avg_observatn,
+                                    student = student,
+                                    added_by = request.user.username,
+                                )
+                    if cur_term == "second":
+                        # print("in second")
+                        get_testa_subj = TestMoySpecialtySubjClass.objects.filter(term=cur_term,classroom_id=get_classrooms,student_id=student.id,is_actif = True)
+                        #
+                        if get_testa_subj:
+                            # print("in gg")
+                            # print(get_testa_subj)
+                            total_coef = get_testa_subj.aggregate(tot_coeff=Sum('subj_coef'))
+                            total_testavg = get_testa_subj.aggregate(tot_testavg=Sum('test_avg'))
+                            tt_coeff = total_coef.get("tot_coeff")
+                            tot_testavg = total_testavg.get("tot_testavg")
+                            student_avg = float('{:0.2f}'.format(tot_testavg  / tt_coeff))
+                            avg_observatn = appreciation_marks(student_avg)
+                            # print(f"{total_coef}-----{total_testavg}---{student_avg}--of specialty:{student.specialty.name}--thus {avg_observatn}")
+                            current_class_rankxs = ClassRanking.objects.filter(term=cur_term, classroom =student.student_class, specialty_id=student.specialty.id, student=student, academic_year=current_academic_year, is_actif=True)
+                            if current_class_rankxs:
+                                for class_rankx in current_class_rankxs:
+                                    # print(class_rankx)
+                                    # print(class_rankx.is_actif)  
+                                    class_rankx.is_actif = False
+                                    class_rankx.modified_by = request.user.username
+                                    class_rankx.save()
+                                    class_ranking = ClassRanking.objects.create(
+                                        term = cur_term,
+                                        classroom = student.student_class,
+                                        specialty = student.specialty,
+                                        total_coeff = tt_coeff,
+                                        total_marks = tot_testavg,
+                                        total_avg = student_avg,
+                                        observation = avg_observatn,
+                                        student = student,
+                                        added_by = request.user.username,
+                                    )
+                            else:
+                                class_ranking = ClassRanking.objects.create(
+                                    term = cur_term,
+                                    classroom = student.student_class,
+                                    specialty = student.specialty,
+                                    total_coeff = tt_coeff,
+                                    total_marks = tot_testavg,
+                                    total_avg = student_avg,
+                                    observation = avg_observatn,
+                                    student = student,
+                                    added_by = request.user.username,
+                                )
+                    if cur_term == "third":
+                        # print("in third")
+                        get_testa_subj = TestMoySpecialtySubjClass.objects.filter(term=cur_term,classroom_id=get_classrooms,student_id=student.id,is_actif = True)
+                        #
+                        if get_testa_subj:
+                            # print("in gg")
+                            # print(get_testa_subj)
+                            total_coef = get_testa_subj.aggregate(tot_coeff=Sum('subj_coef'))
+                            total_testavg = get_testa_subj.aggregate(tot_testavg=Sum('test_avg'))
+                            tt_coeff = total_coef.get("tot_coeff")
+                            tot_testavg = total_testavg.get("tot_testavg")
+                            student_avg = float('{:0.2f}'.format(tot_testavg  / tt_coeff))
+                            avg_observatn = appreciation_marks(student_avg)
+                            # print(f"{total_coef}-----{total_testavg}---{student_avg}--of specialty:{student.specialty.name}--thus {avg_observatn}")
+                            current_class_rankxs = ClassRanking.objects.filter(term=cur_term, classroom =student.student_class, specialty_id=student.specialty.id, student=student, academic_year=current_academic_year, is_actif=True)
+                            if current_class_rankxs:
+                                for class_rankx in current_class_rankxs:
+                                    # print(class_rankx)
+                                    # print(class_rankx.is_actif)  
+                                    class_rankx.is_actif = False
+                                    class_rankx.modified_by = request.user.username
+                                    class_rankx.save()
+                                    class_ranking = ClassRanking.objects.create(
+                                        term = cur_term,
+                                        classroom = student.student_class,
+                                        specialty = student.specialty,
+                                        total_coeff = tt_coeff,
+                                        total_marks = tot_testavg,
+                                        total_avg = student_avg,
+                                        observation = avg_observatn,
+                                        student = student,
+                                        added_by = request.user.username,
+                                    )
+                            else:
+                                class_ranking = ClassRanking.objects.create(
+                                    term = cur_term,
+                                    classroom = student.student_class,
+                                    specialty = student.specialty,
+                                    total_coeff = tt_coeff,
+                                    total_marks = tot_testavg,
+                                    total_avg = student_avg,
+                                    observation = avg_observatn,
+                                    student = student,
+                                    added_by = request.user.username,
+                                )
+        messages.success(request, f'Class Ranking Calculated Successfully')
+        return redirect("classranking_class")
 
     
 
-        # for classroom in classrooms:
-        #     #get students
-        #     for student in students:
-        #         if student.student_class.id == classroom.id:
+        # # for classroom in classrooms:
+        # #     #get students
+        # #     for student in students:
+        # #         if student.student_class.id == classroom.id:
         #             print(classroom.class_name)
         #             print(student.specialty.name)
-        #             #subjects marks
-        #             for subject_marks in totalmarks_subject:
-        #                 if subject_marks.is_actif == True:
-        #                     # print(subject_marks.term)
-        #                     #loop through subjects
-        #                     for subject in subjects:
-        #                         if subject_marks.subject_id == subject.id:
+        # #             #subjects marks
+        # #             for subject_marks in totalmarks_subject:
+        # #                 if subject_marks.is_actif == True:
+        # #                     # print(subject_marks.term)
+        # #                     #loop through subjects
+        # #                     for subject in subjects:
+        # #                         if subject_marks.subject_id == subject.id:
         #                             print(subject.title)
 
-        # count = 0
+        # # count = 0
             
-        if students:
-            print("in in")
-            # loop thro students
-            for student in students:
-                get_coef = 0.0
-                for classroom in classrooms:
-                    # print(classroom)
+        # if students:
+            # print("in in")
+        #     # loop thro students
+        #     for student in students:
+        #         get_coef = 0.0
+        #         for classroom in classrooms:
+        #             # print(classroom)
 
-                    #loop through subjects
-                    # for subject in subjects:
-                        # print(f"{student.name}--{subject.title}--{subject_marks.specialty}--{subject_marks.test_avg}--{subject.coef}")
-                        #
-                    # get_coef = subject.coef
-                    # print(f"{student.name}--")
-                    get_testa_subj = TestMoySpecialtySubjClass.objects.filter(classroom_id=classroom.id,student_id=student.id,is_actif = True)
-                    # print(f"{get_testa_subj}--{get_testa_subj}")
-                    # for get_tt in get_testa_subj:
+        #             #loop through subjects
+        #             # for subject in subjects:
+        #                 # print(f"{student.name}--{subject.title}--{subject_marks.specialty}--{subject_marks.test_avg}--{subject.coef}")
+        #                 #
+        #             # get_coef = subject.coef
+        #             # print(f"{student.name}--")
+        #             get_testa_subj = TestMoySpecialtySubjClass.objects.filter(classroom_id=classroom.id,student_id=student.id,is_actif = True)
+        #             # print(f"{get_testa_subj}--{get_testa_subj}")
+        #             # for get_tt in get_testa_subj:
                     #     print(f"{get_tt.subject.title}--{get_tt.subj_coef}")
-                    print("get_testa_subj")
-                    print(get_testa_subj)
-                    if get_testa_subj:
-                        print("get_testa_subj")
-                        print(get_testa_subj)
-                        #total marks
-                        # total_test = get_testa_subj.aggregate(s=Sum("test_avg"))["s"]
-                        # # print(total_test)
-                        # #total coef
-                        # total_coef = get_testa_subj.aggregate(s=Sum("subj_coef"))["s"]
-                        # # print(total_coef)
-                        # # print(get_testa_subj[0].specialty.name)
-                        # # print(get_testa_subj[0].term)
-                        # # print(get_testa_subj[0].classroom.class_name)
-                        # total_moy = '{:0.2f}'.format(total_test / total_coef) 
-                        # # print(total_moy)
-                        # print(student.name)
-                        # current_class_rankxs = get_class_rankxs.filter(term=get_testa_subj[0].term, classroom =student.student_class, specialty=get_testa_subj[0].specialty, student=student, is_actif=True)
-                        # if current_class_rankxs:
-                        #     for class_rankx in current_class_rankxs:
+                    # print("get_testa_subj")
+                    # print(get_testa_subj)
+        #             if get_testa_subj:
+                        # print("get_testa_subj")
+                        # print(get_testa_subj)
+        #                 #total marks
+        #                 # total_test = get_testa_subj.aggregate(s=Sum("test_avg"))["s"]
+        #                 # # print(total_test)
+        #                 # #total coef
+        #                 # total_coef = get_testa_subj.aggregate(s=Sum("subj_coef"))["s"]
+        #                 # # print(total_coef)
+        #                 # # print(get_testa_subj[0].specialty.name)
+        #                 # # print(get_testa_subj[0].term)
+        #                 # # print(get_testa_subj[0].classroom.class_name)
+        #                 # total_moy = '{:0.2f}'.format(total_test / total_coef) 
+        #                 # # print(total_moy)
+        #                 # print(student.name)
+        #                 # current_class_rankxs = get_class_rankxs.filter(term=get_testa_subj[0].term, classroom =student.student_class, specialty=get_testa_subj[0].specialty, student=student, is_actif=True)
+        #                 # if current_class_rankxs:
+        #                 #     for class_rankx in current_class_rankxs:
                         #         print(class_rankx)
                         #         print(class_rankx.is_actif)  
-                        #         class_rankx.is_actif = False
-                        #         class_rankx.modified_by = request.user.username
-                        #         class_rankx.save()
+        #                 #         class_rankx.is_actif = False
+        #                 #         class_rankx.modified_by = request.user.username
+        #                 #         class_rankx.save()
                         
-                        # class_ranking = ClassRanking.objects.create(
-                        #     term = get_testa_subj[0].term,
-                        #     classroom = student.student_class,
-                        #     specialty = get_testa_subj[0].specialty,
-                        #     total_coeff = total_coef,
-                        #     total_marks = total_test,
-                        #     total_avg = total_moy,
-                        #     student = student,
-                        #     added_by = request.user.username,
-                        # )
+        #                 # class_ranking = ClassRanking.objects.create(
+        #                 #     term = get_testa_subj[0].term,
+        #                 #     classroom = student.student_class,
+        #                 #     specialty = get_testa_subj[0].specialty,
+        #                 #     total_coeff = total_coef,
+        #                 #     total_marks = total_test,
+        #                 #     total_avg = total_moy,
+        #                 #     student = student,
+        #                 #     added_by = request.user.username,
+        #                 # )
                 
 
 
-        # for subject_marks in totalmarks_subject:
-        #     if subject_marks.is_actif == True:
-        #         # print(subject_marks.term)
-        #         #array of student and coef
-        #         arr_stud_coef = []
-        #         # loop thro students
-        #         for student in students:
-        #             get_coef = 0.0
-        #             if student.id == subject_marks.student_id:
+        # # for subject_marks in totalmarks_subject:
+        # #     if subject_marks.is_actif == True:
+        # #         # print(subject_marks.term)
+        # #         #array of student and coef
+        # #         arr_stud_coef = []
+        # #         # loop thro students
+        # #         for student in students:
+        # #             get_coef = 0.0
+        # #             if student.id == subject_marks.student_id:
 
-        #                 #loop through subjects
-        #                 for subject in subjects:
-        #                     if subject_marks.subject_id == subject.id:
+        # #                 #loop through subjects
+        # #                 for subject in subjects:
+        # #                     if subject_marks.subject_id == subject.id:
         #                         print(f"{student.name}--{subject.title}--{subject_marks.specialty}--{subject_marks.test_avg}--{subject.coef}")
-        #                         #
-        #                         get_coef = subject.coef
-                        # print(get_coef)
+        # #                         #
+        # #                         get_coef = subject.coef
+        #                 # print(get_coef)
         
-        #NB
-        # Of course you can do it in one SQL query. Generating this query using django ORM is also easily achievable.
-        # top_scores = (myModel.objects
-        #                     .order_by('-score')
-        #                     .values_list('score', flat=True)
-        #                     .distinct())
-        # top_records = (myModel.objects
-        #                     .order_by('-score')
-        #                     .filter(score__in=top_scores[:10]))
+        # #NB
+        # # Of course you can do it in one SQL query. Generating this query using django ORM is also easily achievable.
+        # # top_scores = (myModel.objects
+        # #                     .order_by('-score')
+        # #                     .values_list('score', flat=True)
+        # #                     .distinct())
+        # # top_records = (myModel.objects
+        # #                     .order_by('-score')
+        # #                     .filter(score__in=top_scores[:10]))
 
 
 
-        #- before column name mean "descending order", while without - mean "ascending".
-        #order be decending order
-        get_class_rankings = ClassRanking.objects.filter(is_actif=True).order_by('-total_avg')
-        # ranking(get_class_rankings)
-        # rankings = ClassRanking.objects.filter(is_actif=True).annotate(
-        #         rank=Window(
-        #             expression=Rank(),
-        #             order_by=F('total_avg').desc()
-        #         ),
-        #     )
-        # print(rankings)
-        # rank = 1
-        # previous = None
-        # entries = list(get_class_rankings)
-        # previous = entries[0]
-        # previous.rank = 1
-        # for i, entry in enumerate(entries[1:]):
-        #     if entry.total_avg != previous.total_avg:
-        #         rank = i + 2
-        #         entry.rank = str(rank)
-        #     else:
-        #         entry.rank = "%s=" % rank
-        #         previous.rank = entry.rank
-        #     previous = entry
+        # #- before column name mean "descending order", while without - mean "ascending".
+        # #order be decending order
+        # get_class_rankings = ClassRanking.objects.filter(is_actif=True).order_by('-total_avg')
+        # # ranking(get_class_rankings)
+        # # rankings = ClassRanking.objects.filter(is_actif=True).annotate(
+        # #         rank=Window(
+        # #             expression=Rank(),
+        # #             order_by=F('total_avg').desc()
+        # #         ),
+        # #     )
+        # # print(rankings)
+        # # rank = 1
+        # # previous = None
+        # # entries = list(get_class_rankings)
+        # # previous = entries[0]
+        # # previous.rank = 1
+        # # for i, entry in enumerate(entries[1:]):
+        # #     if entry.total_avg != previous.total_avg:
+        # #         rank = i + 2
+        # #         entry.rank = str(rank)
+        # #     else:
+        # #         entry.rank = "%s=" % rank
+        # #         previous.rank = entry.rank
+        # #     previous = entry
         #     print(rank)
     
                     
@@ -999,6 +1418,199 @@ def cal_classranking(request):
         'classrooms':classrooms,
     }
     return render(request, "eval/add_classrankx.html", context=context)
+
+
+
+@login_required
+def rankx_all(request):
+    # print("inn")
+    rankings = SchoolClasRanking.objects.filter(is_actif=True)
+    context = {
+        'rankings':rankings,
+    }
+    return render(request, "eval/all_rankx.html", context=context)
+
+
+
+
+@login_required
+def rankx_add(request):
+    # print("inn")
+    rankings = SchoolClasRanking.objects.all()
+    classrooms = ClassRoom.objects.all()
+    current_academic_year = "2024/2025"
+    context = {
+        'rankings':rankings,
+        'classrooms':classrooms,
+    }
+    # .objects.values('parameter_id').annotate(max_time_stamp=Max('time_stamp'))
+    if request.method == "POST":
+        # print('in post')
+        term = request.POST.get('cur_term')
+        get_classrooms = request.POST.get('get_classrooms')
+        # get all specialties
+        all_specialties = Specialty.objects.all()
+        if get_classrooms:
+            selected_class = ClassRoom.objects.get(id=get_classrooms)
+            # print(selected_class)
+            if term:
+                if term == "first":
+                    # print("first")
+                    max_spec = ClassRanking.objects.aggregate(Max('total_avg'))
+                    # print(max_spec)
+                    # loop thro specialties
+                    for specialt in all_specialties:
+                        # print("get_classrooms")
+                        # print(get_classrooms)
+                        # print("specialt")
+                        # print(specialt)
+                        avg_spec = ClassRanking.objects.filter(classroom_id=get_classrooms,specialty=specialt, is_actif=True, academic_year=current_academic_year).order_by('-total_avg')
+                        # print("avg_spec")
+                        # print(avg_spec)
+                        if avg_spec:
+                            forcounter = 0
+                            for avg_rank in avg_spec:
+                                forcounter = forcounter + 1
+                                # if forcounter == 1:
+                                    # print(f"first is {avg_rank}")
+                                # if forcounter == 2:
+                                    # print(f"second is {avg_rank}")
+                                # check if spec class rank exits already
+                                chec_rank = SchoolClasRanking.objects.filter(academic_year=current_academic_year,spec_rank=forcounter,classroom=selected_class,specialty=specialt, is_actif=True).first()
+                                if chec_rank:
+                                    
+                                    # print("record exits")
+                                    chec_rank.is_actif = False
+                                    chec_rank.modified_by = request.user.username
+                                    chec_rank.save()
+                                    spec_class_rank = SchoolClasRanking.objects.create(
+                                        term = term,
+                                        student_avg = avg_rank.total_avg,
+                                        observation = avg_rank.observation,
+                                        academic_year=current_academic_year,
+                                        spec_rank=forcounter,
+                                        added_by = request.user.username,
+                                        classroom=selected_class,
+                                        specialty=specialt,
+                                        student = avg_rank.student,
+                                    )
+                                else:
+                                    # print("record don't exit")
+                                # spec_class_rank =
+                                    spec_class_rank = SchoolClasRanking.objects.create(
+                                        term = term,
+                                        student_avg = avg_rank.total_avg,
+                                        observation = avg_rank.observation,
+                                        academic_year=current_academic_year,
+                                        spec_rank=forcounter,
+                                        added_by = request.user.username,
+                                        classroom=selected_class,
+                                        specialty=specialt,
+                                        student = avg_rank.student,
+                                    )
+
+                                    
+                if term == "second":
+                    # print("second")
+                    max_spec = ClassRanking.objects.aggregate(Max('total_avg'))
+                    # print(max_spec)
+                    # loop thro specialties
+                    for specialt in all_specialties:
+                        avg_spec = ClassRanking.objects.filter(classroom_id=get_classrooms,specialty=specialt, is_actif=True, academic_year=current_academic_year).order_by('-total_avg')
+                        # 
+                        if avg_spec:
+                            forcounter = 0
+                            for avg_rank in avg_spec:
+                                forcounter = forcounter + 1
+                                # check if spec class rank exits already
+                                chec_rank = SchoolClasRanking.objects.filter(academic_year=current_academic_year,spec_rank=forcounter,classroom=selected_class,specialty=specialt, is_actif=True).first()
+                                if chec_rank:
+                                    # print("record exits")
+                                    chec_rank.is_actif = False
+                                    chec_rank.modified_by = request.user.username
+                                    chec_rank.save()
+                                    spec_class_rank = SchoolClasRanking.objects.create(
+                                        term = term,
+                                        student_avg = avg_rank.total_avg,
+                                        observation = avg_rank.observation,
+                                        academic_year=current_academic_year,
+                                        spec_rank=forcounter,
+                                        added_by = request.user.username,
+                                        classroom=selected_class,
+                                        specialty=specialt,
+                                        student = avg_rank.student,
+                                    )
+                                else:
+                                    # print("record don't exit")
+                                    # spec_class_rank =
+                                    spec_class_rank = SchoolClasRanking.objects.create(
+                                        term = term,
+                                        student_avg = avg_rank.total_avg,
+                                        observation = avg_rank.observation,
+                                        academic_year=current_academic_year,
+                                        spec_rank=forcounter,
+                                        added_by = request.user.username,
+                                        classroom=selected_class,
+                                        specialty=specialt,
+                                        student = avg_rank.student,
+                                    )
+                if term == "third":
+                    # print("third")
+                    # max_spec = ClassRanking.objects.aggregate(Max('total_avg'))
+                    # print(max_spec)
+                    # loop thro specialties
+                    for specialt in all_specialties:
+                        avg_spec = ClassRanking.objects.filter(classroom_id=get_classrooms,specialty=specialt, is_actif=True, academic_year=current_academic_year).order_by('-total_avg')
+                        # 
+                        if avg_spec:
+                            forcounter = 0
+                            for avg_rank in avg_spec:
+                                forcounter = forcounter + 1
+                                # check if spec class rank exits already
+                                chec_rank = SchoolClasRanking.objects.filter(academic_year=current_academic_year,spec_rank=forcounter,classroom=selected_class,specialty=specialt, is_actif=True).first()
+                                if chec_rank:
+                                    # print("record exits")
+                                    chec_rank.is_actif = False
+                                    chec_rank.modified_by = request.user.username
+                                    chec_rank.save()
+                                    spec_class_rank = SchoolClasRanking.objects.create(
+                                        term = term,
+                                        student_avg = avg_rank.total_avg,
+                                        observation = avg_rank.observation,
+                                        academic_year=current_academic_year,
+                                        spec_rank=forcounter,
+                                        added_by = request.user.username,
+                                        classroom=selected_class,
+                                        specialty=specialt,
+                                        student = avg_rank.student,
+                                    )
+                                else:
+                                    # print("record don't exit")
+                                    # spec_class_rank =
+                                    spec_class_rank = SchoolClasRanking.objects.create(
+                                        term = term,
+                                        student_avg = avg_rank.total_avg,
+                                        observation = avg_rank.observation,
+                                        academic_year=current_academic_year,
+                                        spec_rank=forcounter,
+                                        added_by = request.user.username,
+                                        classroom=selected_class,
+                                        specialty=specialt,
+                                        student = avg_rank.student,
+                                    )
+        #
+                messages.success(request, f'Ranking DONE per Specialty Class')
+                return redirect("all_ranking")
+        
+            messages.error(request, f'Term Not found')
+            return redirect("add_ranking")
+            
+        messages.error(request, f'Classroom Not found')
+        return redirect("add_ranking")
+
+    return render(request, "eval/add_rankx.html", context=context)
+
+
 
 
 @login_required
@@ -1064,7 +1676,7 @@ def create_report_card(request):
         try:
 
             if obj_eval_class is None:
-                print("not results")
+                # print("not results")
                 messages.error("No Test Results In Record")
                 return redirect('report_cards')
             else:
@@ -1084,7 +1696,7 @@ def create_report_card(request):
                             # print(tests_subj)
                             # for test_subj in tests_subj:
                             #     if term == "second":
-                            #         print(term)
+                                    # print(term)
 
                             testa_value = 0.0
                             testb_value = 0.0
@@ -1092,7 +1704,7 @@ def create_report_card(request):
                             testa_coef = 0.0
                             if(term == 'second'):
                                 obj_eval_first = Eval.objects.filter(title='Test3',student_id=student, academic_year=academic_yr).first()
-                                print(obj_eval_first)
+                                # print(obj_eval_first)
                                 # print(f'{subject}___{evals_record.coef}')
                                 testa = obj_eval_class.filter(title='Test3',subject_id=subject.id)
                                 # testb = obj_eval_class.filter(title='Test4',subject_id=subject.id)
@@ -1106,12 +1718,12 @@ def create_report_card(request):
                                 # print(evals_record.title)
 
                                 if evals_record.title == 'Test3':
-                                    print(f'{subject}___{evals_record}___{evals_record.value}___{evals_record.subject_id}')
+                                    # print(f'{subject}___{evals_record}___{evals_record.value}___{evals_record.subject_id}')
                                     testa_value =  decimal.Decimal(testa_value) + evals_record.value
                                     testa_coef = decimal.Decimal(testa_coef) + evals_record.coef
 
                                 if evals_record.title == 'Test4':
-                                    print(f'{subject}___{evals_record}___{evals_record.value}___{evals_record.subject_id}')
+                                    # print(f'{subject}___{evals_record}___{evals_record.value}___{evals_record.subject_id}')
                                     testb_value =  decimal.Decimal(testb_value) + evals_record.value
                                     testb_coef = decimal.Decimal(testb_coef) +  evals_record.coef
                                 
@@ -1129,7 +1741,7 @@ def create_report_card(request):
                             total_eval = decimal.Decimal(testa_value) + decimal.Decimal(testb_value)
                             # moyentt = total_eval / 2
                             # print(moyentt)
-                            print(total_eval)
+                            # print(total_eval)
 
 
                                 # print(testa)
@@ -1140,7 +1752,7 @@ def create_report_card(request):
                                 #             testa_value = test1.value
                                 #             testa_coef = test1.coef
                                 #             # print(subject.title)
-                                #             print(f'{testa}_______{testa_value}_____{testa_coef}')
+                                            # print(f'{testa}_______{testa_value}_____{testa_coef}')
                                 # print(student)
 
                                 # if testb:
@@ -1150,7 +1762,7 @@ def create_report_card(request):
                                 #             testb_coef = test2.coef
                                 #             # print(subject.title)
                                 # if(subject.category == 'General'):
-                                #     print(f"General {subject.coef} {subject.title}")
+                                    # print(f"General {subject.coef} {subject.title}")
                                 #     total_gen_coeff = total_gen_coeff + decimal.Decimal(testb_coef)
                                 #     subj_cat.append(subject.category)
                                 #     # total_gen_tot = total_gen_tot + decimal.Decimal(testb_coef)
@@ -1215,22 +1827,22 @@ def create_report_card(request):
             return redirect('add_report_cards')
 
         # if results is None:
-        #     print("not results")
-        #     print(results)
+            # print("not results")
+            # print(results)
         # else:
         #     for subjj_cl in results:
-        #         print(subjj_cl.id)
-        #         print(subjj_cl.coef)
+                # print(subjj_cl.id)
+                # print(subjj_cl.coef)
         #         if subjj_cl.coef is None:
-        #             print('no subjj coef')
+                    # print('no subjj coef')
         #         else:
         #             if(subjj_cl.category == 'General'):
-        #                 print(f"General {subjj_cl.coef}")
+                        # print(f"General {subjj_cl.coef}")
         #                 total_gen_coeff = total_gen_coeff + decimal.Decimal(subjj_cl.coef)
         #                 # total_gen_tot = total_gen_tot + decimal.Decimal(subjj_cl.coef)
         #             #)
         #             if(subjj_cl.category == 'Professional'):
-        #                 print(f"Professional {subjj_cl.coef}")
+                        # print(f"Professional {subjj_cl.coef}")
         #                 total_prof_coeff = total_prof_coeff + decimal.Decimal(subjj_cl.coef)
         #             #
         #             if(term == 'first'):
@@ -1238,14 +1850,14 @@ def create_report_card(request):
         #                 testb = obj_eval_class.filter(title='Test2',subject_id=subjj_cl.id)
         #                 # print('first')
         #                 if not testa:
-        #                     print("no vale a")
+                            # print("no vale a")
         #                     testa_value = 0.0
         #                 else:
         #                     for test1 in testa:
         #                         if(test1.subject_id == subjj_cl.id):
         #                             testa_value = test1.value
         #                 if not testb:
-        #                     print("no vale b")
+                            # print("no vale b")
         #                     testb_value = 0.0
         #                 else:
         #                     for test2 in testb:
@@ -1261,7 +1873,7 @@ def create_report_card(request):
         #                 moy_tot = moyentt  * int(subjj_cl.coef)
         #                 total_tot = total_tot + decimal.Decimal(moy_tot)
         #                 subj_moy_tot = f"{subjj_cl.title}_{subjj_cl.id}_{moyentt}_{moy_tot}"
-        #                 print(subj_moy_tot)
+                        # print(subj_moy_tot)
         #                 # print(testb)
         #                 if(subjj_cl.category == 'General'):
         #                     total_gen_tot = total_gen_tot + total_tot
@@ -1272,7 +1884,7 @@ def create_report_card(request):
         #                 # print('test3')
         #                 # print(testa.filter(subject_id=subjj_cl.id))
         #                 if not testa:
-        #                     print("no vale a")
+                            # print("no vale a")
         #                     testa_value = 0.0
         #                 else:
         #                     for test1 in testa:
@@ -1283,7 +1895,7 @@ def create_report_card(request):
         #                             # print(test1.value)
         #                             testa_value = test1.value
         #                 if not testb:
-        #                     print("no vale b")
+                            # print("no vale b")
         #                     testb_value = 0.0
         #                 else:
         #                     for test2 in testb:
@@ -1301,7 +1913,7 @@ def create_report_card(request):
         #                 # print(moyentt)
 
         #                 subj_moy = f"{subjj_cl.id}_{moyentt}_{subjj_cl.title}"
-        #                 print(subj_moy)
+                        # print(subj_moy)
 
         #                 # print("coef")
         #                 # print(subjj_cl.coef)
@@ -1317,7 +1929,7 @@ def create_report_card(request):
         #                 # print(total_tot)
         #                 total_tot = total_tot + decimal.Decimal(moy_tot)
         #                 subj_moy_tot = f"{subjj_cl.title}_{subjj_cl.id}_{moyentt}_{moy_tot}"
-        #                 print(subj_moy_tot)
+                        # print(subj_moy_tot)
 
         #                 # print('test4')
         #                 # print(testb)
@@ -1329,14 +1941,14 @@ def create_report_card(request):
         #                 testb = obj_eval_class.filter(title='Test6')
         #                 # print('first')
         #                 if not testa:
-        #                     print("no vale a")
+                            # print("no vale a")
         #                     testa_value = 0.0
         #                 else:
         #                     for test1 in testa:
         #                         if(test1.subject_id == subjj_cl.id):
         #                             testa_value = test1.value
         #                 if not testb:
-        #                     print("no vale b")
+                            # print("no vale b")
         #                     testb_value = 0.0
         #                 else:
         #                     for test2 in testb:
@@ -1352,20 +1964,20 @@ def create_report_card(request):
         #                 moy_tot = moyentt  * int(subjj_cl.coef)
         #                 total_tot = total_tot + decimal.Decimal(moy_tot)
         #                 subj_moy_tot = f"{subjj_cl.title}_{subjj_cl.id}_{moyentt}_{moy_tot}"
-        #                 print(subj_moy_tot)
+                        # print(subj_moy_tot)
         #                 # print(testb)
         #                 if(subjj_cl.category == 'General'):
         #                     total_gen_tot = total_gen_tot + total_tot
         #     #
 
         #     #total
-        #     print(total_coeff)
-        #     print(total_tot)
-        #     print("general")
-        #     print(total_gen_coeff)
-        #     print(f"General tot: {total_gen_tot}")
-        #     print("prof")
-        #     print(total_prof_coeff)
+            # print(total_coeff)
+            # print(total_tot)
+            # print("general")
+            # print(total_gen_coeff)
+            # print(f"General tot: {total_gen_tot}")
+            # print("prof")
+            # print(total_prof_coeff)
         
 
         #     report_card = ReportCard.objects.create(
@@ -1394,6 +2006,58 @@ def create_report_card(request):
 
 
 
+# fxn to get ranks
+def getstudent_rank(student):
+    rank = SchoolClasRanking.objects.filter(student=student, is_actif=True).first()
+    # print(rank)
+    return rank.spec_rank
+
+
+# get class avg
+def get_classavg(class_room, sch_year="2024/2025"):
+    # print(class_room)
+    # get max avg of class
+    max_spec = ClassRanking.objects.filter(classroom = class_room, academic_year=sch_year, is_actif=True).aggregate(Max('total_avg'))
+    # print(max_spec)
+    return max_spec
+
+
+#total number of student per specialty per class
+def count_stud_classspec(classroom_info, specialty_info):
+    # print(f"classroom_info is {classroom_info}, specialty_info is {specialty_info}")
+    count_stud =  Student.objects.filter(student_class=classroom_info, specialty=specialty_info, is_actif=True).count()
+    # print(count_stud)
+    return count_stud
+
+
+# get diff term avg
+def get_termavg(student, term, year="2024/2025"):
+    # print(f"{student}---{term}---{year}")
+    term_avg = ClassRanking.objects.filter(student = student, term=term, academic_year=year, is_actif=True).aggregate(Max('total_avg'))
+    # print(term_avg)
+    return term_avg
+
+# get subject passed per term
+def get_subj_passedterm(student, term, year="2024/2025"):
+    # print(f"subject passed")
+    count_subjpass = 0
+    title = "first"
+    if term == "first":
+        title = "Test1"
+    if term == "second":
+        title = "Test3"
+    if term == "third":
+        title = "Test5"
+
+    call_subjpass = Eval.objects.filter(student = student, title=title, academic_year=year, is_actif=True)
+    if call_subjpass:
+        for subjpass in call_subjpass:
+            if ((subjpass.value + subjpass.sec_value) / 2) >= 10:
+                count_subjpass = count_subjpass + 1
+    # print(count_subjpass)
+    return count_subjpass
+
+
 @login_required
 def addReportCard(request):
     student = Student.objects.all()
@@ -1407,8 +2071,8 @@ def addReportCard(request):
         student = request.POST.get('student')
         term = request.POST.get('term')
         academic_yr = request.POST.get('academic_year')
-        print("academic_yr")
-        print(academic_yr)
+        # print("academic_yr")
+        # print(academic_yr)
         resumptn = request.POST.get('resumptn_date')
         added_by = request.user.username
 
@@ -1448,27 +2112,29 @@ def addReportCard(request):
             # print('student')
             if student == "all":
                 obj_student_class = Student.objects.all()
+                messages.error(request, 'Please select a student')
+                return redirect('report_cards')
             else:
                 #get student class
                 obj_student_class = Student.objects.get(id=student)
                 # count_obj_student_class = Student.objects.get(id=student).count()
-                print(obj_student_class)
+                # print(obj_student_class)
                 # print(count_obj_student_class)
 
                 classroomId = obj_student_class.student_class_id
                 classroom =  ClassRoom.objects.get(id=classroomId)
             
-                print('student')
+                # print('student')
             # obj_student_class = Student.objects.get(id=student)
             # print(obj_student_class.specialty)
 
             # classroomId = obj_student_class.student_class_id
             # classroom =  ClassRoom.objects.get(id=classroomId)
-                # subjects = Subject.objects.filter(classroom=classroomId)
-                subjects = Subject.objects.all()
-                print(subjects)
+                subjects = Subject.objects.filter(classroom=classroomId)
+                # subjects = Subject.objects.all()
+                # print(subjects)
                 obj_eval_class = Eval.objects.filter(student_id=student, academic_year=academic_yr)
-                obj_eval_cl_type = Eval.objects.filter(student_id=student, academic_year=academic_yr)
+                obj_eval_cl_type = Eval.objects.filter(student_id=student, academic_year=academic_yr, is_actif=True)
             # print(obj_eval_class)
             # pass
         except:
@@ -1480,309 +2146,1253 @@ def addReportCard(request):
 
         #Calculate the Avg Total
         if obj_student_class:
-            print("stud exits")
-            if subjects.count() > 0 :
+            # print("stud exits")
+            # for student in  obj_student_class:
                 #
-                print("subjects")
-                print(subjects)
-                for subject in subjects:
-                    print(subject)
-                    if subject.coef is None:
-                        # print('no subjj coef')
-                        messages.error(request, 'No Coef found')
-                        return redirect('report_cards')
-                    else:
-                        if obj_eval_cl_type:
-                            print("obj_eval_cl_type:")
-                            for evals in obj_eval_cl_type:
-                                if evals.subject_id == subject.id:
-                                    if(term == 'first'):
-                                        print("term")
-                                        print(term)
-                                        print(evals)
-                                        # testa = obj_eval_class.filter(title='Test1',subject_id=subject.id, student=student)
-                                        # testb = obj_eval_class.filter(title='Test2',subject_id=subject.id, student=student)
-                                        test_reslt = evals
-                                        print("test_reslt")
-                                        print(test_reslt)
-                                        # print('first')
-                                        if not test_reslt:
-                                            # print("no vale a")
-                                            testa_value = 0.0
-                                            messages.error(request, 'No Test Results Found')
-                                            return redirect('report_cards')
-                                        else:
-                                            print("in")
-                                            print(print(test_reslt))
-                                            if subject.category == 'General':
-                                                # testa_value = testa.value
-                                                testa_value = test_reslt.value
-                                                testb_value = test_reslt.sec_value
-                                                    #
-                                        
-                                                total_eval = testa_value + testb_value
-                                                moyentt = total_eval / 2
-                                                # print(moyentt)
+                # get reportcard details
+            if obj_eval_cl_type:
+                student = obj_student_class 
+                # print(f"obj_eval_cl_type ---{obj_eval_cl_type}")
+                if(term == 'first'):
+                    # print(f"term---{term}")
+                    firstterm_reslts = Eval.objects.filter(student_id=student.id, academic_year= academic_yr, title="Test1", is_actif =True)
+                    if firstterm_reslts:
+                        for subject_tests in firstterm_reslts:
+                            # print(f"subject_tests --- {subject_tests}")
+                            moyentt = (subject_tests.value + subject_tests.sec_value) / 2
+                            moy_tot = round((moyentt * subject_tests.coef), ndigits=2)
+                            total_coeff = total_coeff + decimal.Decimal(subject_tests.coef)
+                            total_tot = total_tot + decimal.Decimal(moy_tot)
+                            if subject_tests.subject.category == "General":
+                                # print(subject_tests.subject.category)
+                                total_gen_tot = total_gen_tot + total_tot
+                                subject_gen_tot = subject_gen_tot + float(moy_tot)
+                                total_gen_coeff = total_gen_coeff + decimal.Decimal(subject_tests.coef)
+                            if subject_tests.subject.category == "Professional":
+                                # print(subject_tests.subject.category)
+                                total_prof_tot = total_prof_tot + moy_tot
+                                subject_prof_tot = subject_prof_tot + float(moy_tot)
+                                total_prof_coeff = total_prof_coeff + decimal.Decimal(subject_tests.coef)
+                            
+                            # 
+                            subject_value_cat.append([subject_tests.subject.title,subject_tests.value,subject_tests.sec_value, moyentt, subject_tests.coef, moy_tot, subject_tests.observation, subject_tests.subject.category, subject_tests.teacher])
+                
+                if(term == 'second'):
+                    # print(f"term---{term}")
+                    secondterm_reslts = Eval.objects.filter(student_id=student.id, academic_year= academic_yr, title="Test3", is_actif =True)
+                    if secondterm_reslts:
+                        for subject_tests in secondterm_reslts:
+                            # print(f"subject_tests --- {subject_tests}")
+                            moyentt = (subject_tests.value + subject_tests.sec_value) / 2
+                            moy_tot = round((moyentt * subject_tests.coef), ndigits=2)
+                            total_coeff = total_coeff + decimal.Decimal(subject_tests.coef)
+                            total_tot = total_tot + decimal.Decimal(moy_tot)
+                            if subject_tests.subject.category == "General":
+                                # print(subject_tests.subject.category)
+                                total_gen_tot = total_gen_tot + total_tot
+                                subject_gen_tot = subject_gen_tot + float(moy_tot)
+                                total_gen_coeff = total_gen_coeff + decimal.Decimal(subject_tests.coef)
+                            if subject_tests.subject.category == "Professional":
+                                # print(subject_tests.subject.category)
+                                total_prof_tot = total_prof_tot + moy_tot
+                                subject_prof_tot = subject_prof_tot + float(moy_tot)
+                                total_prof_coeff = total_prof_coeff + decimal.Decimal(subject_tests.coef)
+                            
+                            # 
+                            subject_value_cat.append([subject_tests.subject.title,subject_tests.value,subject_tests.sec_value, moyentt, subject_tests.coef, moy_tot, subject_tests.observation, subject_tests.subject.category, subject_tests.teacher])
+                
+                if(term == 'third'):
+                    # print(f"term---{term}")
+                    thirdterm_reslts = Eval.objects.filter(student_id=student.id, academic_year= academic_yr, title="Test5", is_actif =True)
+                    if thirdterm_reslts:
+                        for subject_tests in thirdterm_reslts:
+                            # print(f"subject_tests --- {subject_tests}")
+                            moyentt = (subject_tests.value + subject_tests.sec_value) / 2
+                            moy_tot = round((moyentt * subject_tests.coef), ndigits=2)
+                            total_coeff = total_coeff + decimal.Decimal(subject_tests.coef)
+                            total_tot = total_tot + decimal.Decimal(moy_tot)
+                            if subject_tests.subject.category == "General":
+                                # print(subject_tests.subject.category)
+                                total_gen_tot = total_gen_tot + total_tot
+                                subject_gen_tot = subject_gen_tot + float(moy_tot)
+                                total_gen_coeff = total_gen_coeff + decimal.Decimal(subject_tests.coef)
+                            if subject_tests.subject.category == "Professional":
+                                # print(subject_tests.subject.category)
+                                total_prof_tot = total_prof_tot + moy_tot
+                                subject_prof_tot = subject_prof_tot + float(moy_tot)
+                                total_prof_coeff = total_prof_coeff + decimal.Decimal(subject_tests.coef)
+                            
+                            # 
+                            subject_value_cat.append([subject_tests.subject.title,subject_tests.value,subject_tests.sec_value, moyentt, subject_tests.coef, moy_tot, subject_tests.observation, subject_tests.subject.category, subject_tests.teacher])
+                
+            
+            # 
+            # 
+            total_coeff = decimal.Decimal(total_gen_coeff) + decimal.Decimal(total_prof_coeff)
+                                            
+                                            
+            gen_sub_moy = decimal.Decimal(subject_gen_tot ) / decimal.Decimal(total_gen_coeff)
+            prof_sub_moy = decimal.Decimal(subject_prof_tot ) / decimal.Decimal(total_prof_coeff)
+            prof_gen_tot_moy = decimal.Decimal(total_tot ) / decimal.Decimal(total_coeff)
 
-                                                subj_moy = f"{subject.id}_{moyentt}_{subject.title}"
-                                                total_gen_coeff = total_gen_coeff + decimal.Decimal(evals.coef)
-                                                # total
-                                                moy_tot = moyentt  * int(evals.coef)
-                                                total_tot = total_tot + decimal.Decimal(moy_tot)
-                                                subj_moy_tot = f"{subject.title}_{subject.id}_{evals.coef}_{moyentt}_{moy_tot}"
-                                                total_gen_tot = total_gen_tot + moy_tot
-                                                subject_gen_tot = decimal.Decimal(subject_gen_tot) + moy_tot
-                                                total_gen_tot = total_gen_tot + total_tot
-                                                
-                                            # print(subj_moy_tot)
-                                            # print(testb)
-                                            if subject.category == 'Professional':
-                                                testa_value = test_reslt.value
-                                                testb_value = test_reslt.sec_value
-                                                    #
-                                        
-                                                total_eval = testa_value + testb_value
-                                                moyentt = total_eval / 2
-                                                # print(moyentt)
+            # get rank
+            my_rank = getstudent_rank(obj_student_class)
+            # print(f"rank is {my_rank}")
 
-                                                subj_moy = f"{subject.id}_{moyentt}_{subject.title}"
-                                                total_prof_coeff = total_prof_coeff + decimal.Decimal(evals.coef)
-                                                # total
-                                                moy_tot = moyentt  * int(evals.coef)
-                                                total_tot = total_tot + decimal.Decimal(moy_tot)
-                                                subj_moy_tot = f"{subject.title}_{subject.id}_{evals.coef}_{moyentt}_{moy_tot}"
-                                                total_gen_tot = total_gen_tot + moy_tot
-                                                subject_prof_tot = decimal.Decimal(subject_prof_tot) + moy_tot
-                                                total_prof_tot = total_prof_tot + moy_tot
+            # get classavg
+            my_classavg = get_classavg(classroom)
+            # print(f"classavg is {my_classavg}")
 
-                                            # if(subject.category == 'General'):
-                                            #     total_gen_tot = total_gen_tot + total_tot
-                                            #     #
-                                            # if(subject.category == 'Professional'):
-                                            #     total_prof_tot = total_prof_tot + moy_tot
-                                            #
-                                            # subject_value_cat.append([test1.subject.title,testa_value,testb_value, moyentt, moy_tot,evals.coef, test2.observation, subject.category, test1.teacher])
-                                            subject_value_cat.append([test_reslt.subject.title,testa_value,testb_value, moyentt, moy_tot,evals.coef, test_reslt.observation, subject.category, test_reslt.teacher])
-                                    
-                                        # print(subject_value_cat)
-                                        print("total_prof_coeff")
-                                        print(total_prof_coeff)
-                                        print("total_gen_coeff")
-                                        print(total_gen_coeff)
-                                        print('subj_moy_tot')
-                                        print(subj_moy_tot)
-                                    if(term == 'second'):
-                                        print("term")
-                                        print(term)
-                                        print(evals)
-                                        # testa = obj_eval_class.filter(title='Test1',subject_id=subject.id, student=student)
-                                        # testb = obj_eval_class.filter(title='Test2',subject_id=subject.id, student=student)
-                                        test_reslt = evals
-                                        # print("test_reslt")
-                                        # print(test_reslt)
-                                        # print('first')
-                                        if not test_reslt:
-                                            # print("no vale a")
-                                            testa_value = 0.0
-                                            messages.error(request, 'No Test Results Found')
-                                            return redirect('report_cards')
-                                        else:
+            # get classavg
+            my_countstud = count_stud_classspec( classroom, obj_student_class.specialty)
+            # print(f"count stud in specialty is {my_countstud}")
+
+
+
+            # get first term avg get_termavg(student, term, year="2024/2025")
+            firt_term_avg = get_termavg(obj_student_class, "first", academic_yr)
+            if firt_term_avg:
+                print(f"first term avg is {firt_term_avg}")
+            else: 
+                firt_term_avg = 0.00
+
+            # get second term avg get_termavg(student, term, year="2024/2025")
+            scnd_term_avg = get_termavg(obj_student_class, "second", academic_yr)
+            if scnd_term_avg:
+                print(f"second term avg is {scnd_term_avg}")
+            else: 
+                scnd_term_avg = 0.00
+            
+            # get third term avg get_termavg(student, term, year="2024/2025")
+            third_term_avg = get_termavg(obj_student_class, "third", academic_yr)
+            if third_term_avg:
+                print(f"third term avg is {third_term_avg}")
+            else: 
+                third_term_avg = 0.00
+
+            
+            # get_subj_passedterm 
+            # passed subject count per term
+            passed_subj_first = get_subj_passedterm(obj_student_class, "first", academic_yr)
+            
+            if passed_subj_first:
+                print(f"first term subj count is {passed_subj_first}")
+            else: 
+                passed_subj_first = 0
+
+            passed_subj_second = get_subj_passedterm(obj_student_class, "second", academic_yr)
+            
+            if passed_subj_second:
+                print(f"second term subj count is {passed_subj_second}")
+            else: 
+                passed_subj_second = 0
+
+            passed_subj_third = get_subj_passedterm(obj_student_class, "third", academic_yr)
+            
+            if passed_subj_third:
+                print(f"third term subj count is {passed_subj_third}")
+            else: 
+                passed_subj_third = 0
+
+
+            context = {}
+            context['firstterm_subjpass'] = passed_subj_first
+            context['second_term_subjpass'] = passed_subj_second
+            context['third_avg_subjpass'] = passed_subj_third
+            context['first_avg_term'] = firt_term_avg
+            context['second_term_avg'] = scnd_term_avg
+            context['third_avg_term'] = third_term_avg
+            context['mi_rank'] = my_rank
+            context['mi_class_avg'] = my_classavg
+            context['spec_class_count_stud'] = my_countstud
+            context['prof_sub_moy'] = round(prof_sub_moy, ndigits=2)
+            context['prof_gen_tot_moy'] = round(prof_gen_tot_moy, ndigits=2)
+            context['subject_line'] = subject_value_cat
+            context['p_settings'] = p_settings
+            context['student'] = obj_student_class
+            context['classroom'] = classroom
+            context['total_coeff'] = total_coeff
+            context['total_tot'] = total_tot
+            context['total_gen_coeff'] = total_gen_coeff
+            context['total_prof_coeff'] = total_prof_coeff
+            context['gen_tot'] = total_gen_tot
+            context['subject_gen_tot'] = subject_gen_tot #gen total subj
+            context['gen_sub_moy'] = round(gen_sub_moy, ndigits=2)
+            context['subj_cat'] = subj_cat
+            context['total_prof_tot'] = total_prof_tot
+            # context['avgTotal'] = "{:.2f}".format(invoiceTotal)
+
+            # print(context)
+
+            # using now() to get current time
+            current_time = datetime.datetime.now()
+            # 
+            # check is report card exits
+            chec_card = ReportCard.objects.filter(term = term,student= obj_student_class,academic_year= academic_yr,is_actif=True).first()
+            if chec_card:
+                chec_card.is_actif = False
+                chec_card.modified_by = added_by
+                chec_card.save()
+                report_card = ReportCard.objects.create(
+                    student           = obj_student_class ,
+                    term              = term,
+                    student_rank      = my_rank,
+                    gen_coeff         = total_gen_coeff,
+                    prof_coeff        = total_prof_coeff,
+                    gen_total         = subject_gen_tot,
+                    prof_total        = total_prof_tot,
+                    general_subjs_avr = gen_sub_moy,
+                    prof_subjs_avr    = prof_sub_moy,
+                    total_avr         = prof_gen_tot_moy,
+                    best_avr          = prof_gen_tot_moy,
+                    worst_avr         = prof_gen_tot_moy,
+                    # firstterm_avr     = firt_term_avg["total_avg__max"],
+                    # secondterm_avr  = scnd_term_avg,
+                    # third_subj_passed     = third_term_avg,
+                    # first_subj_passed =  passed_subj_first,
+                    # second_subj_passed = passed_subj_second,
+                    # academic_year = '2023/2024',
+                    academic_year     = academic_yr,
+                    resumption        = resumptn,
+                    # teacher = teacher,
+                    added_by          = added_by,
+                )
+            else:
+                #
+
+                report_card = ReportCard.objects.create(
+                    student           = obj_student_class ,
+                    term              = term,
+                    student_rank      = my_rank,
+                    gen_coeff         = total_gen_coeff,
+                    prof_coeff        = total_prof_coeff,
+                    gen_total         = subject_gen_tot,
+                    prof_total        = total_prof_tot,
+                    general_subjs_avr = gen_sub_moy,
+                    prof_subjs_avr    = prof_sub_moy,
+                    total_avr           = prof_gen_tot_moy,
+                    best_avr            = prof_gen_tot_moy,
+                    worst_avr           = prof_gen_tot_moy,
+                    # firstterm_avr       = firt_term_avg["total_avg__max"],
+                    # secondterm_avr  = scnd_term_avg,
+                    # third_subj_passed     = third_term_avg,
+                    # first_subj_passed =  passed_subj_first,
+                    # second_subj_passed = passed_subj_second,
+                    # # third_subj_passed =  passed_subj_third,
+                    # academic_year = '2023/2024',
+                    academic_year     = academic_yr,
+                    resumption        = resumptn,
+                    # teacher = teacher,
+                    added_by          = added_by,
+                )
+                
+            # 
+            
+            # print(f"firt_term_avg ----{firt_term_avg}")
+            # print(firt_term_avg["total_avg__max"])
+            # print(f"scnd_term_avg ----{scnd_term_avg}")
+            # print(scnd_term_avg["total_avg__max"])
+           
+            if term == "first":
+                report_card.firstterm_avr = prof_gen_tot_moy
+                
+                if passed_subj_first:
+                    report_card.first_subj_passed = passed_subj_first
+                report_card.modified_by = added_by
+                report_card.save()
+            if term == "second":
+                if firt_term_avg["total_avg__max"]:
+                    #
+                    report_card.firstterm_avr = firt_term_avg["total_avg__max"]
+                if passed_subj_first:
+                    report_card.first_subj_passed = passed_subj_first
+                if passed_subj_second:
+                    report_card.second_subj_passed = passed_subj_second
+                report_card.secondterm_avr    =  prof_gen_tot_moy
+                report_card.modified_by = added_by
+                report_card.save()
+                
+            if term == "third":
+                if firt_term_avg["total_avg__max"]:
+                    #
+                    report_card.firstterm_avr = firt_term_avg["total_avg__max"]
+                if scnd_term_avg["total_avg__max"]:
+                    #
+                    report_card.secondterm_avr = scnd_term_avg["total_avg__max"]
+                if passed_subj_first:
+                    report_card.first_subj_passed = passed_subj_first
+                if passed_subj_second:
+                    report_card.second_subj_passed = passed_subj_second
+                if passed_subj_third:
+                    report_card.third_subj_passed = passed_subj_third
+                report_card.thirdterm_avr    =  prof_gen_tot_moy
+                report_card.modified_by = added_by
+                report_card.save()
+                
+            
+
+
+            messages.success(request, f'{obj_student_class.name} Record Card added Successfully')
+            return redirect("report_cards")
+                    
+        else:
+            messages.error(request, 'No Students Found - Something went wrong, please try again!')
+            return redirect('report_cards')
+
+            #     for subject in subjects:
+                    # print(subject)
+            #         if subject.coef is None:
+            #             # print('no subjj coef')
+            #             messages.error(request, 'No Coef found')
+            #             return redirect('report_cards')
+            #         else:
+            #             if obj_eval_cl_type:
+                            # print("obj_eval_cl_type:")
+            #                 for evals in obj_eval_cl_type:
+            #                     if evals.subject_id == subject.id:
+            #                         if(term == 'first'):
+            #                             # print("term")
+            #                             # print(term)
+            #                             # print(evals)
+            #                             # testa = obj_eval_class.filter(title='Test1',subject_id=subject.id, student=student)
+            #                             # testb = obj_eval_class.filter(title='Test2',subject_id=subject.id, student=student)
+            #                             obj_eval = Eval.objects.filter(student_id=student, title="Test1", academic_year=academic_yr, is_actif=True).first()
+            #                             test_reslt = obj_eval
+            #                             # print("test_reslt")
+            #                             # print(test_reslt)
+            #                             # print('first')
+            #                             if not test_reslt:
+            #                                 # print("no vale a")
+            #                                 testa_value = 0.0
+            #                                 messages.error(request, 'No Test Results Found')
+            #                                 return redirect('report_cards')
+            #                             else:
                                             # print("in")
                                             # print(print(test_reslt))
-                                            if subject.category == 'General':
-                                                # testa_value = testa.value
-                                                testa_value = test_reslt.value
-                                                testb_value = test_reslt.sec_value
-                                                    #
+            #                                 if subject.category == 'General':
+            #                                     # testa_value = testa.value
+            #                                     testa_value = test_reslt.value
+            #                                     testb_value = test_reslt.sec_value
+            #                                         #
                                         
-                                                total_eval = testa_value + testb_value
-                                                moyentt = total_eval / 2
-                                                # print(moyentt)
+            #                                     total_eval = testa_value + testb_value
+            #                                     moyentt = total_eval / 2
+            #                                     # print(moyentt)
 
-                                                subj_moy = f"{subject.id}_{moyentt}_{subject.title}"
-                                                total_gen_coeff = total_gen_coeff + decimal.Decimal(evals.coef)
-                                                # total
-                                                moy_tot = moyentt  * int(evals.coef)
-                                                total_tot = total_tot + decimal.Decimal(moy_tot)
-                                                subj_moy_tot = f"{subject.title}_{subject.id}_{moyentt}_{moy_tot}"
-                                                total_gen_tot = total_gen_tot + moy_tot
-                                                subject_gen_tot = decimal.Decimal( subject_gen_tot) + moy_tot
-                                                total_gen_tot = total_gen_tot + total_tot
-                                            # print(subj_moy_tot)
-                                            # print(testb)
-                                            if subject.category == 'Professional':
-                                                testa_value = test_reslt.value
-                                                testb_value = test_reslt.sec_value
-                                                    #
+            #                                     subj_moy = f"{subject.id}_{moyentt}_{subject.title}"
+            #                                     total_gen_coeff = total_gen_coeff + decimal.Decimal(evals.coef)
+            #                                     # total
+            #                                     moy_tot = moyentt  * int(evals.coef)
+            #                                     total_tot = total_tot + decimal.Decimal(moy_tot)
+            #                                     subj_moy_tot = f"{subject.title}_{subject.id}_{evals.coef}_{moyentt}_{moy_tot}"
+            #                                     total_gen_tot = total_gen_tot + moy_tot
+            #                                     subject_gen_tot = decimal.Decimal(subject_gen_tot) + moy_tot
+            #                                     total_gen_tot = total_gen_tot + total_tot
+                                                
+            #                                 # print(subj_moy_tot)
+            #                                 # print(testb)
+            #                                 if subject.category == 'Professional':
+            #                                     testa_value = test_reslt.value
+            #                                     testb_value = test_reslt.sec_value
+            #                                         #
                                         
-                                                total_eval = testa_value + testb_value
-                                                moyentt = total_eval / 2
-                                                # print(moyentt)
+            #                                     total_eval = testa_value + testb_value
+            #                                     moyentt = total_eval / 2
+            #                                     # print(moyentt)
 
-                                                subj_moy = f"{subject.id}_{moyentt}_{subject.title}"
-                                                total_prof_coeff = total_prof_coeff + decimal.Decimal(evals.coef)
-                                                # total
-                                                moy_tot = moyentt  * int(evals.coef)
-                                                total_tot = total_tot + decimal.Decimal(moy_tot)
-                                                subj_moy_tot = f"{subject.title}_{subject.id}_{moyentt}_{moy_tot}"
-                                                total_gen_tot = total_gen_tot + moy_tot
-                                                subject_prof_tot = decimal.Decimal(subject_prof_tot) + moy_tot
-                                                total_prof_tot = total_prof_tot + moy_tot
+            #                                     subj_moy = f"{subject.id}_{moyentt}_{subject.title}"
+            #                                     total_prof_coeff = total_prof_coeff + decimal.Decimal(evals.coef)
+            #                                     # total
+            #                                     moy_tot = moyentt  * int(evals.coef)
+            #                                     total_tot = total_tot + decimal.Decimal(moy_tot)
+            #                                     subj_moy_tot = f"{subject.title}_{subject.id}_{evals.coef}_{moyentt}_{moy_tot}"
+            #                                     total_gen_tot = total_gen_tot + moy_tot
+            #                                     subject_prof_tot = decimal.Decimal(subject_prof_tot) + moy_tot
+            #                                     total_prof_tot = total_prof_tot + moy_tot
 
-                                            # if(subject.category == 'General'):
-                                            #     total_gen_tot = total_gen_tot + total_tot
-                                            #     #
-                                            # if(subject.category == 'Professional'):
-                                            #     total_prof_tot = total_prof_tot + moy_tot
-                                            #
-                                            # subject_value_cat.append([test1.subject.title,testa_value,testb_value, moyentt, moy_tot,evals.coef, test2.observation, subject.category, test1.teacher])
-                                            subject_value_cat.append([test_reslt.subject.title,testa_value,testb_value, moyentt, moy_tot,evals.coef, test_reslt.observation, subject.category, test_reslt.teacher])
+            #                                 # if(subject.category == 'General'):
+            #                                 #     total_gen_tot = total_gen_tot + total_tot
+            #                                 #     #
+            #                                 # if(subject.category == 'Professional'):
+            #                                 #     total_prof_tot = total_prof_tot + moy_tot
+            #                                 #
+            #                                 # subject_value_cat.append([test1.subject.title,testa_value,testb_value, moyentt, moy_tot,evals.coef, test2.observation, subject.category, test1.teacher])
+            #                                 subject_value_cat.append([test_reslt.subject.title,testa_value,testb_value, moyentt, moy_tot,evals.coef, test_reslt.observation, subject.category, test_reslt.teacher])
                                     
-                                        print(subject_value_cat)
-                                    if(term == 'third'):
-                                        print("term")
-                                        print(term)
-                                        print(evals)
-                                        # testa = obj_eval_class.filter(title='Test1',subject_id=subject.id, student=student)
-                                        # testb = obj_eval_class.filter(title='Test2',subject_id=subject.id, student=student)
-                                        test_reslt = evals
-                                        print("test_reslt")
-                                        print(test_reslt)
-                                        # print('first')
-                                        if not test_reslt:
-                                            # print("no vale a")
-                                            testa_value = 0.0
-                                            messages.error(request, 'No Test Results Found')
-                                            return redirect('report_cards')
-                                        else:
-                                            print("in")
-                                            print(print(test_reslt))
-                                            if subject.category == 'General':
-                                                # testa_value = testa.value
-                                                testa_value = test_reslt.value
-                                                testb_value = test_reslt.sec_value
-                                                    #
-                                        
-                                                total_eval = testa_value + testb_value
-                                                moyentt = total_eval / 2
-                                                # print(moyentt)
 
-                                                subj_moy = f"{subject.id}_{moyentt}_{subject.title}"
-                                                total_gen_coeff = total_gen_coeff + decimal.Decimal(evals.coef)
-                                                # total
-                                                moy_tot = moyentt  * int(evals.coef)
-                                                total_tot = total_tot + decimal.Decimal(moy_tot)
-                                                subj_moy_tot = f"{subject.title}_{subject.id}_{moyentt}_{moy_tot}"
-                                                total_gen_tot = total_gen_tot + moy_tot
-                                                subject_gen_tot = decimal.Decimal(subject_gen_tot) + moy_tot
-                                                total_gen_tot = total_gen_tot + total_tot
-                                            # print(subj_moy_tot)
-                                            # print(testb)
-                                            if subject.category == 'Professional':
-                                                testa_value = test_reslt.value
-                                                testb_value = test_reslt.sec_value
-                                                    #
-                                        
-                                                total_eval = testa_value + testb_value
-                                                moyentt = total_eval / 2
-                                                # print(moyentt)
-
-                                                subj_moy = f"{subject.id}_{moyentt}_{subject.title}"
-                                                total_prof_coeff = total_prof_coeff + decimal.Decimal(evals.coef)
-                                                # total
-                                                moy_tot = moyentt  * int(evals.coef)
-                                                total_tot = total_tot + decimal.Decimal(moy_tot)
-                                                subj_moy_tot = f"{subject.title}_{subject.id}_{moyentt}_{moy_tot}"
-                                                total_gen_tot = total_gen_tot + moy_tot
-                                                subject_prof_tot = decimal.Decimal(subject_prof_tot) + moy_tot
-                                                total_prof_tot = total_prof_tot + moy_tot
-
-                                            # if(subject.category == 'General'):
-                                            #     total_gen_tot = total_gen_tot + total_tot
-                                            #     #
-                                            # if(subject.category == 'Professional'):
-                                            #     total_prof_tot = total_prof_tot + moy_tot
-                                            #
-                                            # subject_value_cat.append([test1.subject.title,testa_value,testb_value, moyentt, moy_tot,evals.coef, test2.observation, subject.category, test1.teacher])
-                                            subject_value_cat.append([test_reslt.subject.title,testa_value,testb_value, moyentt, moy_tot,evals.coef, test_reslt.observation, subject.category, test_reslt.teacher])
+            #                         # 
                                     
-                                        print(subject_value_cat)
+            #                         if(term == 'second'):
+            #                             obj_eval = Eval.objects.filter(student_id=student, title="Test3", academic_year=academic_yr, is_actif=True).first()
+            #                             test_reslt = obj_eval
+            #                             # print('first')
+            #                             if not test_reslt:
+            #                                 # print("no vale a")
+            #                                 testa_value = 0.0
+            #                                 messages.error(request, 'No Test Results Found')
+            #                                 return redirect('report_cards')
+            #                             else:
+            #                                 # print("in")
+            #                                 # print(print(test_reslt))
+            #                                 if subject.category == 'General':
+            #                                     # testa_value = testa.value
+            #                                     testa_value = test_reslt.value
+            #                                     testb_value = test_reslt.sec_value
+            #                                         #
+                                        
+            #                                     total_eval = testa_value + testb_value
+            #                                     moyentt = total_eval / 2
+            #                                     # print(moyentt)
+
+            #                                     subj_moy = f"{subject.id}_{moyentt}_{subject.title}"
+            #                                     total_gen_coeff = total_gen_coeff + decimal.Decimal(evals.coef)
+            #                                     # total
+            #                                     moy_tot = moyentt  * int(evals.coef)
+            #                                     total_tot = total_tot + decimal.Decimal(moy_tot)
+            #                                     subj_moy_tot = f"{subject.title}_{subject.id}_{evals.coef}_{moyentt}_{moy_tot}"
+            #                                     total_gen_tot = total_gen_tot + moy_tot
+            #                                     subject_gen_tot = decimal.Decimal(subject_gen_tot) + moy_tot
+            #                                     total_gen_tot = total_gen_tot + total_tot
+                                                
+            #                                 # print(subj_moy_tot)
+            #                                 # print(testb)
+            #                                 if subject.category == 'Professional':
+            #                                     testa_value = test_reslt.value
+            #                                     testb_value = test_reslt.sec_value
+            #                                         #
+                                        
+            #                                     total_eval = testa_value + testb_value
+            #                                     moyentt = total_eval / 2
+            #                                     # print(moyentt)
+
+            #                                     subj_moy = f"{subject.id}_{moyentt}_{subject.title}"
+            #                                     total_prof_coeff = total_prof_coeff + decimal.Decimal(evals.coef)
+            #                                     # total
+            #                                     moy_tot = moyentt  * int(evals.coef)
+            #                                     total_tot = total_tot + decimal.Decimal(moy_tot)
+            #                                     subj_moy_tot = f"{subject.title}_{subject.id}_{evals.coef}_{moyentt}_{moy_tot}"
+            #                                     total_gen_tot = total_gen_tot + moy_tot
+            #                                     subject_prof_tot = decimal.Decimal(subject_prof_tot) + moy_tot
+            #                                     total_prof_tot = total_prof_tot + moy_tot
+            #                                     # 
+            #                                 subject_value_cat.append([test_reslt.subject.title,testa_value,testb_value, moyentt, moy_tot,evals.coef, test_reslt.observation, subject.category, test_reslt.teacher])
+                                    
+
+            #                         # 
+                                    
+                                    
+            #                         if(term == 'third'):
+            #                             obj_eval = Eval.objects.filter(student_id=student, title="Test5", academic_year=academic_yr, is_actif=True).first()
+            #                             test_reslt = obj_eval
+            #                             # print('first')
+            #                             if not test_reslt:
+            #                                 # print("no vale a")
+            #                                 testa_value = 0.0
+            #                                 messages.error(request, 'No Test Results Found')
+            #                                 return redirect('report_cards')
+            #                             else:
+            #                                 # print("in")
+            #                                 # print(print(test_reslt))
+            #                                 if subject.category == 'General':
+            #                                     # testa_value = testa.value
+            #                                     testa_value = test_reslt.value
+            #                                     testb_value = test_reslt.sec_value
+            #                                         #
+                                        
+            #                                     total_eval = testa_value + testb_value
+            #                                     moyentt = total_eval / 2
+            #                                     # print(moyentt)
+
+            #                                     subj_moy = f"{subject.id}_{moyentt}_{subject.title}"
+            #                                     total_gen_coeff = total_gen_coeff + decimal.Decimal(evals.coef)
+            #                                     # total
+            #                                     moy_tot = moyentt  * int(evals.coef)
+            #                                     total_tot = total_tot + decimal.Decimal(moy_tot)
+            #                                     subj_moy_tot = f"{subject.title}_{subject.id}_{evals.coef}_{moyentt}_{moy_tot}"
+            #                                     total_gen_tot = total_gen_tot + moy_tot
+            #                                     subject_gen_tot = decimal.Decimal(subject_gen_tot) + moy_tot
+            #                                     total_gen_tot = total_gen_tot + total_tot
+                                                
+            #                                 # print(subj_moy_tot)
+            #                                 # print(testb)
+            #                                 if subject.category == 'Professional':
+            #                                     testa_value = test_reslt.value
+            #                                     testb_value = test_reslt.sec_value
+            #                                         #
+                                        
+            #                                     total_eval = testa_value + testb_value
+            #                                     moyentt = total_eval / 2
+            #                                     # print(moyentt)
+
+            #                                     subj_moy = f"{subject.id}_{moyentt}_{subject.title}"
+            #                                     total_prof_coeff = total_prof_coeff + decimal.Decimal(evals.coef)
+            #                                     # total
+            #                                     moy_tot = moyentt  * int(evals.coef)
+            #                                     total_tot = total_tot + decimal.Decimal(moy_tot)
+            #                                     subj_moy_tot = f"{subject.title}_{subject.id}_{evals.coef}_{moyentt}_{moy_tot}"
+            #                                     total_gen_tot = total_gen_tot + moy_tot
+            #                                     subject_prof_tot = decimal.Decimal(subject_prof_tot) + moy_tot
+            #                                     total_prof_tot = total_prof_tot + moy_tot
+            #                                     # 
+            #                                 subject_value_cat.append([test_reslt.subject.title,testa_value,testb_value, moyentt, moy_tot,evals.coef, test_reslt.observation, subject.category, test_reslt.teacher])
+
+            #                         #     # print(subject_value_cat)
+            #                         #     # print("total_prof_coeff")
+            #                         #     # print(total_prof_coeff)
+            #                         #     # print("total_gen_coeff")
+            #                         #     # print(total_gen_coeff)
+            #                         #     # print('subj_moy_tot')
+            #                         #     # print(subj_moy_tot)
+                                                       
+
+            #                         #     # print("subject_value_cat")            
+            #                         #     # print(subject_value_cat)
+            #                         #     # print("subject_gen_tot")
+            #                         #     # print(subject_gen_tot)
+            #                         #     # print("subject_prof_tot")
+            #                         #     # print(subject_prof_tot)
+            #                         #     # print("total_tot ")
+            #                         #     # print(total_tot )
+
+            #                         #     # total_coeff = decimal.Decimal(total_gen_coeff) + decimal.Decimal(total_prof_coeff)
+                                        
+                                        
+            #                         #     # gen_sub_moy = decimal.Decimal(subject_gen_tot ) / decimal.Decimal(total_gen_coeff)
+            #                         #     # prof_sub_moy = decimal.Decimal(subject_prof_tot ) / decimal.Decimal(total_prof_coeff)
+            #                         #     # prof_gen_tot_moy = decimal.Decimal(total_tot ) / decimal.Decimal(total_coeff)
+
+            #                         #     # # get rank
+            #                         #     # my_rank = getstudent_rank(obj_student_class)
+            #                         #     # print(f"rank is {my_rank}")
+
+            #                         #     # # get classavg
+            #                         #     # my_classavg = get_classavg(classroom)
+            #                         #     # print(f"classavg is {my_classavg}")
+
+            #                         #     # # get classavg
+            #                         #     # my_countstud = count_stud_classspec( classroom, obj_student_class.specialty)
+            #                         #     # print(f"count stud in specialty is {my_countstud}")
+
+
+
+            #                         #     # # get first term avg get_termavg(student, term, year="2024/2025")
+            #                         #     # firt_term_avg = get_termavg(obj_student_class, "first", academic_yr)
+            #                         #     # if firt_term_avg:
+                                    #     #     print(f"first term avg is {firt_term_avg}")
+            #                         #     # else: 
+            #                         #     #     firt_term_avg = 0.00
+
+            #                         #     # # get second term avg get_termavg(student, term, year="2024/2025")
+            #                         #     # scnd_term_avg = get_termavg(obj_student_class, "second", academic_yr)
+            #                         #     # if scnd_term_avg:
+                                    #     #     print(f"second term avg is {scnd_term_avg}")
+            #                         #     # else: 
+            #                         #     #     scnd_term_avg = 0.00
+                                        
+            #                         #     # # get third term avg get_termavg(student, term, year="2024/2025")
+            #                         #     # third_term_avg = get_termavg(obj_student_class, "third", academic_yr)
+            #                         #     # if third_term_avg:
+                                    #     #     print(f"third term avg is {third_term_avg}")
+            #                         #     # else: 
+            #                         #     #     third_term_avg = 0.00
+
+
+            #                         #     # context = {}
+            #                         #     # context['first_avg_term'] = firt_term_avg
+            #                         #     # context['second_term_avg'] = scnd_term_avg
+            #                         #     # context['third_avg_term'] = third_term_avg
+            #                         #     # context['mi_rank'] = my_rank
+            #                         #     # context['mi_class_avg'] = my_classavg
+            #                         #     # context['spec_class_count_stud'] = my_countstud
+            #                         #     # context['prof_sub_moy'] = round(prof_sub_moy, ndigits=2)
+            #                         #     # context['prof_gen_tot_moy'] = round(prof_gen_tot_moy, ndigits=2)
+            #                         #     # context['subject_line'] = subject_value_cat
+            #                         #     # context['p_settings'] = p_settings
+            #                         #     # context['student'] = obj_student_class
+            #                         #     # context['classroom'] = classroom
+            #                         #     # context['total_coeff'] = total_coeff
+            #                         #     # context['total_tot'] = total_tot
+            #                         #     # context['total_gen_coeff'] = total_gen_coeff
+            #                         #     # context['total_prof_coeff'] = total_prof_coeff
+            #                         #     # context['gen_tot'] = total_gen_tot
+            #                         #     # context['subject_gen_tot'] = subject_gen_tot #gen total subj
+            #                         #     # context['gen_sub_moy'] = round(gen_sub_moy, ndigits=2)
+            #                         #     # context['subj_cat'] = subj_cat
+            #                         #     # context['total_prof_tot'] = total_prof_tot
+            #                         #     # # context['avgTotal'] = "{:.2f}".format(invoiceTotal)
+
+            #                         #     # print(context)
+
+            #                         #     # # using now() to get current time
+            #                         #     # current_time = datetime.datetime.now()
+
+            #                         #     # report_card = ReportCard.objects.create(
+            #                         #     #     student           = obj_student_class ,
+            #                         #     #     term              = term,
+            #                         #     #     student_rank      = my_rank,
+            #                         #     #     gen_coeff         = total_gen_coeff,
+            #                         #     #     prof_coeff        = total_prof_coeff,
+            #                         #     #     gen_total         = subject_gen_tot,
+            #                         #     #     prof_total        = total_prof_tot,
+            #                         #     #     general_subjs_avr = round(gen_sub_moy, ndigits=2),
+            #                         #     #     prof_subjs_avr    = round(prof_sub_moy, ndigits=2),
+            #                         #     #     total_avr         = round(prof_gen_tot_moy, ndigits=2),
+            #                         #     #     best_avr          = round(prof_gen_tot_moy, ndigits=2),
+            #                         #     #     worst_avr         = round(prof_gen_tot_moy, ndigits=2),
+            #                         #     #     firstterm_avr     = round(prof_gen_tot_moy, ndigits=2),
+            #                         #     #     # academic_year = '2023/2024',
+            #                         #     #     academic_year     = academic_yr,
+            #                         #     #     resumption        = resumptn,
+            #                         #     #     # teacher = teacher,
+            #                         #     #     added_by          = added_by,
+            #                         #     # )
+
+            #                         #     # messages.success(request, f'{obj_student_class.name} Record Card added Successfully')
+            #                         #     # return redirect("report_cards")
+            #                         # if(term == 'second'):
+            #                         #     # print("term")
+            #                         #     # print('second')
+            #                         #     # print(evals)
+            #                         #     # testa = obj_eval_class.filter(title='Test1',subject_id=subject.id, student=student)
+            #                         #     # testb = obj_eval_class.filter(title='Test2',subject_id=subject.id, student=student)
+            #                         #     test_reslt = evals
+            #                         #     # print("test_reslt")
+            #                         #     # print(test_reslt)
+            #                         #     # print('first')
+            #                         #     if not test_reslt:
+            #                         #         # print("no vale a")
+            #                         #         testa_value = 0.0
+            #                         #         messages.error(request, 'No Test Results Found')
+            #                         #         return redirect('report_cards')
+            #                         #     else:
+            #                         #         # print("in")
+            #                         #         # print(print(test_reslt))
+            #                         #         if subject.category == 'General':
+            #                         #             # testa_value = testa.value
+            #                         #             testa_value = test_reslt.value
+            #                         #             testb_value = test_reslt.sec_value
+            #                         #                 #
+                                        
+            #                         #             total_eval = testa_value + testb_value
+            #                         #             moyentt = total_eval / 2
+            #                         #             # print(moyentt)
+
+            #                         #             subj_moy = f"{subject.id}_{moyentt}_{subject.title}"
+            #                         #             total_gen_coeff = total_gen_coeff + decimal.Decimal(evals.coef)
+            #                         #             # total
+            #                         #             moy_tot = moyentt  * int(evals.coef)
+            #                         #             total_tot = total_tot + decimal.Decimal(moy_tot)
+            #                         #             subj_moy_tot = f"{subject.title}_{subject.id}_{moyentt}_{moy_tot}"
+            #                         #             total_gen_tot = total_gen_tot + moy_tot
+            #                         #             subject_gen_tot = decimal.Decimal( subject_gen_tot) + moy_tot
+            #                         #             total_gen_tot = total_gen_tot + total_tot
+            #                         #         # print(subj_moy_tot)
+            #                         #         # print(testb)
+            #                         #         if subject.category == 'Professional':
+            #                         #             testa_value = test_reslt.value
+            #                         #             testb_value = test_reslt.sec_value
+            #                         #                 #
+                                        
+            #                         #             total_eval = testa_value + testb_value
+            #                         #             moyentt = total_eval / 2
+            #                         #             # print(moyentt)
+
+            #                         #             subj_moy = f"{subject.id}_{moyentt}_{subject.title}"
+            #                         #             total_prof_coeff = total_prof_coeff + decimal.Decimal(evals.coef)
+            #                         #             # total
+            #                         #             moy_tot = moyentt  * int(evals.coef)
+            #                         #             total_tot = total_tot + decimal.Decimal(moy_tot)
+            #                         #             subj_moy_tot = f"{subject.title}_{subject.id}_{moyentt}_{moy_tot}"
+            #                         #             total_gen_tot = total_gen_tot + moy_tot
+            #                         #             subject_prof_tot = decimal.Decimal(subject_prof_tot) + moy_tot
+            #                         #             total_prof_tot = total_prof_tot + moy_tot
+
+            #                         #         # if(subject.category == 'General'):
+            #                         #         #     total_gen_tot = total_gen_tot + total_tot
+            #                         #         #     #
+            #                         #         # if(subject.category == 'Professional'):
+            #                         #         #     total_prof_tot = total_prof_tot + moy_tot
+            #                         #         #
+            #                         #         # subject_value_cat.append([test1.subject.title,testa_value,testb_value, moyentt, moy_tot,evals.coef, test2.observation, subject.category, test1.teacher])
+            #                         #         subject_value_cat.append([test_reslt.subject.title,testa_value,testb_value, moyentt, moy_tot,evals.coef, test_reslt.observation, subject.category, test_reslt.teacher])
+                                    
+
+            #                         #     # total_coeff = decimal.Decimal(total_gen_coeff) + decimal.Decimal(total_prof_coeff)
+                                        
+                                        
+            #                         #     # gen_sub_moy = decimal.Decimal(subject_gen_tot ) / decimal.Decimal(total_gen_coeff)
+            #                         #     # prof_sub_moy = decimal.Decimal(subject_prof_tot ) / decimal.Decimal(total_prof_coeff)
+            #                         #     # prof_gen_tot_moy = decimal.Decimal(total_tot ) / decimal.Decimal(total_coeff)
+
+            #                         #     # # get rank
+            #                         #     # my_rank = getstudent_rank(obj_student_class)
+            #                         #     # # print(f"rank is {my_rank}")
+
+            #                         #     # # get classavg
+            #                         #     # my_classavg = get_classavg(classroom)
+            #                         #     # # print(f"classavg is {my_classavg}")
+
+            #                         #     # # get classavg
+            #                         #     # my_countstud = count_stud_classspec( classroom, obj_student_class.specialty)
+            #                         #     # # print(f"count stud in specialty is {my_countstud}")
+
+                                        
+
+            #                         #     # # get first term avg get_termavg(student, term, year="2024/2025")
+            #                         #     # firt_term_avg = get_termavg(obj_student_class, "first", academic_yr)
+            #                         #     # if firt_term_avg:
+                                    #     #     print(f"first term avg is {firt_term_avg}")
+            #                         #     # else: 
+            #                         #     #     firt_term_avg = 0.00
+
+            #                         #     # # get second term avg get_termavg(student, term, year="2024/2025")
+            #                         #     # scnd_term_avg = get_termavg(obj_student_class, "second", academic_yr)
+            #                         #     # if scnd_term_avg:
+                                    #     #     print(f"second term avg is {scnd_term_avg}")
+            #                         #     # else: 
+            #                         #     #     scnd_term_avg = 0.00
+                                        
+            #                         #     # # get third term avg get_termavg(student, term, year="2024/2025")
+            #                         #     # third_term_avg = get_termavg(obj_student_class, "third", academic_yr)
+            #                         #     # if third_term_avg:
+                                    #     #     print(f"third term avg is {third_term_avg}")
+            #                         #     # else: 
+            #                         #     #     third_term_avg = 0.00
+
+
+            #                         #     # context = {}
+            #                         #     # context['first_avg_term'] = firt_term_avg
+            #                         #     # context['second_term_avg'] = scnd_term_avg
+            #                         #     # context['third_avg_term'] = third_term_avg
+            #                         #     # context['mi_rank'] = my_rank
+            #                         #     # context['mi_class_avg'] = my_classavg
+            #                         #     # context['spec_class_count_stud'] = my_countstud
+            #                         #     # context['prof_sub_moy'] = round(prof_sub_moy, ndigits=2)
+            #                         #     # context['prof_gen_tot_moy'] = round(prof_gen_tot_moy, ndigits=2)
+            #                         #     # context['subject_line'] = subject_value_cat
+            #                         #     # context['p_settings'] = p_settings
+            #                         #     # context['student'] = obj_student_class
+            #                         #     # context['classroom'] = classroom
+            #                         #     # context['total_coeff'] = total_coeff
+            #                         #     # context['total_tot'] = total_tot
+            #                         #     # context['total_gen_coeff'] = total_gen_coeff
+            #                         #     # context['total_prof_coeff'] = total_prof_coeff
+            #                         #     # context['gen_tot'] = total_gen_tot
+            #                         #     # context['subject_gen_tot'] = subject_gen_tot #gen total subj
+            #                         #     # context['gen_sub_moy'] = round(gen_sub_moy, ndigits=2)
+            #                         #     # context['subj_cat'] = subj_cat
+            #                         #     # context['total_prof_tot'] = total_prof_tot
+            #                         #     # # context['avgTotal'] = "{:.2f}".format(invoiceTotal)
+
+            #                         #     # # print(context)
+
+            #                         #     # # using now() to get current time
+            #                         #     # current_time = datetime.datetime.now()
+
+            #                         #     # report_card = ReportCard.objects.create(
+            #                         #     #     student           = obj_student_class ,
+            #                         #     #     term              = term,
+            #                         #     #     student_rank      = my_rank,
+            #                         #     #     gen_coeff         = total_gen_coeff,
+            #                         #     #     prof_coeff        = total_prof_coeff,
+            #                         #     #     gen_total         = subject_gen_tot,
+            #                         #     #     prof_total        = total_prof_tot,
+            #                         #     #     general_subjs_avr = round(gen_sub_moy, ndigits=2),
+            #                         #     #     prof_subjs_avr    = round(prof_sub_moy, ndigits=2),
+            #                         #     #     total_avr         = round(prof_gen_tot_moy, ndigits=2),
+            #                         #     #     best_avr          = round(prof_gen_tot_moy, ndigits=2),
+            #                         #     #     worst_avr         = round(prof_gen_tot_moy, ndigits=2),
+            #                         #     #     firstterm_avr     = round(firt_term_avg, ndigits=2),
+            #                         #     #     secondterm_avr    = round(prof_gen_tot_moy, ndigits=2),
+            #                         #     #     # academic_year = '2023/2024',
+            #                         #     #     academic_year     = academic_yr,
+            #                         #     #     resumption        = resumptn,
+            #                         #     #     # teacher = teacher,
+            #                         #     #     added_by          = added_by,
+            #                         #     # )
+
+            #                         #     # messages.success(request, f'{obj_student_class.name} Record Card added Successfully')
+            #                         #     # return redirect("report_cards")
+            #                         # if(term == 'third'):
+                                    #     print("term")
+                                    #     print(term)
+                                    #     print(evals)
+            #                         #     # testa = obj_eval_class.filter(title='Test1',subject_id=subject.id, student=student)
+            #                         #     # testb = obj_eval_class.filter(title='Test2',subject_id=subject.id, student=student)
+            #                         #     test_reslt = evals
+                                    #     print("test_reslt")
+                                    #     print(test_reslt)
+            #                         #     # print('first')
+            #                         #     if not test_reslt:
+            #                         #         # print("no vale a")
+            #                         #         testa_value = 0.0
+            #                         #         messages.error(request, 'No Test Results Found')
+            #                         #         return redirect('report_cards')
+            #                         #     else:
+                                    #         print("in")
+                                    #         print(print(test_reslt))
+            #                         #         if subject.category == 'General':
+            #                         #             # testa_value = testa.value
+            #                         #             testa_value = test_reslt.value
+            #                         #             testb_value = test_reslt.sec_value
+            #                         #                 #
+                                        
+            #                         #             total_eval = testa_value + testb_value
+            #                         #             moyentt = total_eval / 2
+            #                         #             # print(moyentt)
+
+            #                         #             subj_moy = f"{subject.id}_{moyentt}_{subject.title}"
+            #                         #             total_gen_coeff = total_gen_coeff + decimal.Decimal(evals.coef)
+            #                         #             # total
+            #                         #             moy_tot = moyentt  * int(evals.coef)
+            #                         #             total_tot = total_tot + decimal.Decimal(moy_tot)
+            #                         #             subj_moy_tot = f"{subject.title}_{subject.id}_{moyentt}_{moy_tot}"
+            #                         #             total_gen_tot = total_gen_tot + moy_tot
+            #                         #             subject_gen_tot = decimal.Decimal(subject_gen_tot) + moy_tot
+            #                         #             total_gen_tot = total_gen_tot + total_tot
+            #                         #         # print(subj_moy_tot)
+            #                         #         # print(testb)
+            #                         #         if subject.category == 'Professional':
+            #                         #             testa_value = test_reslt.value
+            #                         #             testb_value = test_reslt.sec_value
+            #                         #                 #
+                                        
+            #                         #             total_eval = testa_value + testb_value
+            #                         #             moyentt = total_eval / 2
+            #                         #             # print(moyentt)
+
+            #                         #             subj_moy = f"{subject.id}_{moyentt}_{subject.title}"
+            #                         #             total_prof_coeff = total_prof_coeff + decimal.Decimal(evals.coef)
+            #                         #             # total
+            #                         #             moy_tot = moyentt  * int(evals.coef)
+            #                         #             total_tot = total_tot + decimal.Decimal(moy_tot)
+            #                         #             subj_moy_tot = f"{subject.title}_{subject.id}_{moyentt}_{moy_tot}"
+            #                         #             total_gen_tot = total_gen_tot + moy_tot
+            #                         #             subject_prof_tot = decimal.Decimal(subject_prof_tot) + moy_tot
+            #                         #             total_prof_tot = total_prof_tot + moy_tot
+
+            #                         #         # if(subject.category == 'General'):
+            #                         #         #     total_gen_tot = total_gen_tot + total_tot
+            #                         #         #     #
+            #                         #         # if(subject.category == 'Professional'):
+            #                         #         #     total_prof_tot = total_prof_tot + moy_tot
+            #                         #         #
+            #                         #         # subject_value_cat.append([test1.subject.title,testa_value,testb_value, moyentt, moy_tot,evals.coef, test2.observation, subject.category, test1.teacher])
+            #                         #         subject_value_cat.append([test_reslt.subject.title,testa_value,testb_value, moyentt, moy_tot,evals.coef, test_reslt.observation, subject.category, test_reslt.teacher])
+                                    
+            #                         #     # print(subject_value_cat)
+                                                       
+
+            #                         #     # print("subject_value_cat")            
+            #                         #     # print(subject_value_cat)
+            #                         #     # print("subject_gen_tot")
+            #                         #     # print(subject_gen_tot)
+            #                         #     # print("subject_prof_tot")
+            #                         #     # print(subject_prof_tot)
+            #                         #     # print("total_tot ")
+            #                         #     # print(total_tot )
+
+            #                         #     # total_coeff = decimal.Decimal(total_gen_coeff) + decimal.Decimal(total_prof_coeff)
+                                        
+                                        
+            #                         #     # gen_sub_moy = decimal.Decimal(subject_gen_tot ) / decimal.Decimal(total_gen_coeff)
+            #                         #     # prof_sub_moy = decimal.Decimal(subject_prof_tot ) / decimal.Decimal(total_prof_coeff)
+            #                         #     # prof_gen_tot_moy = decimal.Decimal(total_tot ) / decimal.Decimal(total_coeff)
+
+            #                         #     # # get rank
+            #                         #     # my_rank = getstudent_rank(obj_student_class)
+            #                         #     # print(f"rank is {my_rank}")
+
+            #                         #     # # get classavg
+            #                         #     # my_classavg = get_classavg(classroom)
+            #                         #     # print(f"classavg is {my_classavg}")
+
+            #                         #     # # get classavg
+            #                         #     # my_countstud = count_stud_classspec( classroom, obj_student_class.specialty)
+            #                         #     # print(f"count stud in specialty is {my_countstud}")
+
+            #                         #     # # get first term avg get_termavg(student, term, year="2024/2025")
+            #                         #     # firt_term_avg = get_termavg(obj_student_class, "first", academic_yr)
+            #                         #     # if firt_term_avg:
+                                    #     #     print(f"first term avg is {firt_term_avg}")
+            #                         #     # else: 
+            #                         #     #     firt_term_avg = 0.00
+
+            #                         #     # # get second term avg get_termavg(student, term, year="2024/2025")
+            #                         #     # scnd_term_avg = get_termavg(obj_student_class, "second", academic_yr)
+            #                         #     # if scnd_term_avg:
+                                    #     #     print(f"second term avg is {scnd_term_avg}")
+            #                         #     # else: 
+            #                         #     #     scnd_term_avg = 0.00
+                                        
+            #                         #     # # get third term avg get_termavg(student, term, year="2024/2025")
+            #                         #     # third_term_avg = get_termavg(obj_student_class, "third", academic_yr)
+            #                         #     # if third_term_avg:
+                                    #     #     print(f"third term avg is {third_term_avg}")
+            #                         #     # else: 
+            #                         #     #     third_term_avg = 0.00
+
+
+            #                         #     # context = {}
+            #                         #     # context['first_avg_term'] = firt_term_avg
+            #                         #     # context['second_term_avg'] = scnd_term_avg
+            #                         #     # context['third_avg_term'] = third_term_avg
+            #                         #     # context['mi_rank'] = my_rank
+            #                         #     # context['mi_class_avg'] = my_classavg
+            #                         #     # context['spec_class_count_stud'] = my_countstud
+            #                         #     # context['prof_sub_moy'] = round(prof_sub_moy, ndigits=2)
+            #                         #     # context['prof_gen_tot_moy'] = round(prof_gen_tot_moy, ndigits=2)
+            #                         #     # context['subject_line'] = subject_value_cat
+            #                         #     # context['p_settings'] = p_settings
+            #                         #     # context['student'] = obj_student_class
+            #                         #     # context['classroom'] = classroom
+            #                         #     # context['total_coeff'] = total_coeff
+            #                         #     # context['total_tot'] = total_tot
+            #                         #     # context['total_gen_coeff'] = total_gen_coeff
+            #                         #     # context['total_prof_coeff'] = total_prof_coeff
+            #                         #     # context['gen_tot'] = total_gen_tot
+            #                         #     # context['subject_gen_tot'] = subject_gen_tot #gen total subj
+            #                         #     # context['gen_sub_moy'] = round(gen_sub_moy, ndigits=2)
+            #                         #     # context['subj_cat'] = subj_cat
+            #                         #     # context['total_prof_tot'] = total_prof_tot
+            #                         #     # # context['avgTotal'] = "{:.2f}".format(invoiceTotal)
+
+            #                         #     # print(context)
+
+            #                         #     # # using now() to get current time
+            #                         #     # current_time = datetime.datetime.now()
+
+            #                         #     # report_card = ReportCard.objects.create(
+            #                         #     #     student           = obj_student_class ,
+            #                         #     #     term              = term,
+            #                         #     #     student_rank      = my_rank,
+            #                         #     #     gen_coeff         = total_gen_coeff,
+            #                         #     #     prof_coeff        = total_prof_coeff,
+            #                         #     #     gen_total         = subject_gen_tot,
+            #                         #     #     prof_total        = total_prof_tot,
+            #                         #     #     general_subjs_avr = round(gen_sub_moy, ndigits=2),
+            #                         #     #     prof_subjs_avr    = round(prof_sub_moy, ndigits=2),
+            #                         #     #     total_avr         = round(prof_gen_tot_moy, ndigits=2),
+            #                         #     #     best_avr          = round(prof_gen_tot_moy, ndigits=2),
+            #                         #     #     worst_avr         = round(prof_gen_tot_moy, ndigits=2),
+            #                         #     #     firstterm_avr     = round(firt_term_avg, ndigits=2),
+            #                         #     #     secondterm_avr    = round(scnd_term_avg, ndigits=2),
+            #                         #     #     thirdterm_avr    = round(prof_gen_tot_moy, ndigits=2),
+            #                         #     #     # academic_year = '2023/2024',
+            #                         #     #     academic_year     = academic_yr,
+            #                         #     #     resumption        = resumptn,
+            #                         #     #     # teacher = teacher,
+            #                         #     #     added_by          = added_by,
+            #                         #     # )
+
+            #                         #     # messages.success(request, f'{obj_student_class.name} Record Card added Successfully')
+            #                         #     # return redirect("report_cards")
         
         
-            #                             #
-                        else:
-                            messages.error(request, 'No Tests Record')
-                            return redirect('report_cards')
+            # #                             #
+            #             else:
+            #                 messages.error(request, 'No Tests Record')
+            #                 return redirect('report_cards')
                         
+            #
+            #
+                            
+            # total_coeff = decimal.Decimal(total_gen_coeff) + decimal.Decimal(total_prof_coeff)
+                                            
+                                            
+            # gen_sub_moy = decimal.Decimal(subject_gen_tot ) / decimal.Decimal(total_gen_coeff)
+            # prof_sub_moy = decimal.Decimal(subject_prof_tot ) / decimal.Decimal(total_prof_coeff)
+            # prof_gen_tot_moy = decimal.Decimal(total_tot ) / decimal.Decimal(total_coeff)
 
-        print("subject_value_cat")            
-        print(subject_value_cat)
-        print("subject_gen_tot")
-        print(subject_gen_tot)
-        print("subject_prof_tot")
-        print(subject_prof_tot)
-        print("total_tot ")
-        print(total_tot )
+            # # get rank
+            # my_rank = getstudent_rank(obj_student_class)
+            # print(f"rank is {my_rank}")
 
-        total_coeff = decimal.Decimal(total_gen_coeff) + decimal.Decimal(total_prof_coeff)
+            # # get classavg
+            # my_classavg = get_classavg(classroom)
+            # print(f"classavg is {my_classavg}")
 
-        # if subject_gen_tot == 0:
-        #     gen_sub_moy = 0
-        
+            # # get classavg
+            # my_countstud = count_stud_classspec( classroom, obj_student_class.specialty)
+            # print(f"count stud in specialty is {my_countstud}")
+
+
+
+            # # get first term avg get_termavg(student, term, year="2024/2025")
+            # firt_term_avg = get_termavg(obj_student_class, "first", academic_yr)
+            # if firt_term_avg:
+                # print(f"first term avg is {firt_term_avg}")
+            # else: 
+            #     firt_term_avg = 0.00
+
+            # # get second term avg get_termavg(student, term, year="2024/2025")
+            # scnd_term_avg = get_termavg(obj_student_class, "second", academic_yr)
+            # if scnd_term_avg:
+                # print(f"second term avg is {scnd_term_avg}")
+            # else: 
+            #     scnd_term_avg = 0.00
+            
+            # # get third term avg get_termavg(student, term, year="2024/2025")
+            # third_term_avg = get_termavg(obj_student_class, "third", academic_yr)
+            # if third_term_avg:
+                # print(f"third term avg is {third_term_avg}")
+            # else: 
+            #     third_term_avg = 0.00
+
+            
+            # # get_subj_passedterm 
+            # # passed subject count per term
+            # passed_subj_first = get_subj_passedterm(obj_student_class, "first", academic_yr)
+            
+            # if passed_subj_first:
+                # print(f"first term subj count is {passed_subj_first}")
+            # else: 
+            #     passed_subj_first = 0
+
+            # passed_subj_second = get_subj_passedterm(obj_student_class, "second", academic_yr)
+            
+            # if passed_subj_second:
+                # print(f"second term subj count is {passed_subj_second}")
+            # else: 
+            #     passed_subj_second = 0
+
+            # passed_subj_third = get_subj_passedterm(obj_student_class, "third", academic_yr)
+            
+            # if passed_subj_third:
+                # print(f"third term subj count is {passed_subj_third}")
+            # else: 
+            #     passed_subj_third = 0
+
+
+            # context = {}
+            # context['firstterm_subjpass'] = passed_subj_first
+            # context['second_term_subjpass'] = passed_subj_second
+            # context['third_avg_subjpass'] = passed_subj_third
+            # context['first_avg_term'] = firt_term_avg
+            # context['second_term_avg'] = scnd_term_avg
+            # context['third_avg_term'] = third_term_avg
+            # context['mi_rank'] = my_rank
+            # context['mi_class_avg'] = my_classavg
+            # context['spec_class_count_stud'] = my_countstud
+            # context['prof_sub_moy'] = round(prof_sub_moy, ndigits=2)
+            # context['prof_gen_tot_moy'] = round(prof_gen_tot_moy, ndigits=2)
+            # context['subject_line'] = subject_value_cat
+            # context['p_settings'] = p_settings
+            # context['student'] = obj_student_class
+            # context['classroom'] = classroom
+            # context['total_coeff'] = total_coeff
+            # context['total_tot'] = total_tot
+            # context['total_gen_coeff'] = total_gen_coeff
+            # context['total_prof_coeff'] = total_prof_coeff
+            # context['gen_tot'] = total_gen_tot
+            # context['subject_gen_tot'] = subject_gen_tot #gen total subj
+            # context['gen_sub_moy'] = round(gen_sub_moy, ndigits=2)
+            # context['subj_cat'] = subj_cat
+            # context['total_prof_tot'] = total_prof_tot
+            # # context['avgTotal'] = "{:.2f}".format(invoiceTotal)
+
+            # print(context)
+
+            # # using now() to get current time
+            # current_time = datetime.datetime.now()
+            # # 
+            # # check is report card exits
+            # chec_card = ReportCard.objects.filter(term = term,student= obj_student_class,academic_year= academic_yr,is_actif=True).first()
+            # if chec_card:
+            #     chec_card.is_actif = False
+            #     chec_card.modified_by = added_by
+            #     chec_card.save()
+            #     report_card = ReportCard.objects.create(
+            #         student           = obj_student_class ,
+            #         term              = term,
+            #         student_rank      = my_rank,
+            #         gen_coeff         = total_gen_coeff,
+            #         prof_coeff        = total_prof_coeff,
+            #         gen_total         = subject_gen_tot,
+            #         prof_total        = total_prof_tot,
+            #         general_subjs_avr = gen_sub_moy,
+            #         prof_subjs_avr    = prof_sub_moy,
+            #         total_avr         = prof_gen_tot_moy,
+            #         best_avr          = prof_gen_tot_moy,
+            #         worst_avr         = prof_gen_tot_moy,
+            #         # firstterm_avr     = firt_term_avg["total_avg__max"],
+            #         # secondterm_avr  = scnd_term_avg,
+            #         # third_subj_passed     = third_term_avg,
+            #         # first_subj_passed =  passed_subj_first,
+            #         # second_subj_passed = passed_subj_second,
+            #         # academic_year = '2023/2024',
+            #         academic_year     = academic_yr,
+            #         resumption        = resumptn,
+            #         # teacher = teacher,
+            #         added_by          = added_by,
+            #     )
+            # else:
+            #     #
+
+            #     report_card = ReportCard.objects.create(
+            #         student           = obj_student_class ,
+            #         term              = term,
+            #         student_rank      = my_rank,
+            #         gen_coeff         = total_gen_coeff,
+            #         prof_coeff        = total_prof_coeff,
+            #         gen_total         = subject_gen_tot,
+            #         prof_total        = total_prof_tot,
+            #         general_subjs_avr = gen_sub_moy,
+            #         prof_subjs_avr    = prof_sub_moy,
+            #         total_avr           = prof_gen_tot_moy,
+            #         best_avr            = prof_gen_tot_moy,
+            #         worst_avr           = prof_gen_tot_moy,
+            #         # firstterm_avr       = firt_term_avg["total_avg__max"],
+            #         # secondterm_avr  = scnd_term_avg,
+            #         # third_subj_passed     = third_term_avg,
+            #         # first_subj_passed =  passed_subj_first,
+            #         # second_subj_passed = passed_subj_second,
+            #         # # third_subj_passed =  passed_subj_third,
+            #         # academic_year = '2023/2024',
+            #         academic_year     = academic_yr,
+            #         resumption        = resumptn,
+            #         # teacher = teacher,
+            #         added_by          = added_by,
+            #     )
+                
+            # # 
+            
+            # print(f"firt_term_avg ----{firt_term_avg}")
+            # print(firt_term_avg["total_avg__max"])
+            # print(f"scnd_term_avg ----{scnd_term_avg}")
+            # print(scnd_term_avg["total_avg__max"])
+           
+            # if term == "first":
+            #     report_card.firstterm_avr = prof_gen_tot_moy
+                
+            #     if passed_subj_first:
+            #         report_card.first_subj_passed = passed_subj_first
+            #     report_card.modified_by = added_by
+            #     report_card.save()
+            # if term == "second":
+            #     if firt_term_avg["total_avg__max"]:
+            #         #
+            #         report_card.firstterm_avr = firt_term_avg["total_avg__max"]
+            #     if passed_subj_first:
+            #         report_card.first_subj_passed = passed_subj_first
+            #     if passed_subj_second:
+            #         report_card.second_subj_passed = passed_subj_second
+            #     report_card.secondterm_avr    =  prof_gen_tot_moy
+            #     report_card.modified_by = added_by
+            #     report_card.save()
+                
+            # if term == "third":
+            #     if firt_term_avg["total_avg__max"]:
+            #         #
+            #         report_card.firstterm_avr = firt_term_avg["total_avg__max"]
+            #     if scnd_term_avg["total_avg__max"]:
+            #         #
+            #         report_card.secondterm_avr = scnd_term_avg["total_avg__max"]
+            #     if passed_subj_first:
+            #         report_card.first_subj_passed = passed_subj_first
+            #     if passed_subj_second:
+            #         report_card.second_subj_passed = passed_subj_second
+            #     if passed_subj_third:
+            #         report_card.third_subj_passed = passed_subj_third
+            #     report_card.thirdterm_avr    =  prof_gen_tot_moy
+            #     report_card.modified_by = added_by
+            #     report_card.save()
+                
+            
+
+
+            # messages.success(request, f'{obj_student_class.name} Record Card added Successfully')
+            # return redirect("report_cards")
+    
+
         # else:
-        #     gen_sub_moy = subject_gen_tot / decimal.Decimal(total_gen_coeff)
-        # if subject_prof_tot == 0:
-        #     prof_sub_moy = 0
-        # else:
-        #     prof_sub_moy = subject_prof_tot / decimal.Decimal(total_prof_coeff)
-        # if total_tot == 0:
-        #     prof_gen_tot_moy = 0
-        # else:
-        #     prof_gen_tot_moy = total_tot / decimal.Decimal(total_coeff)
-        
-        
-        gen_sub_moy = decimal.Decimal(subject_gen_tot ) / decimal.Decimal(total_gen_coeff)
-        prof_sub_moy = decimal.Decimal(subject_prof_tot ) / decimal.Decimal(total_prof_coeff)
-        prof_gen_tot_moy = decimal.Decimal(total_tot ) / decimal.Decimal(total_coeff)
-        
-        
-        # gen_sub_moy = decimal.Decimal(subject_gen_tot ) / total_gen_coeff
-        # prof_sub_moy = decimal.Decimal(subject_prof_tot ) / total_prof_coeff
-        # prof_gen_tot_moy = decimal.Decimal(total_tot ) / total_coeff
+        #     messages.error(request, 'No Student Record')
+        #     return redirect('report_cards')
+    
 
-        
-
+        # print("subject_value_cat")            
         # print(subject_value_cat)
+        # print("subject_gen_tot")
+        # print(subject_gen_tot)
+        # print("subject_prof_tot")
+        # print(subject_prof_tot)
+        # print("total_tot ")
+        # print(total_tot )
+
+        # total_coeff = decimal.Decimal(total_gen_coeff) + decimal.Decimal(total_prof_coeff)
+
+        # # if subject_gen_tot == 0:
+        # #     gen_sub_moy = 0
+        
+        # # else:
+        # #     gen_sub_moy = subject_gen_tot / decimal.Decimal(total_gen_coeff)
+        # # if subject_prof_tot == 0:
+        # #     prof_sub_moy = 0
+        # # else:
+        # #     prof_sub_moy = subject_prof_tot / decimal.Decimal(total_prof_coeff)
+        # # if total_tot == 0:
+        # #     prof_gen_tot_moy = 0
+        # # else:
+        # #     prof_gen_tot_moy = total_tot / decimal.Decimal(total_coeff)
+        
+        
+        # gen_sub_moy = decimal.Decimal(subject_gen_tot ) / decimal.Decimal(total_gen_coeff)
+        # prof_sub_moy = decimal.Decimal(subject_prof_tot ) / decimal.Decimal(total_prof_coeff)
+        # prof_gen_tot_moy = decimal.Decimal(total_tot ) / decimal.Decimal(total_coeff)
+        
+        
+        # # gen_sub_moy = decimal.Decimal(subject_gen_tot ) / total_gen_coeff
+        # # prof_sub_moy = decimal.Decimal(subject_prof_tot ) / total_prof_coeff
+        # # prof_gen_tot_moy = decimal.Decimal(total_tot ) / total_coeff
+
+        
+
+        # # print(subject_value_cat)
+
+        # # get rank
+        # my_rank = getstudent_rank(obj_student_class)
+        # print(f"rank is {my_rank}")
+
+        # # get classavg
+        # my_classavg = get_classavg(classroom)
+        # print(f"classavg is {my_classavg}")
+
+        # # get classavg
+        # my_countstud = count_stud_classspec( classroom, obj_student_class.specialty)
+        # print(f"count stud in specialty is {my_countstud}")
 
 
 
-        context = {}
-        context['prof_sub_moy'] = round(prof_sub_moy, ndigits=2)
-        context['prof_gen_tot_moy'] = round(prof_gen_tot_moy, ndigits=2)
-        context['subject_line'] = subject_value_cat
-        context['p_settings'] = p_settings
-        context['student'] = obj_student_class
-        context['classroom'] = classroom
-        context['total_coeff'] = total_coeff
-        context['total_tot'] = total_tot
-        context['total_gen_coeff'] = total_gen_coeff
-        context['total_prof_coeff'] = total_prof_coeff
-        context['gen_tot'] = total_gen_tot
-        context['subject_gen_tot'] = subject_gen_tot #gen total subj
-        context['gen_sub_moy'] = round(gen_sub_moy, ndigits=2)
-        context['subj_cat'] = subj_cat
-        context['total_prof_tot'] = total_prof_tot
-        # context['avgTotal'] = "{:.2f}".format(invoiceTotal)
+        # context = {}
+        # context['mi_rank'] = my_rank
+        # context['mi_class_avg'] = my_classavg
+        # context['spec_class_count_stud'] = my_countstud
+        # context['prof_sub_moy'] = round(prof_sub_moy, ndigits=2)
+        # context['prof_gen_tot_moy'] = round(prof_gen_tot_moy, ndigits=2)
+        # context['subject_line'] = subject_value_cat
+        # context['p_settings'] = p_settings
+        # context['student'] = obj_student_class
+        # context['classroom'] = classroom
+        # context['total_coeff'] = total_coeff
+        # context['total_tot'] = total_tot
+        # context['total_gen_coeff'] = total_gen_coeff
+        # context['total_prof_coeff'] = total_prof_coeff
+        # context['gen_tot'] = total_gen_tot
+        # context['subject_gen_tot'] = subject_gen_tot #gen total subj
+        # context['gen_sub_moy'] = round(gen_sub_moy, ndigits=2)
+        # context['subj_cat'] = subj_cat
+        # context['total_prof_tot'] = total_prof_tot
+        # # context['avgTotal'] = "{:.2f}".format(invoiceTotal)
 
-        print(context)
+        # print(context)
 
-        # using now() to get current time
-        current_time = datetime.datetime.now()
+        # # using now() to get current time
+        # current_time = datetime.datetime.now()
 
         # report_card = ReportCard.objects.create(
         #     student           = obj_student_class ,
         #     term              = term,
-        #     student_rank      = 1,
+        #     student_rank      = my_rank,
         #     gen_coeff         = total_gen_coeff,
         #     prof_coeff        = total_prof_coeff,
         #     gen_total         = subject_gen_tot,
@@ -1801,8 +3411,8 @@ def addReportCard(request):
         #     added_by          = added_by,
         # )
 
-        messages.success(request, f'{obj_student_class.name} Record Card added Successfully')
-        return redirect("report_cards")
+        # messages.success(request, f'{obj_student_class.name} Record Card added Successfully')
+        # return redirect("report_cards")
         
         # messages.error(request, 'Something went wrong')
         # return redirect('report_cards')
@@ -1831,8 +3441,8 @@ def addReportCard(request):
             #                         #     subj_cat.append(subject.category)
             #                         #
             #                         if(term == 'first'):
-            #                             print("term")
-            #                             print(term)
+                                        # print("term")
+                                        # print(term)
             #                             subjt_rang = "1"
             #                             testa = obj_eval_class.filter(title='Test1',subject_id=subject.id)
             #                             testb = obj_eval_class.filter(title='Test2',subject_id=subject.id)
@@ -1876,7 +3486,7 @@ def addReportCard(request):
             #                             subjt_rang = "1"
             #                             testa = obj_eval_class.filter(title='Test3',subject_id=subject.id)
             #                             testb = obj_eval_class.filter(title='Test4',subject_id=subject.id)
-            #                             print(term)
+                                        # print(term)
             #                             testa_value = 0.0
             #                             testb_value = 0.0
             #                             testb_coef = 0.0
@@ -1925,7 +3535,7 @@ def addReportCard(request):
             #                             # print(moyentt)
 
             #                             subj_moy = f"{subject.id}_{moyentt}_{subject.title}"
-            #                             print(subj_moy)
+                                        # print(subj_moy)
             #                             total_coeff = total_coeff + decimal.Decimal(testb_coef)
             #                             # total
             #                             moy_tot = moyentt  * int(testb_coef)
@@ -1942,7 +3552,7 @@ def addReportCard(request):
             #                                 total_prof_tot = total_prof_tot + moy_tot
             #                                 #
             #                             # if(test1.subject.title == "English Langauge"):
-            #                             #     print(subject.category)
+                                        #     print(subject.category)
             #                                 #
             #                             subject_value_cat.append([test1.subject.title,testa_value,testb_value, moyentt, testb_coef, moy_tot, test1.observation, subject.category, test1.teacher])
             #                             # subject_value_cat.append([test1.subject.title,testa_value,testb_value, moyentt, subject.coef, moy_tot, test2.observation, subject.category, test1.teacher])
@@ -2115,24 +3725,327 @@ def addReportCard(request):
 #     return buffer
 
 
-
-# @login_required
 def viewDocumentInvoice(request, slug):
     #fetch that reportcard
     try:
         #get student class
-        print('student')
+        # print('student')
         obj_report_card = ReportCard.objects.get(id=slug)
         studentId = obj_report_card.student.id
         obj_student_class = Student.objects.get(id=studentId)
+        # print(obj_student_class)
         # print(obj_student_class.specialty)
+        current_academic_year = "2024/2025"
+
+        classroomId = obj_student_class.student_class_id
+        classroom =  ClassRoom.objects.get(id=classroomId)
+        subjects = Subject.objects.filter(classroom=classroomId)
+        # print(subjects)
+        obj_eval_cl_type = TestMoySpecialtySubjClass.objects.filter(student_id=studentId, academic_year= current_academic_year, is_actif =True)
+        # print(obj_eval_class)
+        pass
+    except:
+        messages.error(request, 'Something went wrong')
+        return redirect('report_cards')
+
+    #total coef
+    # total_coeff = 0.00
+    total_coeff = decimal.Decimal(0.0)
+    #
+    total_gen_coeff = decimal.Decimal(0.0)
+    total_prof_coeff = decimal.Decimal(0.0)
+
+    #total tot
+    # total_tot = 0.00
+    total_tot = decimal.Decimal(0.0)
+    #
+    total_gen_tot = decimal.Decimal(0.0)
+    total_prof_tot = decimal.Decimal(0.0)
+
+    #Get Client Settings
+    p_settings = Settings.objects.get(clientName='GILEAD TECHNICAL HIGH SCHOOL')
+
+    #get subjects
+    term = obj_report_card.term
+
+    # Create an empty of subjects and marks
+    subject_value_cat = []
+
+    # Create an empty of subjects and marks
+    subj_cat = []
+
+    # Create an empty of gen et prof
+    subject_gen_tot = 0.0
+    subject_prof_tot = 0.0
+
+    subjt_rang = "1"
+
+    # get reportcard details
+    if obj_eval_cl_type:
+        # print(f"obj_eval_cl_type ---{obj_eval_cl_type}")
+        if(term == 'first'):
+            # print(f"term---{term}")
+            firstterm_reslts = Eval.objects.filter(student_id=studentId, academic_year= current_academic_year, title="Test1", is_actif =True)
+            if firstterm_reslts:
+                for subject_tests in firstterm_reslts:
+                    # print(f"subject_tests --- {subject_tests}")
+                    moyentt = (subject_tests.value + subject_tests.sec_value) / 2
+                    moy_tot = round((moyentt * subject_tests.coef), ndigits=2)
+                    total_coeff = total_coeff + decimal.Decimal(subject_tests.coef)
+                    total_tot = total_tot + decimal.Decimal(moy_tot)
+                    if subject_tests.subject.category == "General":
+                        # print(subject_tests.subject.category)
+                        total_gen_tot = total_gen_tot + total_tot
+                        subject_gen_tot = subject_gen_tot + float(moy_tot)
+                        total_gen_coeff = total_gen_coeff + decimal.Decimal(subject_tests.coef)
+                    if subject_tests.subject.category == "Professional":
+                        # print(subject_tests.subject.category)
+                        total_prof_tot = total_prof_tot + moy_tot
+                        subject_prof_tot = subject_prof_tot + float(moy_tot)
+                        total_prof_coeff = total_prof_coeff + decimal.Decimal(subject_tests.coef)
+                    
+                    # 
+                    subject_value_cat.append([subject_tests.subject.title,subject_tests.value,subject_tests.sec_value, moyentt, subject_tests.coef, moy_tot, subject_tests.observation, subject_tests.subject.category, subject_tests.teacher])
+        # 
+        if(term == 'second'):
+            # print(f"term---{term}")
+            secondterm_reslts = Eval.objects.filter(student_id=studentId, academic_year= current_academic_year, title="Test3", is_actif =True)
+            if secondterm_reslts:
+                for subject_tests in secondterm_reslts:
+                    # print(f"subject_tests --- {subject_tests}")
+                    moyentt = (subject_tests.value + subject_tests.sec_value) / 2
+                    moy_tot = round((moyentt * subject_tests.coef), ndigits=2)
+                    total_coeff = total_coeff + decimal.Decimal(subject_tests.coef)
+                    total_tot = total_tot + decimal.Decimal(moy_tot)
+                    if subject_tests.subject.category == "General":
+                        # print(subject_tests.subject.category)
+                        total_gen_tot = total_gen_tot + total_tot
+                        subject_gen_tot = subject_gen_tot + float(moy_tot)
+                        total_gen_coeff = total_gen_coeff + decimal.Decimal(subject_tests.coef)
+                    if subject_tests.subject.category == "Professional":
+                        # print(subject_tests.subject.category)
+                        total_prof_tot = total_prof_tot + moy_tot
+                        subject_prof_tot = subject_prof_tot + float(moy_tot)
+                        total_prof_coeff = total_prof_coeff + decimal.Decimal(subject_tests.coef)
+                    
+                    # 
+                    subject_value_cat.append([subject_tests.subject.title,subject_tests.value,subject_tests.sec_value, moyentt, subject_tests.coef, moy_tot, subject_tests.observation, subject_tests.subject.category, subject_tests.teacher])
+        # 
+        if(term == 'third'):
+            # print(f"term---{term}")
+            thirdterm_reslts = Eval.objects.filter(student_id=studentId, academic_year= current_academic_year, title="Test5", is_actif =True)
+            if thirdterm_reslts:
+                for subject_tests in thirdterm_reslts:
+                    # print(f"subject_tests --- {subject_tests}")
+                    moyentt = (subject_tests.value + subject_tests.sec_value) / 2
+                    moy_tot = round((moyentt * subject_tests.coef), ndigits=2)
+                    total_coeff = total_coeff + decimal.Decimal(subject_tests.coef)
+                    total_tot = total_tot + decimal.Decimal(moy_tot)
+                    if subject_tests.subject.category == "General":
+                        # print(subject_tests.subject.category)
+                        total_gen_tot = total_gen_tot + total_tot
+                        subject_gen_tot = subject_gen_tot + float(moy_tot)
+                        total_gen_coeff = total_gen_coeff + decimal.Decimal(subject_tests.coef)
+                    if subject_tests.subject.category == "Professional":
+                        # print(subject_tests.subject.category)
+                        total_prof_tot = total_prof_tot + moy_tot
+                        subject_prof_tot = subject_prof_tot + float(moy_tot)
+                        total_prof_coeff = total_prof_coeff + decimal.Decimal(subject_tests.coef)
+                    
+                    # 
+                    subject_value_cat.append([subject_tests.subject.title,subject_tests.value,subject_tests.sec_value, moyentt, subject_tests.coef, moy_tot, subject_tests.observation, subject_tests.subject.category, subject_tests.teacher])
+        # 
+        # print(subject_value_cat)
+        # print(f"subject_gen_tot ----{subject_gen_tot}")
+        # print(f"total_gen_coeff ----{total_gen_coeff}")
+        
+        gen_sub_moy = decimal.Decimal(subject_gen_tot, ) / total_gen_coeff
+        prof_sub_moy = decimal.Decimal(subject_prof_tot, ) / total_prof_coeff
+        prof_gen_tot_moy = decimal.Decimal(total_tot, ) / total_coeff
+
+        
+
+        # print(subject_value_cat)
+        # get student image obj_student_class
+        def display_image( obj):
+            if obj.stud_image:
+                img_url = image_services.get_image_url_from_cloudflare(
+                    obj.stud_image.cloudflare_id, variant="thumbnailSmall"
+                    # obj.stud_image.cloudflare_id
+                )
+                # print("obj")
+                return img_url
+            return "https://imagedelivery.net/FGazjujafzdf38AXQFJ0qw/834941c7-4e47-4404-a47c-c27bd18a4e00/thumbnailSmall"
+        myimage = display_image(obj_student_class)
+
+        meimage = "https://imagedelivery.net/FGazjujafzdf38AXQFJ0qw/834941c7-4e47-4404-a47c-c27bd18a4e00/thumbnailSmall"
+
+
+        # get rank
+        my_rank = getstudent_rank(obj_student_class)
+        # print(f"rank is {my_rank}")
+
+        # get classavg
+        my_classavg = get_classavg(classroom)
+        # print(f"classavg is {my_classavg}")
+
+        # get classavg
+        my_countstud = count_stud_classspec( classroom, obj_student_class.specialty)
+        # print(f"count stud in specialty is {my_countstud}")
+
+
+
+        # get first term avg get_termavg(student, term, year="2024/2025")
+        firt_term_avg = get_termavg(obj_student_class, "first", current_academic_year)
+        if firt_term_avg:
+            print(f"first term avg is {firt_term_avg}")
+        else: 
+            firt_term_avg = 0.00
+
+        # get second term avg get_termavg(student, term, year="2024/2025")
+        scnd_term_avg = get_termavg(obj_student_class, "second", current_academic_year)
+        if scnd_term_avg:
+            print(f"second term avg is {scnd_term_avg}")
+        else: 
+            scnd_term_avg = 0.00
+        
+        # get third term avg get_termavg(student, term, year="2024/2025")
+        third_term_avg = get_termavg(obj_student_class, "third", current_academic_year)
+        if third_term_avg:
+            print(f"third term avg is {third_term_avg}")
+        else: 
+            third_term_avg = 0.00
+
+
+        context = {}
+        context['first_avg_term'] = firt_term_avg
+        context['second_term_avg'] = scnd_term_avg
+        context['third_avg_term'] = third_term_avg
+        context['mi_rank'] = my_rank
+        context['mi_class_avg'] = my_classavg
+        context['spec_class_count_stud'] = my_countstud
+        context['testimag'] = meimage
+        context['onlinestudimag'] = myimage
+        context['prof_sub_moy'] = round(prof_sub_moy, ndigits=2)
+        context['prof_gen_tot_moy'] = round(prof_gen_tot_moy, ndigits=2)
+        context['reportcard'] = obj_report_card
+        context['subject_line'] = subject_value_cat
+        context['p_settings'] = p_settings
+        context['student'] = obj_student_class
+        context['classroom'] = classroom
+        context['total_coeff'] = total_coeff
+        context['total_tot'] = total_tot
+        context['total_gen_coeff'] = total_gen_coeff
+        context['total_prof_coeff'] = total_prof_coeff
+        context['gen_tot'] = total_gen_tot
+        context['subject_gen_tot'] = subject_gen_tot #gen total subj
+        context['gen_sub_moy'] = round(gen_sub_moy, ndigits=2)
+        context['subj_cat'] = subj_cat
+        context['total_prof_tot'] = total_prof_tot
+        # context['avgTotal'] = "{:.2f}".format(invoiceTotal)
+
+        # using now() to get current time
+        current_time = datetime.datetime.now()
+
+        #The name of your PDF file
+        filename = f"{obj_student_class.name}_{classroom.class_name}_{obj_report_card.academic_year}_{current_time}.pdf"
+
+        #HTML FIle to be converted to PDF - inside your Django directory
+        template = get_template('reports/cards/pdf-template.html')
+
+
+        #Render the HTML
+        html = template.render(context)
+
+        #Options - Very Important [Don't forget this]
+        #Javascript delay is optional
+
+        #Remember that location to wkhtmltopdf
+        # path_wkthmltopdf = b'C:\wkhtmltopdf\\bin\wkhtmltopdf.exe'
+        # config = pdfkit.configuration(wkhtmltopdf=path_wkthmltopdf)
+        # config = pdfkit.configuration(wkhtmltopdf='C:/wkhtmltopdf/bin/wkhtmltopdf')
+        #
+        if platform.system() == "Windows":
+            config = pdfkit.configuration(wkhtmltopdf=os.environ.get("WKHTMLTOPDF_PATH", "C:\wkhtmltopdf\\bin\wkhtmltopdf.exe"))
+        else:
+            WKHTMLTOPDF_CMD = subprocess.Popen(["which", os.environ.get("WKHTMLTOPDF_PATH", "/app/bin/wkhtmltopdf")],
+            stdout=subprocess.PIPE).communicate()[0].strip()
+            config = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_CMD)
+        
+
+        # css
+        # html
+        _html = template.render(context)
+        # remove header
+        _html = _html[_html.find('<body>'):] 
+        new_header = '''<!DOCTYPE html>
+            <html>
+                <head>
+                    <meta charset="utf-8" />
+            <style>
+            '''
+
+        #IF you have CSS to add to template
+        css1 = os.path.join(settings.CSS_LOCATION, 'assets', 'css', 'bootstrap.min.css')
+        css_path = os.path.join(settings.CSS_LOCATION, 'assets', 'css', 'bootstrap.min.css')
+        # css2 = os.path.join(settings.CSS_LOCATION, 'assets', 'css', 'dashboard.css')
+
+        with open(css_path, 'r') as f:
+            new_header += f.read()
+        new_header += '\n</style>'
+        # print(new_header)
+
+        # add head to html
+        _html = new_header + _html[_html.find('<body>'):]
+        # with open('../reports/cards/pdf-template.html', 'w') as f: f.write(_html)  # for debug
+
+        options = {
+            'encoding': 'UTF-8',
+            'javascript-delay':'10', #Optional
+            #   'enable-local-file-access': None, #To be able to access CSS
+            'enable-local-file-access': "", #To be able to access CSS
+            'page-size': 'A4',
+            'custom-header' : [
+                ('Accept-Encoding', 'gzip')
+            ],
+        }
+
+        #Create the file
+        file_content = pdfkit.from_string(html, False, configuration=config, options=options)
+        # file_content = pdfkit.from_string(_html, False, configuration=config, options=options)
+
+        #Create the HTTP Response
+        response = HttpResponse(file_content, content_type='application/pdf')
+        response['Content-Disposition'] = 'inline; filename = {}'.format(filename)
+
+        #Return
+        return response
+    else:
+        messages.error(request, 'No test result found')
+        return redirect('report_cards')
+
+   
+
+
+# @login_required
+def NOTGOODviewDocumentInvoice(request, slug):
+    #fetch that reportcard
+    try:
+        #get student class
+        # print('student')
+        obj_report_card = ReportCard.objects.get(id=slug)
+        studentId = obj_report_card.student.id
+        obj_student_class = Student.objects.get(id=studentId)
+        # print(obj_student_class)
+        # print(obj_student_class.specialty)
+        current_academic_year = "2024/2025"
 
         classroomId = obj_student_class.student_class_id
         classroom =  ClassRoom.objects.get(id=classroomId)
         subjects = Subject.objects.filter(classroom=classroomId)
         # print(subjects)
         obj_eval_class = Eval.objects.filter(student_id=studentId)
-        obj_eval_cl_type = Eval.objects.filter(student_id=studentId, title='Test3')
+        obj_eval_cl_type = Eval.objects.filter(student_id=studentId, academic_year= current_academic_year)
         # print(obj_eval_class)
         pass
     except:
@@ -2175,308 +4088,303 @@ def viewDocumentInvoice(request, slug):
     if len(subjects) > 0:
         for subject in subjects:
             # print(subject.coef)
-            if subject.coef is None:
+            if subject is None:
                 # print('no subjj coef')
                 messages.error(request, 'Something went wrong')
                 return redirect('report_cards')
             else:
-                # follow_object = Teacher.objects.filter(classrooms = classroom, t_subjects = subjects)
-                # followers_of_teach = follow_object.t_subjects.all()
-                # print(follow_object)
-                # print("subject title")
-                # print(subject.title)
-                # print("subject term")
-                # print(obj_report_card.term)
-                for evals in obj_eval_cl_type:
-                        if evals.subject_id == subject.id:
-                            # if(subject.category == 'General'):
-                            #     # print(f"General {subject.coef}")
-                            #     total_gen_coeff = total_gen_coeff + decimal.Decimal(evals.subject.coef)
-                            #     subj_cat.append(subject.category)
-                            #     # total_gen_tot = total_gen_tot + decimal.Decimal(evals.subject.coef)
-                            # #)
-                            # if(subject.category == 'Professional'):
-                            #     # print(f"Professional {evals.subject.coef}")
-                            #     total_prof_coeff = total_prof_coeff + decimal.Decimal(evals.subject.coef)
-                            #     subj_cat.append(subject.category)
-                            #
-                            if(term == 'first'):
-                                subjt_rang = "1"
-                                testa = obj_eval_class.filter(title='Test1',subject_id=subject.id)
-                                testb = obj_eval_class.filter(title='Test2',subject_id=subject.id)
-                                # print('first')
-                                if not testa:
-                                    # print("no vale a")
-                                    testa_value = 0.0
-                                else:
-                                    for test1 in testa:
-                                        if(test1.subject_id == subject.id):
-                                            testa_value = test1.value
+                if obj_student_class:
+                    if obj_eval_cl_type:
+                        for evals in obj_eval_cl_type:
+                                if evals.subject_id == subject.id:
+                                    if(term == 'first'):
+                                        subjt_rang = "1"
+                                        # testa = obj_eval_class.filter(title='Test1',subject_id=subject.id)
+                                        # testb = obj_eval_class.filter(title='Test2',subject_id=subject.id)
+                                        get_testa = Eval.objects.filter(title="Test1",student_id=obj_student_class.id,subject_id = subject.id, academic_year=current_academic_year).first()
+                                        # print('first')
+                                        get_testa.value + get_testa.sec_value
+                                        if not get_testa.value:
+                                            # print("no vale a")
+                                            testa_value = 0.0
+                                        else:
+                                            testa_value = get_testa.value
+                                            # for test1 in testa:
+                                            #     if(test1.subject_id == subject.id):
+                                            #         testa_value = test1.value
+                                                    #
+                                        if not get_testa.sec_value:
+                                            # print("no vale b")
+                                            testb_value = 0.0
+                                        else:
+                                            testb_value = get_testa.sec_value
+                                            # for test2 in testb:
+                                            #     if(test2.subject_id == subject.id):
+                                            #         testb_value = test2.value
+                                        total_eval = testa_value + testb_value
+                                        moyentt = total_eval / 2
+                                        # print(moyentt)
+
+                                        subj_moy = f"{subject.id}_{moyentt}_{subject.title}"
+                                        total_coeff = total_coeff + decimal.Decimal(evals.subject.coef)
+                                        # total
+                                        moy_tot = moyentt  * int(evals.subject.coef)
+                                        total_tot = total_tot + decimal.Decimal(moy_tot)
+                                        subj_moy_tot = f"{subject.title}_{subject.id}_{moyentt}_{moy_tot}"
+                                        # print(subj_moy_tot)
+                                        # print(testb)
+                                        if(subject.category == 'General'):
+                                            total_gen_tot = total_gen_tot + total_tot
                                             #
-                                if not testb:
-                                    # print("no vale b")
-                                    testb_value = 0.0
-                                else:
-                                    for test2 in testb:
-                                        if(test2.subject_id == subject.id):
-                                            testb_value = test2.value
-                                total_eval = testa_value + testb_value
-                                moyentt = total_eval / 2
-                                # print(moyentt)
+                                        if(subject.category == 'Professional'):
+                                            total_prof_tot = total_prof_tot + moy_tot
+                                            #
+                                        # subject_value_cat.append([test1.subject.title,testa_value,testb_value, moyentt, moy_tot,evals.subject.coef, test2.observation, subject.category, test1.teacher])
+                                        #
+                                    if(term == 'second'):
+                                        subjt_rang = "1"
+                                        testa = obj_eval_class.filter(title='Test3',subject_id=subject.id)
+                                        testb = obj_eval_class.filter(title='Test4',subject_id=subject.id)
+                                        # print(term)
+                                        testa_value = 0.0
+                                        testb_value = 0.0
+                                        testb_coef = 0.0
+                                        testa_coef = 0.0
 
-                                subj_moy = f"{subject.id}_{moyentt}_{subject.title}"
-                                total_coeff = total_coeff + decimal.Decimal(evals.subject.coef)
-                                # total
-                                moy_tot = moyentt  * int(evals.subject.coef)
-                                total_tot = total_tot + decimal.Decimal(moy_tot)
-                                subj_moy_tot = f"{subject.title}_{subject.id}_{moyentt}_{moy_tot}"
-                                # print(subj_moy_tot)
-                                # print(testb)
-                                if(subject.category == 'General'):
-                                    total_gen_tot = total_gen_tot + total_tot
-                                    #
-                                if(subject.category == 'Professional'):
-                                    total_prof_tot = total_prof_tot + moy_tot
-                                    #
-                                # subject_value_cat.append([test1.subject.title,testa_value,testb_value, moyentt, moy_tot,evals.subject.coef, test2.observation, subject.category, test1.teacher])
-                                #
-                            if(term == 'second'):
-                                subjt_rang = "1"
-                                testa = obj_eval_class.filter(title='Test3',subject_id=subject.id)
-                                testb = obj_eval_class.filter(title='Test4',subject_id=subject.id)
-                                print(term)
-                                testa_value = 0.0
-                                testb_value = 0.0
-                                testb_coef = 0.0
-                                testa_coef = 0.0
+                                        if testa:
+                                            for test1 in testa:
+                                                if(test1.subject_id == subject.id):
+                                                    testa_value = test1.value
+                                                    testa_coef = test1.coef
 
-                                if testa:
-                                    for test1 in testa:
-                                        if(test1.subject_id == subject.id):
-                                            testa_value = test1.value
-                                            testa_coef = test1.coef
+                                        if testb:
+                                            for test2 in testb:
+                                                if(test2.subject_id == subject.id):
+                                                    testb_value = test2.value
+                                                    testb_coef = test2.coef
+                                        if(subject.category == 'General'):
+                                            # print(f"General {subject.coef}")
+                                            total_gen_coeff = total_gen_coeff + decimal.Decimal(testb_coef)
+                                            subj_cat.append(subject.category)
+                                            # total_gen_tot = total_gen_tot + decimal.Decimal(testb_coef)
+                                        #)
+                                        if(subject.category == 'Professional'):
+                                            # print(f"Professional {testb_coef}")
+                                            total_prof_coeff = total_prof_coeff + decimal.Decimal(testb_coef)
+                                            subj_cat.append(subject.category)
+                                        # print(testa.teacher)
+                                        # print(testb)
+                                        # print('first')
+                                        # if not testa:
+                                        #     # print("no vale a")
+                                        #     testa_value = 0.0
+                                        # else:
+                                        #     for test1 in testa:
+                                        #         if(test1.subject_id == subject.id):
+                                        #             testa_value = test1.value
+                                        # if not testb:
+                                        #     # print("no vale b")
+                                        #     testb_value = 0.0
+                                        # else:
+                                        #     for test2 in testb:
+                                        #         if(test2.subject_id == subject.id):
+                                        #             testb_value = test2.value
+                                        total_eval = decimal.Decimal(testa_value) + decimal.Decimal(testb_value)
+                                        moyentt = total_eval / 2
+                                        # print(moyentt)
 
-                                if testb:
-                                    for test2 in testb:
-                                        if(test2.subject_id == subject.id):
-                                            testb_value = test2.value
-                                            testb_coef = test2.coef
-                                if(subject.category == 'General'):
-                                    # print(f"General {subject.coef}")
-                                    total_gen_coeff = total_gen_coeff + decimal.Decimal(testb_coef)
-                                    subj_cat.append(subject.category)
-                                    # total_gen_tot = total_gen_tot + decimal.Decimal(testb_coef)
-                                #)
-                                if(subject.category == 'Professional'):
-                                    # print(f"Professional {testb_coef}")
-                                    total_prof_coeff = total_prof_coeff + decimal.Decimal(testb_coef)
-                                    subj_cat.append(subject.category)
-                                # print(testa.teacher)
-                                # print(testb)
-                                # print('first')
-                                # if not testa:
-                                #     # print("no vale a")
-                                #     testa_value = 0.0
-                                # else:
-                                #     for test1 in testa:
-                                #         if(test1.subject_id == subject.id):
-                                #             testa_value = test1.value
-                                # if not testb:
-                                #     # print("no vale b")
-                                #     testb_value = 0.0
-                                # else:
-                                #     for test2 in testb:
-                                #         if(test2.subject_id == subject.id):
-                                #             testb_value = test2.value
-                                total_eval = decimal.Decimal(testa_value) + decimal.Decimal(testb_value)
-                                moyentt = total_eval / 2
-                                # print(moyentt)
+                                        subj_moy = f"{subject.id}_{moyentt}_{subject.title}"
+                                        # print(subj_moy)
+                                        total_coeff = total_coeff + decimal.Decimal(testb_coef)
+                                        # total
+                                        moy_tot = moyentt  * int(testb_coef)
+                                        total_tot = total_tot + decimal.Decimal(moy_tot)
+                                        subj_moy_tot = f"{subject.title}_{subject.id}_{moyentt}_{moy_tot}"
+                                        # print(subj_moy_tot)
+                                        # print(testb)
+                                        if(subject.category == 'General'):
+                                            total_gen_tot = total_gen_tot + total_tot
+                                            subject_gen_tot = subject_gen_tot + float(moy_tot)
+                                        if(subject.category == 'Professional'):
+                                            # total_gen_tot = total_gen_tot + total_tot
+                                            subject_prof_tot = subject_prof_tot + float(moy_tot)
+                                            total_prof_tot = total_prof_tot + moy_tot
+                                            #
+                                        # if(test1.subject.title == "English Langauge"):
+                                            print(subject.category)
+                                            #
+                                        subject_value_cat.append([test1.subject.title,testa_value,testb_value, moyentt, testb_coef, moy_tot, test1.observation, subject.category, test1.teacher])
+                                        # subject_value_cat.append([test1.subject.title,testa_value,testb_value, moyentt, subject.coef, moy_tot, test2.observation, subject.category, test1.teacher])
+                                        #
+                                    if(term == 'third'):
+                                        subjt_rang = "1"
+                                        testa = obj_eval_class.filter(title='Test5',subject_id=subject.id)
+                                        testb = obj_eval_class.filter(title='Test6',subject_id=subject.id)
+                                        # print('first')
+                                        if not testa:
+                                            # print("no vale a")
+                                            testa_value = 0.0
+                                        else:
+                                            for test1 in testa:
+                                                if(test1.subject_id == subject.id):
+                                                    testa_value = test1.value
+                                        if not testb:
+                                            # print("no vale b")
+                                            testb_value = 0.0
+                                        else:
+                                            for test2 in testb:
+                                                if(test2.subject_id == subject.id):
+                                                    testb_value = test2.value
+                                        total_eval = testa_value + testb_value
+                                        moyentt = total_eval / 2
+                                        # print(moyentt)
 
-                                subj_moy = f"{subject.id}_{moyentt}_{subject.title}"
-                                # print(subj_moy)
-                                total_coeff = total_coeff + decimal.Decimal(testb_coef)
-                                # total
-                                moy_tot = moyentt  * int(testb_coef)
-                                total_tot = total_tot + decimal.Decimal(moy_tot)
-                                subj_moy_tot = f"{subject.title}_{subject.id}_{moyentt}_{moy_tot}"
-                                # print(subj_moy_tot)
-                                # print(testb)
-                                if(subject.category == 'General'):
-                                    total_gen_tot = total_gen_tot + total_tot
-                                    subject_gen_tot = subject_gen_tot + float(moy_tot)
-                                if(subject.category == 'Professional'):
-                                    # total_gen_tot = total_gen_tot + total_tot
-                                    subject_prof_tot = subject_prof_tot + float(moy_tot)
-                                    total_prof_tot = total_prof_tot + moy_tot
-                                    #
-                                # if(test1.subject.title == "English Langauge"):
-                                #     print(subject.category)
-                                    #
-                                subject_value_cat.append([test1.subject.title,testa_value,testb_value, moyentt, testb_coef, moy_tot, test1.observation, subject.category, test1.teacher])
-                                # subject_value_cat.append([test1.subject.title,testa_value,testb_value, moyentt, subject.coef, moy_tot, test2.observation, subject.category, test1.teacher])
-                                #
-                            if(term == 'third'):
-                                subjt_rang = "1"
-                                testa = obj_eval_class.filter(title='Test5',subject_id=subject.id)
-                                testb = obj_eval_class.filter(title='Test6',subject_id=subject.id)
-                                # print('first')
-                                if not testa:
-                                    # print("no vale a")
-                                    testa_value = 0.0
-                                else:
-                                    for test1 in testa:
-                                        if(test1.subject_id == subject.id):
-                                            testa_value = test1.value
-                                if not testb:
-                                    # print("no vale b")
-                                    testb_value = 0.0
-                                else:
-                                    for test2 in testb:
-                                        if(test2.subject_id == subject.id):
-                                            testb_value = test2.value
-                                total_eval = testa_value + testb_value
-                                moyentt = total_eval / 2
-                                # print(moyentt)
-
-                                subj_moy = f"{subject.id}_{moyentt}_{subject.title}"
-                                total_coeff = total_coeff + decimal.Decimal(evals.subject.coef)
-                                # total
-                                moy_tot = moyentt  * int(evals.subject.coef)
-                                total_tot = total_tot + decimal.Decimal(moy_tot)
-                                subj_moy_tot = f"{subject.title}_{subject.id}_{moyentt}_{moy_tot}"
-                                # print(subj_moy_tot)
-                                # print(testb)
-                                if(subject.category == 'General'):
-                                    total_gen_tot = total_gen_tot + total_tot
-                                if(subject.category == 'Professional'):
-                                    total_prof_tot = total_prof_tot + moy_tot
-                                    #
-                                # subject_value_cat.append([test1.subject.title,testa_value,testb_value, moyentt, moy_tot, subject.coef, test2.observation, subject.category,  test1.teacher])
-                                subject_value_cat.append([test1.subject.title,testa_value,testb_value, moyentt, moy_tot, evals.subject.coef, test2.observation, subject.category,  test1.teacher])
+                                        subj_moy = f"{subject.id}_{moyentt}_{subject.title}"
+                                        total_coeff = total_coeff + decimal.Decimal(evals.subject.coef)
+                                        # total
+                                        moy_tot = moyentt  * int(evals.subject.coef)
+                                        total_tot = total_tot + decimal.Decimal(moy_tot)
+                                        subj_moy_tot = f"{subject.title}_{subject.id}_{moyentt}_{moy_tot}"
+                                        # print(subj_moy_tot)
+                                        # print(testb)
+                                        if(subject.category == 'General'):
+                                            total_gen_tot = total_gen_tot + total_tot
+                                        if(subject.category == 'Professional'):
+                                            total_prof_tot = total_prof_tot + moy_tot
+                                            #
+                                        # subject_value_cat.append([test1.subject.title,testa_value,testb_value, moyentt, moy_tot, subject.coef, test2.observation, subject.category,  test1.teacher])
+                                        subject_value_cat.append([test1.subject.title,testa_value,testb_value, moyentt, moy_tot, evals.subject.coef, test2.observation, subject.category,  test1.teacher])
 
             # y = float(x.quantity) * float(x.price)
             # invoiceTotal += y
     
-    gen_sub_moy = decimal.Decimal(subject_gen_tot, ) / total_gen_coeff
-    prof_sub_moy = decimal.Decimal(subject_prof_tot, ) / total_prof_coeff
-    prof_gen_tot_moy = decimal.Decimal(total_tot, ) / total_coeff
+        # print(f"subject_gen_tot ----{subject_gen_tot}")
+        # print(f"total_gen_coeff ----{total_gen_coeff}")
+        
+        gen_sub_moy = decimal.Decimal(subject_gen_tot, ) / total_gen_coeff
+        prof_sub_moy = decimal.Decimal(subject_prof_tot, ) / total_prof_coeff
+        prof_gen_tot_moy = decimal.Decimal(total_tot, ) / total_coeff
 
+        
+
+        # print(subject_value_cat)
+        # get student image obj_student_class
+        def display_image( obj):
+            if obj.stud_image:
+                img_url = image_services.get_image_url_from_cloudflare(
+                    obj.stud_image.cloudflare_id, variant="thumbnailSmall"
+                    # obj.stud_image.cloudflare_id
+                )
+                # print("obj")
+                return img_url
+            return "https://imagedelivery.net/FGazjujafzdf38AXQFJ0qw/834941c7-4e47-4404-a47c-c27bd18a4e00/thumbnailSmall"
+        myimage = display_image(obj_student_class)
+
+        meimage = "https://imagedelivery.net/FGazjujafzdf38AXQFJ0qw/834941c7-4e47-4404-a47c-c27bd18a4e00/thumbnailSmall"
+
+
+
+        context = {}
+        context['testimag'] = meimage
+        context['onlinestudimag'] = myimage
+        context['prof_sub_moy'] = round(prof_sub_moy, ndigits=2)
+        context['prof_gen_tot_moy'] = round(prof_gen_tot_moy, ndigits=2)
+        context['reportcard'] = obj_report_card
+        context['subject_line'] = subject_value_cat
+        context['p_settings'] = p_settings
+        context['student'] = obj_student_class
+        context['classroom'] = classroom
+        context['total_coeff'] = total_coeff
+        context['total_tot'] = total_tot
+        context['total_gen_coeff'] = total_gen_coeff
+        context['total_prof_coeff'] = total_prof_coeff
+        context['gen_tot'] = total_gen_tot
+        context['subject_gen_tot'] = subject_gen_tot #gen total subj
+        context['gen_sub_moy'] = round(gen_sub_moy, ndigits=2)
+        context['subj_cat'] = subj_cat
+        context['total_prof_tot'] = total_prof_tot
+        # context['avgTotal'] = "{:.2f}".format(invoiceTotal)
+
+        # using now() to get current time
+        current_time = datetime.datetime.now()
+
+        #The name of your PDF file
+        filename = f"{obj_student_class.name}_{classroom.class_name}_{obj_report_card.academic_year}_{current_time}.pdf"
+
+        #HTML FIle to be converted to PDF - inside your Django directory
+        template = get_template('reports/cards/pdf-template.html')
+
+
+        #Render the HTML
+        html = template.render(context)
+
+        #Options - Very Important [Don't forget this]
+        #Javascript delay is optional
+
+        #Remember that location to wkhtmltopdf
+        # path_wkthmltopdf = b'C:\wkhtmltopdf\\bin\wkhtmltopdf.exe'
+        # config = pdfkit.configuration(wkhtmltopdf=path_wkthmltopdf)
+        # config = pdfkit.configuration(wkhtmltopdf='C:/wkhtmltopdf/bin/wkhtmltopdf')
+        #
+        if platform.system() == "Windows":
+            config = pdfkit.configuration(wkhtmltopdf=os.environ.get("WKHTMLTOPDF_PATH", "C:\wkhtmltopdf\\bin\wkhtmltopdf.exe"))
+        else:
+            WKHTMLTOPDF_CMD = subprocess.Popen(["which", os.environ.get("WKHTMLTOPDF_PATH", "/app/bin/wkhtmltopdf")],
+            stdout=subprocess.PIPE).communicate()[0].strip()
+            config = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_CMD)
+        
+
+        # css
+        # html
+        _html = template.render(context)
+        # remove header
+        _html = _html[_html.find('<body>'):] 
+        new_header = '''<!DOCTYPE html>
+            <html>
+                <head>
+                    <meta charset="utf-8" />
+            <style>
+            '''
+
+        #IF you have CSS to add to template
+        css1 = os.path.join(settings.CSS_LOCATION, 'assets', 'css', 'bootstrap.min.css')
+        css_path = os.path.join(settings.CSS_LOCATION, 'assets', 'css', 'bootstrap.min.css')
+        # css2 = os.path.join(settings.CSS_LOCATION, 'assets', 'css', 'dashboard.css')
+
+        with open(css_path, 'r') as f:
+            new_header += f.read()
+        new_header += '\n</style>'
+        # print(new_header)
+
+        # add head to html
+        _html = new_header + _html[_html.find('<body>'):]
+        # with open('../reports/cards/pdf-template.html', 'w') as f: f.write(_html)  # for debug
+
+        options = {
+            'encoding': 'UTF-8',
+            'javascript-delay':'10', #Optional
+            #   'enable-local-file-access': None, #To be able to access CSS
+            'enable-local-file-access': "", #To be able to access CSS
+            'page-size': 'A4',
+            'custom-header' : [
+                ('Accept-Encoding', 'gzip')
+            ],
+        }
+
+        #Create the file
+        file_content = pdfkit.from_string(html, False, configuration=config, options=options)
+        # file_content = pdfkit.from_string(_html, False, configuration=config, options=options)
+
+        #Create the HTTP Response
+        response = HttpResponse(file_content, content_type='application/pdf')
+        response['Content-Disposition'] = 'inline; filename = {}'.format(filename)
+
+        #Return
+        return response
     
-
-    # print(subject_value_cat)
-    # get student image obj_student_class
-    def display_image( obj):
-        if obj.stud_image:
-            img_url = image_services.get_image_url_from_cloudflare(
-                obj.stud_image.cloudflare_id, variant="thumbnailSmall"
-                # obj.stud_image.cloudflare_id
-            )
-            print("obj")
-            return img_url
-        return "https://imagedelivery.net/FGazjujafzdf38AXQFJ0qw/834941c7-4e47-4404-a47c-c27bd18a4e00/thumbnailSmall"
-    myimage = display_image(obj_student_class)
-
-    meimage = "https://imagedelivery.net/FGazjujafzdf38AXQFJ0qw/834941c7-4e47-4404-a47c-c27bd18a4e00/thumbnailSmall"
-
-
-
-    context = {}
-    context['testimag'] = meimage
-    context['onlinestudimag'] = myimage
-    context['prof_sub_moy'] = round(prof_sub_moy, ndigits=2)
-    context['prof_gen_tot_moy'] = round(prof_gen_tot_moy, ndigits=2)
-    context['reportcard'] = obj_report_card
-    context['subject_line'] = subject_value_cat
-    context['p_settings'] = p_settings
-    context['student'] = obj_student_class
-    context['classroom'] = classroom
-    context['total_coeff'] = total_coeff
-    context['total_tot'] = total_tot
-    context['total_gen_coeff'] = total_gen_coeff
-    context['total_prof_coeff'] = total_prof_coeff
-    context['gen_tot'] = total_gen_tot
-    context['subject_gen_tot'] = subject_gen_tot #gen total subj
-    context['gen_sub_moy'] = round(gen_sub_moy, ndigits=2)
-    context['subj_cat'] = subj_cat
-    context['total_prof_tot'] = total_prof_tot
-    # context['avgTotal'] = "{:.2f}".format(invoiceTotal)
-
-    # using now() to get current time
-    current_time = datetime.datetime.now()
-
-    #The name of your PDF file
-    filename = f"{obj_student_class.name}_{classroom.class_name}_{obj_report_card.academic_year}_{current_time}.pdf"
-
-    #HTML FIle to be converted to PDF - inside your Django directory
-    template = get_template('reports/cards/pdf-template.html')
-
-
-    #Render the HTML
-    html = template.render(context)
-
-    #Options - Very Important [Don't forget this]
-      #Javascript delay is optional
-
-    #Remember that location to wkhtmltopdf
-    # path_wkthmltopdf = b'C:\wkhtmltopdf\\bin\wkhtmltopdf.exe'
-    # config = pdfkit.configuration(wkhtmltopdf=path_wkthmltopdf)
-    # config = pdfkit.configuration(wkhtmltopdf='C:/wkhtmltopdf/bin/wkhtmltopdf')
-    #
-    if platform.system() == "Windows":
-        config = pdfkit.configuration(wkhtmltopdf=os.environ.get("WKHTMLTOPDF_PATH", "C:\wkhtmltopdf\\bin\wkhtmltopdf.exe"))
     else:
-        WKHTMLTOPDF_CMD = subprocess.Popen(["which", os.environ.get("WKHTMLTOPDF_PATH", "/app/bin/wkhtmltopdf")],
-        stdout=subprocess.PIPE).communicate()[0].strip()
-        config = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_CMD)
-    
-
-    # css
-    # html
-    _html = template.render(context)
-     # remove header
-    _html = _html[_html.find('<body>'):] 
-    new_header = '''<!DOCTYPE html>
-        <html>
-            <head>
-                <meta charset="utf-8" />
-        <style>
-        '''
-
-    #IF you have CSS to add to template
-    css1 = os.path.join(settings.CSS_LOCATION, 'assets', 'css', 'bootstrap.min.css')
-    css_path = os.path.join(settings.CSS_LOCATION, 'assets', 'css', 'bootstrap.min.css')
-    # css2 = os.path.join(settings.CSS_LOCATION, 'assets', 'css', 'dashboard.css')
-
-    with open(css_path, 'r') as f:
-        new_header += f.read()
-    new_header += '\n</style>'
-    print(new_header)
-
-    # add head to html
-    _html = new_header + _html[_html.find('<body>'):]
-    # with open('../reports/cards/pdf-template.html', 'w') as f: f.write(_html)  # for debug
-
-    options = {
-          'encoding': 'UTF-8',
-          'javascript-delay':'10', #Optional
-        #   'enable-local-file-access': None, #To be able to access CSS
-          'enable-local-file-access': "", #To be able to access CSS
-          'page-size': 'A4',
-          'custom-header' : [
-              ('Accept-Encoding', 'gzip')
-          ],
-      }
-
-    #Create the file
-    file_content = pdfkit.from_string(html, False, configuration=config, options=options)
-    # file_content = pdfkit.from_string(_html, False, configuration=config, options=options)
-
-    #Create the HTTP Response
-    response = HttpResponse(file_content, content_type='application/pdf')
-    response['Content-Disposition'] = 'inline; filename = {}'.format(filename)
-
-    #Return
-    return response
+            messages.error(request, 'No Subject found Record')
+            return redirect('report_cards')
 
 
 
@@ -2487,7 +4395,7 @@ def viewDocumentInvoiceERRUR(request, slug):
     #fetch that reportcard
     try:
         #get student class
-        print('student')
+        # print('student')
         obj_report_card = ReportCard.objects.get(id=slug)
         studentId = obj_report_card.student.id
         obj_student_class = Student.objects.get(id=studentId)
@@ -2607,9 +4515,9 @@ def viewDocumentInvoiceERRUR(request, slug):
                     subjt_rang = "1"
                     testa = obj_eval_class.filter(title='Test3',subject_id=subject.id)
                     testb = obj_eval_class.filter(title='Test4',subject_id=subject.id)
-                    print(term)
+                    # print(term)
                     # print(testa.teacher)
-                    print(testb)
+                    # print(testb)
                     # print('first')
                     if not testa:
                         # print("no vale a")
@@ -2630,7 +4538,7 @@ def viewDocumentInvoiceERRUR(request, slug):
                     # print(moyentt)
 
                     subj_moy = f"{subject.id}_{moyentt}_{subject.title}"
-                    print(subj_moy)
+                    # print(subj_moy)
                     total_coeff = total_coeff + decimal.Decimal(subject.coef)
                     # total
                     moy_tot = moyentt  * int(subject.coef)
@@ -2647,7 +4555,7 @@ def viewDocumentInvoiceERRUR(request, slug):
                         total_prof_tot = total_prof_tot + moy_tot
                         #
                     # if(test1.subject.title == "English Langauge"):
-                    #     print(subject.category)
+                        print(subject.category)
                         #
                     subject_value_cat.append([subject.title,testa_value,testb_value, moyentt, subject.coef, moy_tot, test2.observation, subject.category, test2.teacher])
                     # subject_value_cat.append([test1.subject.title,testa_value,testb_value, moyentt, subject.coef, moy_tot, test2.observation, subject.category, test1.teacher])
@@ -2791,19 +4699,19 @@ def OLDcreate_report_card(request):
         added_by = request.user.username
 
         #get student class
-        print('student')
+        # print('student')
         obj_student_class = Student.objects.get(id=student)
 
         classroomId = obj_student_class.student_class_id
         classroom =  ClassRoom.objects.get(id=classroomId)
 
         #get test
-        print('test')
+        # print('test')
         obj_eval_class = Eval.objects.filter(student_id=student)
         # print(obj_eval_class)
 
         #get subject
-        print('subject')
+        # print('subject')
         # list_subject = Subject.classroom.all()
         # print(list_subject)
         # obj_eval_class = Eval.objects.filter(student_id=student)
@@ -2825,21 +4733,21 @@ def OLDcreate_report_card(request):
 
         if results is None:
             print("not results")
-            print(results)
+            # print(results)
         else:
             for subjj_cl in results:
-                print(subjj_cl.id)
-                print(subjj_cl.coef)
+                # print(subjj_cl.id)
+                # print(subjj_cl.coef)
                 if subjj_cl.coef is None:
                     print('no subjj coef')
                 else:
                     if(subjj_cl.category == 'General'):
-                        print(f"General {subjj_cl.coef}")
+                        # print(f"General {subjj_cl.coef}")
                         total_gen_coeff = total_gen_coeff + decimal.Decimal(subjj_cl.coef)
                         # total_gen_tot = total_gen_tot + decimal.Decimal(subjj_cl.coef)
                     #)
                     if(subjj_cl.category == 'Professional'):
-                        print(f"Professional {subjj_cl.coef}")
+                        # print(f"Professional {subjj_cl.coef}")
                         total_prof_coeff = total_prof_coeff + decimal.Decimal(subjj_cl.coef)
                     #
                     if(term == 'first'):
@@ -2847,14 +4755,14 @@ def OLDcreate_report_card(request):
                         testb = obj_eval_class.filter(title='Test2',subject_id=subjj_cl.id)
                         # print('first')
                         if not testa:
-                            print("no vale a")
+                            # print("no vale a")
                             testa_value = 0.0
                         else:
                             for test1 in testa:
                                 if(test1.subject_id == subjj_cl.id):
                                     testa_value = test1.value
                         if not testb:
-                            print("no vale b")
+                            # print("no vale b")
                             testb_value = 0.0
                         else:
                             for test2 in testb:
@@ -2870,7 +4778,7 @@ def OLDcreate_report_card(request):
                         moy_tot = moyentt  * int(subjj_cl.coef)
                         total_tot = total_tot + decimal.Decimal(moy_tot)
                         subj_moy_tot = f"{subjj_cl.title}_{subjj_cl.id}_{moyentt}_{moy_tot}"
-                        print(subj_moy_tot)
+                        # print(subj_moy_tot)
                         # print(testb)
                         if(subjj_cl.category == 'General'):
                             total_gen_tot = total_gen_tot + total_tot
@@ -2881,7 +4789,7 @@ def OLDcreate_report_card(request):
                         # print('test3')
                         # print(testa.filter(subject_id=subjj_cl.id))
                         if not testa:
-                            print("no vale a")
+                            # print("no vale a")
                             testa_value = 0.0
                         else:
                             for test1 in testa:
@@ -2892,7 +4800,7 @@ def OLDcreate_report_card(request):
                                     # print(test1.value)
                                     testa_value = test1.value
                         if not testb:
-                            print("no vale b")
+                            # print("no vale b")
                             testb_value = 0.0
                         else:
                             for test2 in testb:
@@ -2910,7 +4818,7 @@ def OLDcreate_report_card(request):
                         # print(moyentt)
 
                         subj_moy = f"{subjj_cl.id}_{moyentt}_{subjj_cl.title}"
-                        print(subj_moy)
+                        # print(subj_moy)
 
                         # print("coef")
                         # print(subjj_cl.coef)
@@ -2926,7 +4834,7 @@ def OLDcreate_report_card(request):
                         # print(total_tot)
                         total_tot = total_tot + decimal.Decimal(moy_tot)
                         subj_moy_tot = f"{subjj_cl.title}_{subjj_cl.id}_{moyentt}_{moy_tot}"
-                        print(subj_moy_tot)
+                        # print(subj_moy_tot)
 
                         # print('test4')
                         # print(testb)
@@ -2938,14 +4846,14 @@ def OLDcreate_report_card(request):
                         testb = obj_eval_class.filter(title='Test6')
                         # print('first')
                         if not testa:
-                            print("no vale a")
+                            # print("no vale a")
                             testa_value = 0.0
                         else:
                             for test1 in testa:
                                 if(test1.subject_id == subjj_cl.id):
                                     testa_value = test1.value
                         if not testb:
-                            print("no vale b")
+                            # print("no vale b")
                             testb_value = 0.0
                         else:
                             for test2 in testb:
@@ -2961,20 +4869,20 @@ def OLDcreate_report_card(request):
                         moy_tot = moyentt  * int(subjj_cl.coef)
                         total_tot = total_tot + decimal.Decimal(moy_tot)
                         subj_moy_tot = f"{subjj_cl.title}_{subjj_cl.id}_{moyentt}_{moy_tot}"
-                        print(subj_moy_tot)
+                        # print(subj_moy_tot)
                         # print(testb)
                         if(subjj_cl.category == 'General'):
                             total_gen_tot = total_gen_tot + total_tot
             #
 
             #total
-            print(total_coeff)
-            print(total_tot)
-            print("general")
-            print(total_gen_coeff)
-            print(f"General tot: {total_gen_tot}")
-            print("prof")
-            print(total_prof_coeff)
+            # print(total_coeff)
+            # print(total_tot)
+            # print("general")
+            # print(total_gen_coeff)
+            # print(f"General tot: {total_gen_tot}")
+            # print("prof")
+            # print(total_prof_coeff)
         
 
             report_card = ReportCard.objects.create(
@@ -3019,19 +4927,19 @@ def ANCIENcreate_report_card(request):
         added_by = request.user.username
 
         #get student class
-        print('student')
+        # print('student')
         obj_student_class = Student.objects.get(id=student)
 
         classroomId = obj_student_class.student_class_id
         classroom =  ClassRoom.objects.get(id=classroomId)
 
         #get test
-        print('test')
+        # print('test')
         obj_eval_class = Eval.objects.filter(student_id=student)
         # print(obj_eval_class)
 
         #get subject
-        print('subject')
+        # print('subject')
         # list_subject = Subject.classroom.all()
         # print(list_subject)
         # obj_eval_class = Eval.objects.filter(student_id=student)
@@ -3053,21 +4961,21 @@ def ANCIENcreate_report_card(request):
 
         if results is None:
             print("not results")
-            print(results)
+            # print(results)
         else:
             for subjj_cl in results:
-                print(subjj_cl.id)
-                print(subjj_cl.coef)
+                # print(subjj_cl.id)
+                # print(subjj_cl.coef)
                 if subjj_cl.coef is None:
                     print('no subjj coef')
                 else:
                     if(subjj_cl.category == 'General'):
-                        print(f"General {subjj_cl.coef}")
+                        # print(f"General {subjj_cl.coef}")
                         total_gen_coeff = total_gen_coeff + decimal.Decimal(subjj_cl.coef)
                         # total_gen_tot = total_gen_tot + decimal.Decimal(subjj_cl.coef)
                     #)
                     if(subjj_cl.category == 'Professional'):
-                        print(f"Professional {subjj_cl.coef}")
+                        # print(f"Professional {subjj_cl.coef}")
                         total_prof_coeff = total_prof_coeff + decimal.Decimal(subjj_cl.coef)
                     #
                     if(term == 'first'):
@@ -3075,14 +4983,14 @@ def ANCIENcreate_report_card(request):
                         testb = obj_eval_class.filter(title='Test2',subject_id=subjj_cl.id)
                         # print('first')
                         if not testa:
-                            print("no vale a")
+                            # print("no vale a")
                             testa_value = 0.0
                         else:
                             for test1 in testa:
                                 if(test1.subject_id == subjj_cl.id):
                                     testa_value = test1.value
                         if not testb:
-                            print("no vale b")
+                            # print("no vale b")
                             testb_value = 0.0
                         else:
                             for test2 in testb:
@@ -3098,7 +5006,7 @@ def ANCIENcreate_report_card(request):
                         moy_tot = moyentt  * int(subjj_cl.coef)
                         total_tot = total_tot + decimal.Decimal(moy_tot)
                         subj_moy_tot = f"{subjj_cl.title}_{subjj_cl.id}_{moyentt}_{moy_tot}"
-                        print(subj_moy_tot)
+                        # print(subj_moy_tot)
                         # print(testb)
                         if(subjj_cl.category == 'General'):
                             total_gen_tot = total_gen_tot + total_tot
@@ -3109,7 +5017,7 @@ def ANCIENcreate_report_card(request):
                         # print('test3')
                         # print(testa.filter(subject_id=subjj_cl.id))
                         if not testa:
-                            print("no vale a")
+                            # print("no vale a")
                             testa_value = 0.0
                         else:
                             for test1 in testa:
@@ -3120,7 +5028,7 @@ def ANCIENcreate_report_card(request):
                                     # print(test1.value)
                                     testa_value = test1.value
                         if not testb:
-                            print("no vale b")
+                            # print("no vale b")
                             testb_value = 0.0
                         else:
                             for test2 in testb:
@@ -3138,7 +5046,7 @@ def ANCIENcreate_report_card(request):
                         # print(moyentt)
 
                         subj_moy = f"{subjj_cl.id}_{moyentt}_{subjj_cl.title}"
-                        print(subj_moy)
+                        # print(subj_moy)
 
                         # print("coef")
                         # print(subjj_cl.coef)
@@ -3154,7 +5062,7 @@ def ANCIENcreate_report_card(request):
                         # print(total_tot)
                         total_tot = total_tot + decimal.Decimal(moy_tot)
                         subj_moy_tot = f"{subjj_cl.title}_{subjj_cl.id}_{moyentt}_{moy_tot}"
-                        print(subj_moy_tot)
+                        # print(subj_moy_tot)
 
                         # print('test4')
                         # print(testb)
@@ -3166,14 +5074,14 @@ def ANCIENcreate_report_card(request):
                         testb = obj_eval_class.filter(title='Test6')
                         # print('first')
                         if not testa:
-                            print("no vale a")
+                            # print("no vale a")
                             testa_value = 0.0
                         else:
                             for test1 in testa:
                                 if(test1.subject_id == subjj_cl.id):
                                     testa_value = test1.value
                         if not testb:
-                            print("no vale b")
+                            # print("no vale b")
                             testb_value = 0.0
                         else:
                             for test2 in testb:
@@ -3189,20 +5097,20 @@ def ANCIENcreate_report_card(request):
                         moy_tot = moyentt  * int(subjj_cl.coef)
                         total_tot = total_tot + decimal.Decimal(moy_tot)
                         subj_moy_tot = f"{subjj_cl.title}_{subjj_cl.id}_{moyentt}_{moy_tot}"
-                        print(subj_moy_tot)
+                        # print(subj_moy_tot)
                         # print(testb)
                         if(subjj_cl.category == 'General'):
                             total_gen_tot = total_gen_tot + total_tot
             #
 
             #total
-            print(total_coeff)
-            print(total_tot)
-            print("general")
-            print(total_gen_coeff)
-            print(f"General tot: {total_gen_tot}")
-            print("prof")
-            print(total_prof_coeff)
+            # print(total_coeff)
+            # print(total_tot)
+            # print("general")
+            # print(total_gen_coeff)
+            # print(f"General tot: {total_gen_tot}")
+            # print("prof")
+            # print(total_prof_coeff)
         
 
             report_card = ReportCard.objects.create(
@@ -3267,7 +5175,7 @@ def consolidation(request):
         #get the number of students per class
         #count number of female in class 1
         count_girl_form1 = Student.objects.filter(gender="Female",student_class="1").count()
-        print(f"num of girls in form 1 is {count_girl_form1}")
+        # print(f"num of girls in form 1 is {count_girl_form1}")
 
         count_male_form = 0
         count_female_form = 0
@@ -3327,18 +5235,18 @@ def consolidation(request):
         pdf_heading = ""
         
         # if term == "first":
-        #     print(term)
+            # print(term)
         # elif term == "second":
-        #     print(term)
+            # print(term)
         #     #get the test relatives too students
         # elif term == "third":
-        #     print(term)
+            # print(term)
         
         # if type == "consolidation":
-        #     print(type)
+            # print(type)
         #     # pdf_heading = ""
         # elif type == "non_consolidation":
-        #     print(type)
+            # print(type)
         
         if term == "second" and type == "consolidation":
             pdf_heading = f"SECOND TERM GENERAL CONSOLIDATED STATISTICS, ACADEMIC YEAR {annee} "
@@ -3374,11 +5282,11 @@ def consolidation(request):
         # print(subject_value_cat)
 
         # print(student_gender_count)
-        print(data_non_consolidation)
+        # print(data_non_consolidation)
 
-        print("num_specialties")
+        # print("num_specialties")
         num_specialties = num_specialties + 2
-        print(num_specialties)
+        # print(num_specialties)
 
 
 

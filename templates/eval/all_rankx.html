@@ -7,15 +7,15 @@
                <div class="page-header">
                   <div class="row align-items-center">
                      <div class="col">
-                        <h3 class="page-title">Class Ranking</h3>
+                        <h3 class="page-title">Ranking</h3>
                         <ul class="breadcrumb">
-                           <li class="breadcrumb-item"><a href="{% url 'all_classrank' %}">ClassRanksing</a></li>
-                           <li class="breadcrumb-item active">Class Ranking</li>
+                           <li class="breadcrumb-item"><a href="{% url 'all_ranking' %}">Ranking</a></li>
+                           <li class="breadcrumb-item active">Ranking</li>
                         </ul>
                      </div>
                      <div class="col-auto text-right float-right ml-auto">
                         
-                        <a href="{% url 'classranking_class' %}" class="btn btn-primary"><i class="fas fa-plus"></i></a>
+                        <a href="{% url 'add_ranking' %}" class="btn btn-primary"><i class="fas fa-plus"></i></a>
                      </div>
                   </div>
                </div>
@@ -36,28 +36,7 @@
                   <div class="col-sm-12">
                      <div class="card card-table">
                         <div class="card-body">
-                            {% comment %} <table class="table">
-                                <thead>
-                                  <tr>
-                                    <th scope="col">Term</th>
-                                    <th scope="col">Class</th>
-                                    <th scope="col">Specialty</th>
-                                    <th scope="col">Avergae</th>
-                                    <th scope="col">Student</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                    {% for class_ranking in class_rankings %}
-                                  <tr>
-                                    <td>{{ class_ranking.term}}</td> 
-                                    <td>{{ class_ranking.classroom.class_name}}</td>
-                                    <td>{{ class_ranking.specialty.name}}</td>
-                                    <td>{{ class_ranking.total_avg}}</td>
-                                    <td>{{ class_ranking.student.name}}</td>
-                                  </tr>
-                                  {% endfor %}
-                                </tbody>
-                              </table> {% endcomment %}
+                            {% comment %}    {% endcomment %}
                               <div class="table-responsive">
                                  <table class="table table-hover table-center mb-0 datatable">
                                     <thead>
@@ -65,6 +44,7 @@
                                             <th scope="col">#</th>
                                             <th scope="col">Term</th>
                                             <th scope="col">Class</th>
+                                            <th scope="col">Specialty Rank</th>
                                             <th scope="col">Specialty</th>
                                             {% comment %} <th scope="col">Rank</th> {% endcomment %}
                                             <th scope="col">Average</th>
@@ -72,14 +52,15 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {% for class_ranking in class_rankings %}
+                                        {% for ranking in rankings %}
                                       <tr>
                                         <td>{{ forloop.counter}}</td> 
-                                        <td>{{ class_ranking.term}}</td>
-                                        <td>{{ class_ranking.classroom.class_name}}</td>
-                                        <td>{{ class_ranking.specialty.name}}</td>
-                                        <td>{{ class_ranking.total_avg}}</td>
-                                        <td>{{ class_ranking.student.name}}</td>
+                                        <td>{{ ranking.term}}</td>
+                                        <td>{{ ranking.classroom.class_name}}</td>
+                                        <td>{{ ranking.spec_rank}}</td>
+                                        <td>{{ ranking.specialty.name}}</td>
+                                        <td>{{ ranking.student_avg}}</td>
+                                        <td>{{ ranking.student.name}}</td>
                                       </tr>
                                       {% endfor %}
                                     </tbody>

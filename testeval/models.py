@@ -98,24 +98,57 @@ class ClassRanking(models.Model):
         return f"{self.term}_{self.classroom}_{self.student.name} "
 
 
+#SchoolClasRanking ranking
+class SchoolClasRanking(models.Model):
+    term                  = models.CharField(max_length=100)
+    classroom             = models.ForeignKey(ClassRoom, on_delete=models.CASCADE)
+    specialty             = models.ForeignKey(Specialty, on_delete=models.CASCADE,  null=True)
+    student_avg           = models.DecimalField(max_digits=10, decimal_places=2) #
+    observation           = models.TextField( null=True, blank=True)
+
+    # Define a foreign key relationship with ranking
+    # Multiple ranking can be assigned to one student
+    student              = models.ForeignKey(Student, on_delete=models.CASCADE)
+
+    academic_year        = models.CharField(max_length=100, default="2024/2025")
+
+    spec_rank           = models.CharField(max_length=100, null=True, blank=True)
+    class_rank           = models.CharField(max_length=100, null=True, blank=True)
+    school_rank           = models.CharField(max_length=100, null=True, blank=True)
+    freefield1          = models.CharField(max_length=100, null=True, blank=True)
+    freefield2          = models.CharField(max_length=100, null=True, blank=True)
+    added_by            = models.CharField(max_length=100, null=True)
+    modified_by         = models.CharField(max_length=100, null=True, blank=True)
+    is_actif            = models.BooleanField(default=True)
+    created_on          = models.DateTimeField(auto_now_add=True)
+    updated_on          = models.DateTimeField(auto_now=True)
+    
+
+    def __str__(self):
+        return f"{self.term}_{self.classroom}_{self.student.name} "
+    
+
+
+    
 class ReportCard(models.Model):
     student = models.ForeignKey(Student, related_name="studentreportcard",  on_delete=models.CASCADE)
     # evuation = models.ForeignKey(Eval,  on_delete=models.CASCADE)
     student_rank = models.DecimalField(max_digits=10, decimal_places=0)
 
-    gen_coeff =  models.DecimalField(max_digits=10, decimal_places=0, null=True, blank=True)
-    prof_coeff=  models.DecimalField(max_digits=10, decimal_places=0, null=True, blank=True)
-    gen_total =  models.DecimalField(max_digits=10, decimal_places=0, null=True, blank=True)
-    prof_total=  models.DecimalField(max_digits=10, decimal_places=0, null=True, blank=True)
+    gen_coeff =  models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    prof_coeff=  models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    gen_total =  models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    prof_total=  models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
-    general_subjs_avr = models.DecimalField(max_digits=10, decimal_places=0)
-    prof_subjs_avr = models.DecimalField(max_digits=10, decimal_places=0)
-    total_avr = models.DecimalField(max_digits=10, decimal_places=0)
-    best_avr =  models.DecimalField(max_digits=10, decimal_places=0)
-    worst_avr =  models.DecimalField(max_digits=10, decimal_places=0)
-    firstterm_avr =  models.DecimalField(max_digits=10, decimal_places=0)
-    secondterm_avr =  models.DecimalField(max_digits=10, decimal_places=0)
-    annuelle_avr =  models.DecimalField(max_digits=10, decimal_places=0, null=True, blank=True)
+    general_subjs_avr = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    prof_subjs_avr = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    total_avr = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    best_avr =  models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    worst_avr =  models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    firstterm_avr =  models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    secondterm_avr =  models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    thirdterm_avr =  models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    annuelle_avr =  models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     date_of_report_card_generation = models.DateField(auto_now_add=True)
 
     first_subj_passed   = models.CharField(max_length=100, null=True, blank=True)
@@ -136,7 +169,7 @@ class ReportCard(models.Model):
     updated_on          = models.DateTimeField(auto_now=True)
     
     class Meta:
-        unique_together = ['student', 'student_rank', 'term','academic_year', 'date_of_report_card_generation']
+        unique_together = ['student',  'date_of_report_card_generation','student_rank', 'term', 'is_actif','academic_year', 'created_on']
     
     def __str__(self):
         return f"{self.student}_{self.student_rank}_{self.created_on} "

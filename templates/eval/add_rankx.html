@@ -7,29 +7,22 @@
                <div class="page-header">
                   <div class="row align-items-center">
                      <div class="col">
-                        <h3 class="page-title">Calculate Class Rank</h3>
+                        <h3 class="page-title">Rank</h3>
                         <ul class="breadcrumb">
-                           <li class="breadcrumb-item"><a href="{% url 'all_classrank' %}">Ranking Results</a></li>
-                           <li class="breadcrumb-item active">Calculate Class Rank</li>
+                           <li class="breadcrumb-item"><a href="{% url 'all_ranking' %}">Ranking All</a></li>
+                           <li class="breadcrumb-item active">Rank</li>
                         </ul>
                      </div>
                   </div>
                </div>
                <div class="row">
-                  <!-- Error and success messages -->
-                  {% comment %} {% if messages %}
-                  <div class="alert alert-info">
-                     {% for message in messages %}
-                        <p>{{ message }}</p>
-                     {% endfor %}
-                  </div>
-                  {% endif %} {% endcomment %}
                 <!-- Error and success messages -->
                {% if messages %}
                   {% for message in messages %}
                      <div class="alert {% if message.tags %} alert-{{ message.tags }}{% endif %}">{{ message|safe }}</div>
                   {% endfor %}
                {% endif %}
+               {% comment %}  {% endcomment %}
                   <div class="col-sm-12">
                      <div class="card">
                         <div class="card-body">
@@ -37,14 +30,20 @@
                               {% csrf_token %}
                               <div class="row">
                                  <div class="col-12">
-                                    <h5 class="form-title"><span>Class</span></h5>
+                                    <h5 class="form-title"><span>Rank per Class</span></h5>
                                  </div>
-                                 {% comment %} <div class="col-12 col-sm-6">
+                                 
+                                 <div class="col-12 col-sm-6">
                                     <div class="form-group">
-                                       <label>Title</label>
-                                       <input type="text" class="form-control" name="title" required>
+                                       <label>Term</label>
+                                       <select class="form-control" name="cur_term" required>
+                                          <option value="">Select Term</option>
+                                          <option value="first">1st Term</option>
+                                          <option value="second">2nd Term</option>
+                                          <option value="third">3rd Term</option>
+                                       </select>
                                     </div>
-                                 </div> {% endcomment %}
+                                 </div>
                                  
                                  <div class="col-12 col-sm-6">
                                     <div class="form-group">
@@ -55,17 +54,6 @@
                                              <option value="{{classroom.id}}">{{classroom.class_name}}</option>
                                           
                                           {% endfor %}
-                                       </select>
-                                    </div>
-                                 </div>
-                                 <div class="col-12 col-sm-6">
-                                    <div class="form-group">
-                                       <label>Term</label>
-                                       <select class="form-control" name="cur_term" required>
-                                          <option value="">Select Term</option>
-                                          <option value="first">1st Term</option>
-                                          <option value="second">2nd Term</option>
-                                          <option value="third">3rd Term</option>
                                        </select>
                                     </div>
                                  </div>

@@ -13,6 +13,8 @@ urlpatterns = [
     path('calculate_marks/', views.cal_mark_class, name="calculate_mark_class"),
     path('class_ranking/', views.cal_classranking, name="classranking_class"),
     path('all_class_ranking/', views.all_classrank, name="all_classrank"),
+    path('all_ranking/', views.rankx_all, name="all_ranking"),
+    path('add_ranking/', views.rankx_add, name="add_ranking"),
 
 
 
