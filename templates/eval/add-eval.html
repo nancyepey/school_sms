@@ -60,6 +60,28 @@
                                  <div class="col-12 col-sm-6">
                                     <div class="form-group">
                                        <label>Student</label>
+                                       <input type="text" list="students" id="studentsans" placeholder="Search student" class="form-control" name="selected_stud" required>
+                                       <datalist id="students" name="selected_stud">
+                                          {% for student in student %}
+                                             {% comment %} <option value="{{student.id}}">{{student.name}}</option> {% endcomment %}
+                                             <option data-value="{{student.id}}" value="{{student.name}}"></option>
+                                          
+                                          {% endfor %}
+                                       </datalist>
+                                       {% comment %} <input type="hidden" name="selected_stud" id="studentsans-hidden"> {% endcomment %}
+                                    </div>
+                                 </div>
+                                 {% comment %} <input id="selected" list="browsers" class="form-control" name="browser" >
+                                 <datalist id="browsers">
+                                    <option data-value="InternetExplorer" value="1"></option>
+                                    <option data-value="Firefox" value="2"></option>
+                                    <option data-value="Chrome" value="3"></option>
+                                    <option data-value="Opera" value="4"></option>
+                                    <option data-value="Safari" value="5"></option>
+                                 </datalist> {% endcomment %}
+                                 {% comment %} <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                       <label>Student</label>
                                        <select class="form-control" name="student" required>
                                           <option value="">Select Student</option>
                                           {% for student in student %}
@@ -68,7 +90,7 @@
                                           {% endfor %}
                                        </select>
                                     </div>
-                                 </div>
+                                 </div> {% endcomment %}
                                  <div class="col-12 col-sm-6">
                                     <div class="form-group">
                                        <label>Teacher</label>
@@ -147,6 +169,17 @@
       <script src="{%static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
       <script src="{%static 'assets/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
       <script src="{%static 'assets/js/script.js' %}"></script>
+      <script>
+         function getRealValue(ele){
+           var dl=ele.list.options;
+           for (var x=0;x<dl.length;x++){
+             if (dl[x].value==ele.value){
+               ele.value=dl[x].dataset.value;
+               return dl[x].dataset.value;
+             }
+           }
+         }
+      </script>
    </body>
    <!-- Mirrored from preschool.dreamguystech.com/html-template/add-eval.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 28 Oct 2021 11:11:50 GMT -->
 </html>

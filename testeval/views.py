@@ -52,6 +52,8 @@ from images import services as image_services
 
 #login required
 from django.contrib.auth.decorators import login_required
+# 
+from dal import autocomplete
 
 
 
@@ -204,7 +206,14 @@ def add_test(request):
             titre =  "Eval5"
             title1 = "Test6"
             titre1 =  "Eval6"
-        student = request.POST.get('student')
+        
+        
+        # student = request.POST.get('student')
+        # browser = request.POST.get('browser')
+        # print("browser")
+        # print(browser)
+        student = request.POST.get('selected_stud')
+        # print(student)
         value = request.POST.get('value')
         value_two = request.POST.get('value_two')
         coef = request.POST.get('coeff')
@@ -214,20 +223,26 @@ def add_test(request):
         remarks = request.POST.get('remarks')
         added_by = request.user.username
 
+        try:
 
-        #get student class
-        # print('student')
-        obj_student_class = Student.objects.get(id=student)
 
-        #get teacher class
-        # print('teacher')
-        # print(teacher)
-        obj_teacher_class = Teacher.objects.get(id=teacher)
-        # print(obj_teacher_class)
+            #get student class
+            # print('student')
+            # obj_student_class = Student.objects.get(id=student)
+            obj_student_class = Student.objects.filter(name=student).first()
 
-        #get subject class
-        # print('subject')
-        obj_subject_class = Subject.objects.get(id=subject)
+            #get teacher class
+            # print('teacher')
+            # print(teacher)
+            obj_teacher_class = Teacher.objects.get(id=teacher)
+            # print(obj_teacher_class)
+
+            #get subject class
+            # print('subject')
+            obj_subject_class = Subject.objects.get(id=subject)
+        except:
+            messages.error(request, f'Oops and error occured')
+            return redirect("test_list")
 
 
         # check if test exist
