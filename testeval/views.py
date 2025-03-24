@@ -53,7 +53,7 @@ from images import services as image_services
 #login required
 from django.contrib.auth.decorators import login_required
 # 
-from dal import autocomplete
+
 
 
 
