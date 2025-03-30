@@ -133,6 +133,10 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            # 'libraries':{
+            #     'urlexists': 'app.templatetags.checkurl',
+            #     'urlimg': 'app.templatetags.geturl',
+            # }
         },
     },
 ]
@@ -339,7 +343,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # added session expiratn
 # SESSION_EXPIRE_SECONDS = 3600  # 1 hour
 # SESSION_EXPIRE_SECONDS = 600  # 30min
-SESSION_EXPIRE_SECONDS = 600  # 30min
+SESSION_EXPIRE_SECONDS = 1000  # 
 # By default, the session will expire X seconds after the start of the session. To expire the session X seconds after the last activity, use the following setting:
 SESSION_EXPIRE_AFTER_LAST_ACTIVITY = True
 # By default, last activiy will be grouped per second. To group by different period use the following setting:
@@ -349,7 +353,7 @@ SESSION_EXPIRE_AFTER_LAST_ACTIVITY_GRACE_PERIOD = 60 # group by minute
 SESSION_TIMEOUT_REDIRECT = 'authentication/login/'
 
 # 
-SESSION_COOKIE_AGE = 600
+SESSION_COOKIE_AGE = 1000
 SESSION_SAVE_EVERY_REQUEST = True
 SESSION_TIMEOUT_REDIRECT = 'authentication/login/'
 LOGIN_URL = '/authentication/login/'

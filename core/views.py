@@ -7,6 +7,7 @@ from django.conf import settings
 from django.utils.crypto import get_random_string
 #login required
 from django.contrib.auth.decorators import login_required
+from django.urls import reverse
 
 # Create your views here.
 
@@ -52,8 +53,31 @@ def login_view(request):
         if user is not None:
             login(request, user)
             messages.success(request, 'Login successful!')
+            next_param = request.POST.get('next')
+            print(next_param)
+            # if next_param:
+            #     url = next_param
+            #     #new code
+            #     if url != '':
+            #         if url == "/":
+            #             pass
+            #         else:
+            #             return redirect(url)
+            # else:
+            #     # Redirect user based on their role
+            #     if user.is_admin:
+            #         url = reverse('admin_dashboard')
+            #     elif user.is_teacher:
+            #         url = reverse('teacher_dashboard')
+            #     elif user.is_student:
+            #         url = reverse('dashboard')
+            #     else:
+            #         messages.error(request, 'Invalid user role')
+            #         return redirect('index')
+            # return redirect(url)
+                
             
-            # Redirect user based on their role
+            # # Redirect user based on their role
             if user.is_admin:
                 return redirect('admin_dashboard')
             elif user.is_teacher:

@@ -53,7 +53,9 @@ from images import services as image_services
 #login required
 from django.contrib.auth.decorators import login_required
 # 
-
+from django.db.models import Q
+#paginator
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
 
 
@@ -61,13 +63,57 @@ from django.contrib.auth.decorators import login_required
 
 @login_required
 def eval_list(request):
-    eval_list = Eval.objects.select_related('student').all()
+    # print("in")
+    if request.user.is_teacher:
+        eval_list = Eval.objects.filter(teacher_class=request.user.teacher_profile)
+    else:
+        eval_list = Eval.objects.all()
+    # print("in all")
     classroom = ClassRoom.objects.all()
     specialtys = Specialty.objects.all()
+    # print("in in")
+    # pagination
+    paginator = None
+
+    # search
+    if 'q_test' in request.GET:
+        search=request.GET['q_test']
+        eval_list =  Eval.objects.filter(Q(title__icontains = search) | Q(titre__icontains = search) | Q(academic_year__icontains = search) | Q(teacher__icontains = search)  | Q(subject_code__icontains = search)  | Q(subject__title__icontains = search) | Q(student__name__icontains = search) | Q(student__admission_number__icontains = search) | Q(teacher_class__name__icontains = search) )
+
+        
+        try:
+            if eval_list:
+                if eval_list.exists():
+                    paginator = Paginator(eval_list, 20)
+                    eval_list = paginator.page(1)
+        except:
+            # print("nooo")
+            pass
+        
+        # else:
+        #     msg = "There is no article with the keyword"
+    
+    # 
+       
+    else:
+        paginator = Paginator(eval_list, 20)
+        page = request.GET.get("page")
+        
+        try:
+            eval_list = paginator.page(page)
+            
+        except PageNotAnInteger:
+            eval_list = paginator.page(1)
+        
+        except EmptyPage:
+            eval_list = paginator.page(paginator.num_pages)
+
+    
     context = {
         'eval_list': eval_list,
         'classroom':classroom,
         'specialtys':specialtys,
+         "paginator": paginator,
     }
     if request.method == 'POST':
         # print(request)
@@ -92,16 +138,34 @@ def eval_list(request):
         specialty_selected = request.POST.get('stud_specialty')
         if class_selected == "all" and specialty_selected == "all":
             # print("dff")
+            try:
+                if eval_list:
+                    if eval_list.exists():
+                        paginator = Paginator(eval_list, 20)
+                        eval_list = paginator.page(1)
+            except:
+                # print("nooo")
+                pass
             context = {
                 'eval_list': eval_list,
                 'classroom':classroom,
                 'specialtys':specialtys,
                 'codeclass_selected': "all",
                 'specialty_selected': "all",
+                 "paginator": paginator,
             }
         if class_selected != "all" and specialty_selected == "all":
             get_class = ClassRoom.objects.get(id = class_selected)
             eval_list = Eval.objects.filter( student__student_class=get_class )
+            
+            try:
+                if eval_list:
+                    if eval_list.exists():
+                        paginator = Paginator(eval_list, 20)
+                        eval_list = paginator.page(1)
+            except:
+                # print("nooo")
+                pass
             context = {
                 'eval_list': eval_list,
                 'classroom':classroom,
@@ -109,21 +173,39 @@ def eval_list(request):
                 'class_selected': get_class.class_name,
                 'codeclass_selected': get_class.class_code,
                 'specialty_selected': "all",
+                 "paginator": paginator,
             }
         if class_selected == "all" and specialty_selected != "all":
             get_specialty = Specialty.objects.get(id = specialty_selected)
             eval_list = Eval.objects.filter( student__specialty=get_specialty )
+            try:
+                if eval_list:
+                    if eval_list.exists():
+                        paginator = Paginator(eval_list, 20)
+                        eval_list = paginator.page(1)
+            except:
+                # print("nooo")
+                pass
             context = {
                 'eval_list': eval_list,
                 'classroom':classroom,
                 'specialtys':specialtys,
                 'specialty_selected': get_specialty.name,
                 'codeclass_selected': "all",
+                 "paginator": paginator,
             }
         if class_selected != "all" and specialty_selected != "all":
             get_class = ClassRoom.objects.get(id = class_selected)
             get_specialty = Specialty.objects.get(id = specialty_selected)
             eval_list = Eval.objects.filter( student__student_class=get_class, student__specialty=get_specialty )
+            try:
+                if eval_list:
+                    if eval_list.exists():
+                        paginator = Paginator(eval_list, 20)
+                        eval_list = paginator.page(1)
+            except:
+                # print("nooo")
+                pass
             context = {
                 'eval_list': eval_list,
                 'classroom':classroom,
@@ -131,6 +213,7 @@ def eval_list(request):
                 'class_selected': get_class.class_name,
                 'codeclass_selected': get_class.class_code,
                 'specialty_selected': get_specialty.name,
+                 "paginator": paginator,
             }
         return render(request, "eval/evals.html", context)
     
@@ -222,6 +305,18 @@ def add_test(request):
         teacher = request.POST.get('teacher')
         remarks = request.POST.get('remarks')
         added_by = request.user.username
+        
+
+        
+        
+        if not value:
+            value = 0.00
+            absent_one = True
+        if not value_two:
+            value_two = 0.00
+            absent_two = True
+        
+        
 
         try:
 
@@ -252,7 +347,9 @@ def add_test(request):
             return redirect("test_list")
         else:
             # print(value_two)
-            if float(value_two) >= 0:
+            if not value and value_two:
+                value = 0.00
+                absent_one = True
                 value1 = value_two
                 #test
                 test = Eval.objects.create(
@@ -269,12 +366,35 @@ def add_test(request):
                     teacher = obj_teacher_class,
                     teacher_class = obj_teacher_class,
                     added_by = added_by,
+                    seqone_is_absent = absent_one
                 )
-            else:
+            if not value_two and value:
+                value_two = 0.00
+                absent_two = True
                 test = Eval.objects.create(
                     title = title,
                     titre = titre,
                     value = value,
+                    sec_title = title1,
+                    sec_titre = titre1,
+                    sec_value = value_two,
+                    coef = coef,
+                    subject = obj_subject_class,
+                    observation = remarks,
+                    student = obj_student_class,
+                    teacher = obj_teacher_class,
+                    teacher_class = obj_teacher_class,
+                    added_by = added_by,
+                    seqtwo_is_absent = absent_two
+                )
+            if value_two and value:
+                test = Eval.objects.create(
+                    title = title,
+                    titre = titre,
+                    value = value,
+                    sec_title = title1,
+                    sec_titre = titre1,
+                    sec_value = value_two,
                     coef = coef,
                     subject = obj_subject_class,
                     observation = remarks,
@@ -283,6 +403,37 @@ def add_test(request):
                     teacher_class = obj_teacher_class,
                     added_by = added_by,
                 )
+            # if float(value_two) >= 0:
+            #     value1 = value_two
+            #     #test
+            #     test = Eval.objects.create(
+            #         title = title,
+            #         titre = titre,
+            #         value = value,
+            #         sec_title = title1,
+            #         sec_titre = titre1,
+            #         sec_value = value1,
+            #         coef = coef,
+            #         subject = obj_subject_class,
+            #         observation = remarks,
+            #         student = obj_student_class,
+            #         teacher = obj_teacher_class,
+            #         teacher_class = obj_teacher_class,
+            #         added_by = added_by,
+            #     )
+            # else:
+            #     test = Eval.objects.create(
+            #         title = title,
+            #         titre = titre,
+            #         value = value,
+            #         coef = coef,
+            #         subject = obj_subject_class,
+            #         observation = remarks,
+            #         student = obj_student_class,
+            #         teacher = obj_teacher_class,
+            #         teacher_class = obj_teacher_class,
+            #         added_by = added_by,
+            #     )
 
         messages.success(request, f'{obj_student_class.name}-- {obj_subject_class.title} --- Marks added Successfully')
         return redirect("test_list")
@@ -307,10 +458,20 @@ def edit_test(request, slug):
         titre = request.POST.get('titre')
         student = request.POST.get('student')
         value = request.POST.get('value')
+        value_two = request.POST.get('value_two')
         coef = request.POST.get('coeff')
         subject = request.POST.get('subject')
         teacher = request.POST.get('teacher')
         remarks = request.POST.get('remarks')
+        absent_one = False
+        absent_two = False
+
+        if not value:
+            value = 0.00
+            absent_one = True
+        if not value_two:
+            absent_two = True
+            value_two = 0.00
 
         #get student class
         # print('student')
@@ -330,6 +491,7 @@ def edit_test(request, slug):
         eval.title = title
         eval.titre = titre
         eval.value = value
+        eval.sec_value = value_two
         eval.coef = coef
         eval.subject = obj_subject_class
         eval.observation = remarks
@@ -337,8 +499,10 @@ def edit_test(request, slug):
         eval.teacher = obj_teacher_class.name
         eval.teacher_class = obj_teacher_class
         eval.modified_by = request.user.username
+        eval.seqone_is_absent =  absent_one
+        eval.seqtwo_is_absent = absent_two
         eval.save()
-        
+      
         
         return redirect("test_list")
     return render(request, "eval/edit-eval.html", context )
@@ -3873,10 +4037,22 @@ def viewDocumentInvoice(request, slug):
         # print(subject_value_cat)
         # print(f"subject_gen_tot ----{subject_gen_tot}")
         # print(f"total_gen_coeff ----{total_gen_coeff}")
-        
-        gen_sub_moy = decimal.Decimal(subject_gen_tot, ) / total_gen_coeff
-        prof_sub_moy = decimal.Decimal(subject_prof_tot, ) / total_prof_coeff
-        prof_gen_tot_moy = decimal.Decimal(total_tot, ) / total_coeff
+
+        if subject_gen_tot == 0 or total_gen_coeff == 0:
+            gen_sub_moy = 0
+        else:
+            gen_sub_moy = decimal.Decimal(subject_gen_tot, ) / total_gen_coeff
+        # prof_sub_moy = decimal.Decimal(subject_prof_tot, ) / total_prof_coeff
+
+        if subject_prof_tot == 0 or total_prof_coeff == 0:
+            prof_sub_moy = 0
+        else:
+            prof_sub_moy = decimal.Decimal(subject_prof_tot, ) / total_prof_coeff
+
+        if total_tot == 0 or total_coeff == 0:
+            prof_gen_tot_moy = 0
+        else:
+            prof_gen_tot_moy = decimal.Decimal(total_tot, ) / total_coeff
 
         
 

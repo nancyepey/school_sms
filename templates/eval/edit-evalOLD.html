@@ -78,12 +78,7 @@
                                  <option >Select Teacher</option>
                                  {% if user.is_admin%}
                                     {% for teacher in teacher %}
-                                    
-                                       <option value="{{teacher.id}}"
-                                       {% if eval.teacher_class.id == teacher.id %}
-                                        selected
-                                        {% endif %} 
-                                       >{{teacher.name}}</option>
+                                       <option value="{{teacher.id}}">{{teacher.name}}</option>
                                     
                                     {% endfor %}
                                  {% endif %}
@@ -96,14 +91,8 @@
                         </div>
                          <div class="col-12 col-sm-6">
                             <div class="form-group">
-                               <label>Test1 Value (X.XX)</label>
-                               <input type="number" min=0 step=0.01 class="form-control" name ="value" value="{{ eval.value }}">
-                            </div>
-                         </div>
-                         <div class="col-12 col-sm-6">
-                            <div class="form-group">
-                               <label>Test2 Value (X.XX)</label>
-                               <input type="number" min=0 step=0.01 class="form-control" name="value_two" value="{{ eval.sec_value }}">
+                               <label>Value</label>
+                               <input type="number" min=0 step=0.01 class="form-control" name ="value" value="{{ eval.value }}" required>
                             </div>
                          </div>
                          <div class="col-12 col-sm-6">
@@ -134,7 +123,7 @@
                          <div class="col-12 col-sm-6">
                             <div class="form-group">
                                <label>Remarks</label>
-                               <input type="text" class="form-control" name="remarks" value="{{ eval.observation }}" >
+                               <input type="text" class="form-control" name="remarks" value="{{ eval.observation }}" required>
                             </div>
                          </div>
                          <div class="col-12">

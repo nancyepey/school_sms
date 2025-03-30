@@ -45,8 +45,12 @@ def add_teacher(request):
         teacher_uid = request.POST.get('teacher_uid')
         gender = request.POST.get('gender')
         date_of_birth = request.POST.get('date_of_birth')
-        teacher_subj = request.POST.get('teacher_subj')
-        classteach = request.POST.get('classteach')
+        teacher_subj = request.POST.getlist('teacher_subj')
+        # teacher_subj = request.POST.get('teacher_subj')
+        # project_teacher_subj = request.POST.getlist('teacher_subj')
+        # print(project_teacher_subj)
+        classteach = request.POST.getlist('classteach')
+        # classteach = request.POST.get('classteach')
         joining_date = request.POST.get('joining_date')
         mobile_number = request.POST.get('mobile_number')
         section = request.POST.get('section')
@@ -83,8 +87,8 @@ def add_teacher(request):
 
         #get teacher class
         # print(teacher_subj)
-        obj_teacher_subj = Subject.objects.get(id=teacher_subj)
-        obj_classteach = ClassRoom.objects.get(id=classteach)
+        # obj_teacher_subj = Subject.objects.get(id=teacher_subj)
+        # obj_classteach = ClassRoom.objects.get(id=classteach)
 
         teacher = Teacher.objects.create(
             name = name,
@@ -104,8 +108,20 @@ def add_teacher(request):
             added_by = request.user.username,
         )
 
-        teacher.classrooms.add(obj_classteach)
-        teacher.t_subjects.add(obj_teacher_subj)
+        
+        for subj_teach in teacher_subj:
+            # print(subj_teach)
+            obj_teacher_subj = Subject.objects.get(id=subj_teach)
+            # print(obj_teacher_subj)
+            teacher.t_subjects.add(obj_teacher_subj)
+        
+
+        for class_t in classteach:
+            obj_classteach = ClassRoom.objects.get(id=class_t)
+            teacher.classrooms.add(obj_classteach)
+
+        # teacher.classrooms.add(obj_classteach)
+        # teacher.t_subjects.add(obj_teacher_subj)
         teacher.save()
 
         # Create the user
@@ -154,6 +170,7 @@ def add_teacher(request):
 @login_required
 def teacher_list(request):
     teacher_list = Teacher.objects.all()
+    default_img = "defaultprof_0RJUmR2.png"
 
     # search
     if 'q' in request.GET:
@@ -162,6 +179,7 @@ def teacher_list(request):
 
     context = {
         'teacher_list': teacher_list,
+        "img_default": default_img
     }
     return render(request, "teachers/teachers.html", context)
 
@@ -173,26 +191,45 @@ def edit_teacher(request,slug):
     classroom = ClassRoom.objects.all()
     class_notselected_objects = []
     subj_notselected_objects = []
+    teach_subjs = teacher.t_subjects.all()
+    # remainx_subjs = Teacher.objects.exclude(t_subjects__in=teach_subjs)
+    for t_subjs in teach_subjs:
+        # print(t_subjs.title)
+        remainx_subjs = Subject.objects.exclude(title__in=t_subjs.title)
+        # print(remainx_subjs)
+        subj_notselected_objects.append(remainx_subjs)
 
-    print(len(class_notselected_objects))
+    # print(len(class_notselected_objects))
+    teach_classrms = teacher.classrooms.all()
+    for t_classrm in teach_classrms:
+        remainx_classrm = ClassRoom.objects.exclude(class_name__in=t_classrm.class_name)
+        print(remainx_classrm)
+        class_notselected_objects.append(remainx_classrm)
+    print(class_notselected_objects)
+    
+    # print(class_notselected_objects)
+    # print(subj_notselected_objects)
     
 
-    for teachclassroom in teacher.classrooms.all():
-        for classrm in classroom :
-            if teachclassroom.id == classrm.id:
-                pass
-            else:
-                class_notselected_objects.append(classrm)
+    # for teachclassroom in teacher.classrooms.all():
+    #     for classrm in classroom :
+    #         if teachclassroom.id != classrm.id:
+    #             class_notselected_objects.append(classrm)
+            # if teachclassroom.id == classrm.id:
+            #     pass
+            # else:
+            #     class_notselected_objects.append(classrm)
                 # print(classrm)
 
     
 
-    for teachsubj in teacher.t_subjects.all():
-        for subjt in subject :
-            if teachsubj.id == subjt.id:
-                pass
-            else:
-                subj_notselected_objects.append(subjt)
+    # for teachsubj in teacher.t_subjects.all():
+    #     for subjt in subject:
+    #         if teachsubj.id == subjt.id:
+    #             pass
+    #         else:
+    #             subj_notselected_objects.append(subjt)
+                # print(subjt)
     # for teachsubj in teacher.t_subjects.all():
     #     for subjt in subject :
     #         if teachsubj.id == subjt.id:
@@ -229,7 +266,7 @@ def edit_teacher(request,slug):
         teacher_uid = request.POST.get('teacher_uid')
         gender = request.POST.get('gender')
         date_of_birth = request.POST.get('date_of_birth')
-        teacher_subj = request.POST.get('teacher_subj')
+        teacher_subj = request.POST.getlist('teacher_subj')
         joining_date = request.POST.get('joining_date')
         mobile_number = request.POST.get('mobile_number')
         section = request.POST.get('section')
@@ -258,8 +295,6 @@ def edit_teacher(request,slug):
         # val_unique = f"{uniqv}"[:4]
         # password = f"{username}_{val_unique}"
 
-        subjs_names = teacher_subj
-
         # 
         if teacher_uid == "":
             teacher_uid = uname
@@ -270,12 +305,14 @@ def edit_teacher(request,slug):
         if date_of_birth == "":
             date_of_birth = None
 
-        # 
-        print("subjs_names")
-        print(subjs_names)
+        # # 
 
         # subjs_names = teacher_subj
-        teacher.t_subjects.set([subjs_names])
+        # print("subjs_names")
+        # print(subjs_names)
+
+        # subjs_names = teacher_subj
+        teacher.t_subjects.set(teacher_subj)
         
         # classteach_objects = []
         # for sub in classteach_names:
@@ -341,7 +378,7 @@ def edit_teacher(request,slug):
         messages.success(request, f'{name}  Updated Successfully')
         
         return redirect("teacher_list")
-    return render(request, "teachers/edit-teacher.html",{'teacher':teacher,  'subject':subject, 'classroom': classroom, 'class_notselected_objects':class_notselected_objects, 'subj_notselected_objects':subj_notselected_objects } )
+    return render(request, "teachers/edit-teacher.html",{'teacher':teacher,  'subject':subject, 'classroom': classroom, 'class_notselected_objects':class_notselected_objects[0], 'subj_notselected_objects':subj_notselected_objects[0] } )
 
 
 @login_required

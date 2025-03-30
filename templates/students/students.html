@@ -1,5 +1,7 @@
 {% extends 'home/base.html' %}
 {% load static %}
+{% load urlexists %}
+{% comment %} {% load urlimg %} {% endcomment %}
 {% block body %}
    
          <div class="page-wrapper">
@@ -61,13 +63,20 @@
                   </div>
                </div>
                <div class="row">
-                  {% if messages %}
+                  {% comment %} {% if messages %}
                      <div class="alert alert-info">
                         {% for message in messages %}
                            <p>{{ message }}</p>
                         {% endfor %}
                      </div>
-                     {% endif %}
+                     {% endif %} {% endcomment %}
+                     
+                <!-- Error and success messages -->
+               {% if messages %}
+                  {% for message in messages %}
+                     <div class="alert {% if message.tags %} alert-{{ message.tags }}{% endif %}">{{ message|safe }}</div>
+                  {% endfor %}
+               {% endif %}
                      
                   <div class="col-sm-12">
                      <div class="card card-table">
@@ -166,11 +175,24 @@
                                                 {% endfor %}
                                                 {% endif %} {% endcomment %}
                                                 {% if student.student_image.url != None %}
-                                                {{ student.student_image.url }}
+                                                   {% if student.student_image.url|checkurl %}
+                                                      {{ student.student_image.url }}
+                                                   {% else %}
+                                                   /media/img/default.png
+                                                   {% endif %}
                                                 
                                                 {% elif student.stud_image %}
+                                                   {% if student.stud_image.cloudflare_id %}
+                                                    {{student.stud_image.cloudflare_id|geturl}} 
+                                                    {% else %}
+                                                    /media/img/default.png
+                                                    {% endif %}
+                                                  
+                                                {% else %}
                                                 https://imagedelivery.net/FGazjujafzdf38AXQFJ0qw/3f12d21f-02bc-44e7-2ce3-3b00f45fb600/thumbnailSmall
-                                                {% endif %} 
+                                                {% endif %}
+                                                {% comment %} https://imagedelivery.net/FGazjujafzdf38AXQFJ0qw/3f12d21f-02bc-44e7-2ce3-3b00f45fb600/thumbnailSmall
+                                                {% endif %}  {% endcomment %}
                                                  {% comment %} {% endif %}  {% endcomment %}
                                                  " alt="User Image"></a>
                                              <a href="{% url 'view_student' student.id %}">{{ student.first_name }} {{ student.last_name}}</a>

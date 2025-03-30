@@ -16,83 +16,38 @@
                      </div>
                      <div class="col-auto text-right float-right ml-auto">
                         {% if user.username == "emnanlaptop" %}
-                        {% comment %} <button type="button" class="btn btn-outline-primary mr-2" data-toggle="modal" data-target="#csvimportstudModal">
-                           Import Teacher CSV
-                         </button> {% endcomment %}
-                         
                         <a href="{% url 'users_downloadcsv'  %}" class="btn btn-outline-primary mr-2"><i class="fas fa-download"></i>Users Download</a>
                         <a href="{% url 'img_downloadcsv'  %}" class="btn btn-outline-primary mr-2"><i class="fas fa-download"></i>Image Download</a>
 
                         {% endif %}
-                        
-                           <a href="{% url 'downloadcsv_teacher' %}"  class="btn btn-outline-primary mr-2"><i class="fas fa-download"></i>
-                               Download
-                           </a>
-                        
+                        <a href="{% url 'downloadcsv_teacher'  %}" class="btn btn-outline-primary mr-2"><i class="fas fa-download"></i> Download</a>
                         <a href="{% url 'add_teacher' %}" class="btn btn-primary"><i class="fas fa-plus"></i></a>
                      </div>
-
-                     <!-- The Modal -->
-                     {% comment %} <div class="modal" id="csvimportstudModal">
-                        <div class="modal-dialog">
-                        <div class="modal-content">
-                        
-                           <!-- Modal Header -->
-                           <div class="modal-header">
-                              <h4 class="modal-title">CSV - Import Students</h4>
-                              <button type="button" class="close" data-dismiss="modal">&times;</button>
-                           </div>
-                           
-                           <!-- Modal body -->
-                           <form method="post" enctype="multipart/form-data">
-                              <div class="modal-body">
-                                 <h6 class="card-subtitle mb-2 text-muted">Student CSV Files</h6>
-                                 {% csrf_token %}
-                                 {{ csv_import_form.as_p }}
-                                 
-                              </div>
-                              
-                              <!-- Modal footer -->
-                              <div class="modal-footer">
-                                 <button type="submit" class="btn btn-primary" >Import</button>
-                                 <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-                              </div>
-                           </form>
-                           
-                        </div>
-                        </div>
-                     </div> {% endcomment %}
                   </div>
+               {% comment %} </div>
+               <!-- Error and success messages -->
+               {% if messages %}
+               <div class="alert alert-info">
+                  {% for message in messages %}
+                     <p>{{ message }}</p>
+                  {% endfor %}
                </div>
-               <div class="row">
-                  {% comment %} {% if messages %}
-                     <div class="alert alert-info">
-                        {% for message in messages %}
-                           <p>{{ message }}</p>
-                        {% endfor %}
-                     </div>
-                     {% endif %} {% endcomment %}
-                     
+               {% endif %} {% endcomment %}
                 <!-- Error and success messages -->
                {% if messages %}
                   {% for message in messages %}
                      <div class="alert {% if message.tags %} alert-{{ message.tags }}{% endif %}">{{ message|safe }}</div>
                   {% endfor %}
                {% endif %}
-                     
+               <div class="row">
                   <div class="col-sm-12">
                      <div class="card card-table">
-                       
                         <div class="card-body">
                            <div class="table-responsive">
-                              {% comment %} <div id="autocomplete" class="autocomplete">
-                                 <input class="autocomplete-input" />
-                                 <ul class="autocomplete-result-list"></ul>
-                               </div> {% endcomment %}
                               <div class="col-auto text-right float-right ml-auto">
                                  <form>
                                     <div class="input-group">
-                                       <input name="q" type="text" class="form-control" id="myteachInput" onkeyup="myteachFunction()" placeholder="Search for names..">
+                                       <input name="q" type="text" class="form-control"  placeholder="Search for names..">
                                        <div class="input-group-btn">
                                        <button class="btn btn-default" type="submit">
                                           <i class="glyphicon glyphicon-search"></i>
@@ -101,13 +56,15 @@
                                     </div>
                                  </form>
                               </div>
-                              <table class="table table-hover table-center mb-0 datatable" id="teachTable">
+                              <table class="table table-hover table-center mb-0 datatable">
                                  <thead>
                                     <tr>
-                                       <th>#</th>
+                                       {% comment %} <th>ID</th> {% endcomment %}
                                        <th>Pic</th>
                                        <th>Name</th>
+                                       {% comment %} <th>Subject</th> {% endcomment %}
                                        <th>DOB</th>
+                                       <!-- <th>Mobile Number</th> -->
                                        <th>Address</th>
                                        <th>Username</th>
                                        <th>Password</th>
@@ -118,27 +75,33 @@
                                  <tbody>
                                     {% for teacher in teacher_list %}
                                     <tr>
-                                       <td>{{ forloop.counter}}</td> 
+                                       {% comment %} <td>{{ teacher.id}}</td>  {% endcomment %} 
                                        <td>
-                                          <h2 class="table-avatar">
-                                             <a href="{% url 'view_teacher' teacher.id %}" class="avatar avatar-sm mr-2"><img class="avatar-img rounded-circle" 
-                                                {% if teacher.teacher_image %}
-                                                   {% if teacher.teacher_image.url|checkurl %}
-                                                   src="
-                                                   {{ teacher.teacher_image.url }}
-                                                   "
-                                                   {% else %}
-                                                   src="/media/img/default.png"
-                                                   {% endif %}
+                                        <h2 class="table-avatar">
+                                           <a href="{% url 'view_teacher' teacher.id %}" class="avatar avatar-sm mr-2"><img class="avatar-img rounded-circle" 
+                                             {% if teacher.teacher_image %}
+                                             {% if teacher.teacher_image.url|checkurl %}
+                                             src="
+                                             {{ teacher.teacher_image.url }}
+                                             "
+                                             {% else %}
+                                             src="/media/img/default.png"
+                                             {% endif %}
+                                                {% comment %} {% if teacher.teacher_image.url|checkurl %}
+                                                src="
+                                                {{ teacher.teacher_image.url }}
+                                                "
                                                 {% else %}
-                                                src="/media/img/default.png"
-                                                 
-                                                 {% endif %}
-                                                 alt="User Image"></a>
-                                              <a href="{% url 'view_teacher' teacher.id %}">{{ teacher.first_name }} {{ teacher.last_name}}</a>
-                                           
-                                          </h2>
-                                       </td>
+                                                src="img/defaultprof_0RJUmR2.png"
+                                                {% endif %} {% endcomment %}
+                                             {% else %}
+                                             src="/media/img/default.png"
+                                              
+                                              {% endif %}
+                                              alt="User Image"></a>
+                                           <a href="{% url 'view_teacher' teacher.id %}">{{ teacher.first_name }} {{ teacher.last_name}}</a>
+                                        </h2>
+                                     </td>
                                        <td>{{ teacher.name}}</td>
                                        {% comment %} <td>{{ teacher.teacher_subj.title }}</td> {% endcomment %}
                                        <td>{{ teacher.date_of_birth|date:"d M Y" }}</td>
@@ -148,8 +111,6 @@
                                        <td>{{ teacher.usname }}</td>
                                        
                                        <td>{{ teacher.idontknow }}</td>
-                                       <!-- <td>{{ student.mobile_number }}</td> -->
-                                       {% comment %} <td>{{ student.parent.present_address }}</td> {% endcomment %}
                                        <td class="text-right">
                                           <div class="actions">
                                              <a href="{% url 'edit_teacher' teacher.id %}" class="btn btn-sm bg-success-light mr-2">
@@ -174,7 +135,7 @@
                </div>
             </div>
             <footer>
-               <p>Copyright © 2020 GroupBarb.</p>
+               <p>Copyright © 2025 GroupBarb.</p>
             </footer>
          </div>
       </div>
@@ -184,11 +145,8 @@
       <script src="{%static 'assets/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
       <script src="{%static 'assets/plugins/datatables/datatables.min.js' %}"></script>
       <script src="{%static 'assets/js/script.js' %}"></script>
-
-     
-
    </body>
-   
+   <!-- Mirrored from preschool.dreamguystech.com/html-template/teachers.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 28 Oct 2021 11:11:49 GMT -->
 </html>
 
 

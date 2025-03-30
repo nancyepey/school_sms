@@ -27,7 +27,8 @@
                   {% endfor %}
                </div>
                {% endif %} {% endcomment %}
-                <!-- Error and success messages -->
+               
+               <!-- Error and success messages -->
                {% if messages %}
                   {% for message in messages %}
                      <div class="alert {% if message.tags %} alert-{{ message.tags }}{% endif %}">{{ message|safe }}</div>
@@ -86,7 +87,7 @@
                               <div class="col-auto text-right float-right ml-auto">
                                  <form>
                                     <div class="input-group">
-                                       <input name="q_test" type="text" class="form-control"  placeholder="Search for title..">
+                                       <input name="q_test" type="text" class="form-control" id="mytestInput" onkeyup="mytestFunction()" placeholder="Search...">
                                        <div class="input-group-btn">
                                        <button class="btn btn-default" type="submit">
                                           <i class="glyphicon glyphicon-search"></i>
@@ -94,10 +95,8 @@
                                        </div>
                                     </div>
                                  </form>
-
-                                 
                               </div>
-                              <table class="table table-hover table-center mb-0 ">
+                              <table class="table table-hover table-center mb-0 datatable">
                                  <thead>
                                     <tr>
                                        <th>ID</th>
@@ -112,21 +111,20 @@
                                     </tr>
                                  </thead>
                                  <tbody>
-                                    
-                                    {% comment %} {% if eval_list  %} {% endcomment %}
+                                    {% if eval_list  %}
                                     {% for eval in eval_list %}
-                                    {% comment %} {% if eval.teacher_class.id == user.teacher_profile.id %} {% endcomment %}
+                                    {% if eval.teacher_class.id == user.teacher_profile.id %}
                                     {% comment %} <td>teacher id {{ eval}}</td> {% endcomment %}
                                     {% comment %} <td>user teacher id{{ user.teacher_profile.name}}</td> {% endcomment %}
                                     <tr>
                                        <td>{{ forloop.counter}}</td> 
                                        {% if eval.title == "Test1"  %} 
                                        <td>First</td>
-                                       {% comment %} {% endif %} {% endcomment %}
-                                       {% elif eval.title == "Test3"  %}
+                                       {% endif %}
+                                       {% if eval.title == "Test3"  %}
                                        <td>Second</td>
-                                       {% comment %} {% endif %} {% endcomment %}
-                                       {% elif eval.title == "Test5"  %}
+                                       {% endif %}
+                                       {% if eval.title == "Test5"  %}
                                        <td>Third</td>
                                        {% endif %}
                                        <td>{{ eval.subject.title }}</td>
@@ -151,15 +149,19 @@
                                          {% comment %} {% endif %} {% endcomment %}
                                        </td>
                                     </tr>
-                                    {% comment %} {% endif %} {% endcomment %}
-                                    {% comment %} {% elif user.is_admin %} {% endcomment %}
-                                    {% comment %} <tr>
+                                    {% endif %}
+                                    {% if user.is_admin %}
+                                    {% comment %} <td>teacher id {{ eval}}</td> {% endcomment %}
+                                    {% comment %} <td>user teacher id{{ user.teacher_profile.name}}</td> {% endcomment %}
+                                    <tr>
                                        <td>{{ forloop.counter}}</td> 
                                        {% if eval.title == "Test1"  %}
                                        <td>First</td>
-                                       {% elif eval.title == "Test3"  %}
+                                       {% endif %}
+                                       {% if eval.title == "Test3"  %}
                                        <td>Second</td>
-                                       {% elif eval.title == "Test5"  %}
+                                       {% endif %}
+                                       {% if eval.title == "Test5"  %}
                                        <td>Third</td>
                                        {% endif %}
                                        <td>{{ eval.subject.title }}</td>
@@ -169,7 +171,8 @@
                                        <td>{{ eval.coef}}</td> 
                                        <td>{{ eval.teacher }}</td>
                                        <td class="text-right">
-                                           <div class="actions">
+                                          {% comment %} {% if user.is_admin and eval.teacher_class.id == user.teacher_profile.id %} {% endcomment %}
+                                          <div class="actions">
                                              <a href="{% url 'edit_test' eval.id %}" class="btn btn-sm bg-success-light mr-2">
                                                  <i class="fas fa-pen"></i>
                                              </a>
@@ -180,79 +183,36 @@
                                                  </button>
                                              </form>
                                          </div>
-                                         
+                                         {% comment %} {% endif %} {% endcomment %}
                                        </td>
-                                    </tr> {% endcomment %}
-                                    {% comment %} {% endif %} {% endcomment %}
+                                    </tr>
+                                    {% endif %}
                                     {% endfor %}
 
-                                    {% comment %} {% endif %} {% endcomment %}
+                                    {% endif %}
+                                    
                                  </tbody>
                               </table>
-                              <nav aria-label="Pagination">
-                                 <hr class="my-0" />
-                                 <ul class="pagination justify-content-center my-4">
-                                     {% comment %} <li class="page-item disabled"><a class="page-link" href="#" tabindex="-1" aria-disabled="true">Newer</a></li>
-                                     <li class="page-item active" aria-current="page"><a class="page-link" href="#!">1</a></li> {% endcomment %}
-                 
-                                     
-                                     {% if eval_list.has_previous %}
-                                     <li class="page-item"><a class="page-link" href="?page={{eval_list.previous_page_number}}" 
-                                         tabindex="-1" aria-disabled="true">Previous</a></li>
-                                         
-                                     {% endif %}
-                                         
-                                     
-                                     {% for page in paginator.page_range  %}
-                 
-                                     
-                                     {% if page == eval_list.number %}
-                 
-                                     <li class="page-item active" aria-current="page"><a class="page-link" href="?page={{page}}">{{page}}</a></li>
-                 
-                                     {% else %}
-                                     <li class="page-item"><a class="page-link" href="?page={{page}}">{{page}}</a></li>
-                                         
-                                     {% endif %}
-                                         
-                 
-                                     
-                                         
-                                     {% endfor %}
-                 
-                                     {% if eval_list.has_next %}
-                                     <li class="page-item"><a class="page-link" href="?page={{eval_list.next_page_number}}" 
-                                         tabindex="-1" aria-disabled="true">Next</a></li>
-                                         
-                                     {% endif %}
-                                         
-                                         
-                                     
-                                    
-                                     {% comment %} <li class="page-item"><a class="page-link" href="#!">Older</a></li> {% endcomment %}
-                                 </ul>
-                             </nav>
                            </div>
                         </div>
                      </div>
                   </div>
                </div>
             </div>
-         <footer>
-            <p>Copyright © 2020 GroupBarb.</p>
-         </footer>
+            <footer>
+               <p>Copyright © 2025 GroupBarb.</p>
+            </footer>
          </div>
-         </div>
-         <script src="{%static 'assets/js/jquery-3.6.0.min.js' %}"></script>
-         <script src="{%static 'assets/js/popper.min.js' %}"></script>
-         <script src="{%static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
-         <script src="{%static 'assets/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
-         <script src="{%static 'assets/plugins/datatables/datatables.min.js' %}"></script>
-         <script src="{%static 'assets/js/script.js' %}"></script>
-         </body>
-         
-         </html>
-           
-           
+      </div>
+      <script src="{%static 'assets/js/jquery-3.6.0.min.js' %}"></script>
+      <script src="{%static 'assets/js/popper.min.js' %}"></script>
+      <script src="{%static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
+      <script src="{%static 'assets/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
+      <script src="{%static 'assets/plugins/datatables/datatables.min.js' %}"></script>
+      <script src="{%static 'assets/js/script.js' %}"></script>
+   </body>
+   <!-- Mirrored from preschool.dreamguystech.com/html-template/evals.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 28 Oct 2021 11:11:49 GMT -->
+</html>
+
 
 {% endblock %}

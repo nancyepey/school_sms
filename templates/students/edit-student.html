@@ -15,12 +15,19 @@
             </div>
         </div>
         <!-- Error and success messages -->
-        {% if messages %}
+        {% comment %} {% if messages %}
         <div class="alert alert-info">
            {% for message in messages %}
               <p>{{ message }}</p>
            {% endfor %}
         </div>
+        {% endif %} {% endcomment %}
+        
+        <!-- Error and success messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert {% if message.tags %} alert-{{ message.tags }}{% endif %}">{{ message|safe }}</div>
+            {% endfor %}
         {% endif %}
         <div class="row">
             <div class="col-sm-12">

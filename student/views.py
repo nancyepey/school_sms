@@ -597,6 +597,14 @@ def edit_student(request,slug):
         section = request.POST.get('section')
         # student_image = request.FILES.get('student_image')  if request.FILES.get('student_image') else student.student_image
 
+        
+        
+        if joining_date == "":
+            joining_date = None
+        
+        if date_of_birth == "":
+            date_of_birth = None
+            
         haschange = "non"
         if request.FILES.get('student_image'):
             student_image = request.FILES.get('student_image')

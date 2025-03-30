@@ -36,6 +36,8 @@ class Eval(models.Model):
     added_by            = models.CharField(max_length=100, null=True)
     modified_by         = models.CharField(max_length=100, null=True, blank=True)
     is_actif            = models.BooleanField(default=True)
+    seqone_is_absent   = models.BooleanField(default=False, null=True, blank=True)
+    seqtwo_is_absent   = models.BooleanField(default=False, null=True, blank=True)
     created_on          = models.DateTimeField(auto_now_add=True)
     updated_on          = models.DateTimeField(auto_now=True)
     
