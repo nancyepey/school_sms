@@ -825,20 +825,21 @@ def generate_csv(request, student_list):
             parent_i = ""
             parent_num = ""
             if student.gender == "Female":
-                sexe_stud = "G"
+                sexe_stud = "G" 
             else:
                 sexe_stud = "B"
-            if student.parent.father_name == "" or student.parent.mother_name == "":
-                # print("eee")
-                parent_i = student.parent.carer_name
-                parent_num = student.parent.carer_mobile
-            else:
-                if student.parent.father_name != "":
-                    parent_i = student.parent.father_name
-                    parent_num = student.parent.father_mobile
+            if student.parent:
+                if student.parent.father_name == "" or student.parent.mother_name == "":
+                    # print("eee")
+                    parent_i = student.parent.carer_name
+                    parent_num = student.parent.carer_mobile
                 else:
-                    parent_i = student.parent.mother_name
-                    parent_num = student.parent.mother_mobile
+                    if student.parent.father_name != "":
+                        parent_i = student.parent.father_name
+                        parent_num = student.parent.father_mobile
+                    else:
+                        parent_i = student.parent.mother_name
+                        parent_num = student.parent.mother_mobile
             
             writer.writerow([student.name, student.sch_status, student.student_class.class_name, student.specialty.name, sexe_stud, student.date_of_birth, student.place_of_birth, student.admission_number, student.minesec_ident_num, parent_i, parent_num]) 
         # 
