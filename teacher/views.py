@@ -206,6 +206,18 @@ def edit_teacher(request,slug):
         print(remainx_classrm)
         class_notselected_objects.append(remainx_classrm)
     print(class_notselected_objects)
+
+    if class_notselected_objects:
+        # class_notselected_objects[0]
+        cls_not_obj = class_notselected_objects[0]
+    else:
+        cls_not_obj = []
+
+    if subj_notselected_objects:
+        # subj_notselected_objects[0]
+        subj_not_obj = subj_notselected_objects[0]
+    else:
+        subj_not_obj = []
     
     # print(class_notselected_objects)
     # print(subj_notselected_objects)
@@ -261,6 +273,16 @@ def edit_teacher(request,slug):
 
     # context = {
     # }
+    # print(teacher)
+    print(classroom)
+
+    context = {
+        'teacher':teacher,  
+        'subject':subject, 
+        'classroom': classroom, 
+        'class_notselected_objects':cls_not_obj, 
+        'subj_notselected_objects':subj_not_obj,
+    }
     if request.method == "POST":
         name = request.POST.get('name')
         teacher_uid = request.POST.get('teacher_uid')
@@ -378,7 +400,7 @@ def edit_teacher(request,slug):
         messages.success(request, f'{name}  Updated Successfully')
         
         return redirect("teacher_list")
-    return render(request, "teachers/edit-teacher.html",{'teacher':teacher,  'subject':subject, 'classroom': classroom, 'class_notselected_objects':class_notselected_objects[0], 'subj_notselected_objects':subj_notselected_objects[0] } )
+    return render(request, "teachers/edit-teacher.html", context)
 
 
 @login_required

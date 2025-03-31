@@ -183,17 +183,27 @@ def edit_subject(request, slug):
         'subj_specialty_class':subj_specialty_class,
     }
 
+    
+
     if request.method == "POST":
+        subj_all = subject.classroom.all()
+        print(subj_all)
+        # subj_all.clear()
+        print(subj_all)
+        spec_all = subject.specialty.all()
+        print(spec_all)
+        # spec_all.clear()
+        print(spec_all)
         title           = request.POST.get('subject_title')
         # title = request.POST.get('subject_title')
         fr_title        = request.POST.get('subject_title_fren')
         coef            = request.POST.get('coeff')
         subject_code    = request.POST.get('subject_code')
-        classroom       = request.POST.get('subject_class[]')
+        classroom       = request.POST.getlist('subject_class')
         
         description     = request.POST.get('description')
         category = request.POST.get('category')
-        specialty = request.POST.get('specialty[]')
+        specialty = request.POST.getlist('specialty')
         modified_by     = request.user.username
 
         # 
