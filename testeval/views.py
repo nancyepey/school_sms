@@ -4133,7 +4133,13 @@ def viewDocumentInvoice(request, slug):
         context['gen_sub_moy'] = round(gen_sub_moy, ndigits=2)
         context['subj_cat'] = subj_cat
         context['total_prof_tot'] = total_prof_tot
+        context['academ_yr'] = obj_report_card.academic_year
+        context['acad_resumption'] = obj_report_card.resumption
+        context['total_prof_tot'] = total_prof_tot
         # context['avgTotal'] = "{:.2f}".format(invoiceTotal)
+
+        # print(f"academic_year {obj_report_card.academic_year}")
+        # print(f"resumption {obj_report_card.resumption}")
 
         # using now() to get current time
         current_time = datetime.datetime.now()
