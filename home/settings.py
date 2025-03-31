@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import dj_database_url
 from pathlib import Path, os
 from decouple import config as env_config
+from django.contrib import messages
 
 
 # import cloudinary_storage
@@ -357,3 +358,11 @@ SESSION_COOKIE_AGE = 1000
 SESSION_SAVE_EVERY_REQUEST = True
 SESSION_TIMEOUT_REDIRECT = 'authentication/login/'
 LOGIN_URL = '/authentication/login/'
+
+MESSAGE_TAGS = {
+    messages.DEBUG: 'secondary',
+    messages.INFO: 'info',
+    messages.SUCCESS: 'success',
+    messages.WARNING: 'warning',
+    messages.ERROR: 'danger',
+}

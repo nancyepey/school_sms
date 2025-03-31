@@ -4089,21 +4089,24 @@ def viewDocumentInvoice(request, slug):
         # get first term avg get_termavg(student, term, year="2024/2025")
         firt_term_avg = get_termavg(obj_student_class, "first", current_academic_year)
         if firt_term_avg:
-            print(f"first term avg is {firt_term_avg}")
+            # print(f"first term avg is {firt_term_avg}")
+            pass
         else: 
             firt_term_avg = 0.00
 
         # get second term avg get_termavg(student, term, year="2024/2025")
         scnd_term_avg = get_termavg(obj_student_class, "second", current_academic_year)
         if scnd_term_avg:
-            print(f"second term avg is {scnd_term_avg}")
+            # print(f"second term avg is {scnd_term_avg}")
+            pass
         else: 
             scnd_term_avg = 0.00
         
         # get third term avg get_termavg(student, term, year="2024/2025")
         third_term_avg = get_termavg(obj_student_class, "third", current_academic_year)
         if third_term_avg:
-            print(f"third term avg is {third_term_avg}")
+            # print(f"third term avg is {third_term_avg}")
+            pass
         else: 
             third_term_avg = 0.00
 
