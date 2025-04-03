@@ -399,6 +399,9 @@
 					<tbody style=" max-width:100%;">
 						{% for subj in subject_line %}
 						<tr>
+							{% for gradesubj in subject_grade %}
+							{% if subj.0 == gradesubj.0 %}
+
 							{% if subj.7 == "General" %}
 							<td>{{ subj.0 }}</td>
 							<td> {{ subj.1 }}</td>
@@ -407,12 +410,15 @@
 							<td> {{ subj.4 }}</td>
 							<td>{{ subj.5 }} </td>
 							{% if subj.7 %}
-							   <td> 1</td>
+							   <td> {{gradesubj.1}}</td>
 						   {% endif %}
 						   <td>{{ subj.6 }}</td>
 							<td>{{ subj.8 }} </td>
 							<td>{{ subj.9 }} </td>
 							{% endif %}
+
+							{% endif %}
+						   {% endfor %}
 						</tr>
 						{% endfor %}
 						{% comment %} <tr>
@@ -435,6 +441,8 @@
 	
 					   {% for subj in subject_line %}
 					   <tr>
+						{% for gradesubj in subject_grade %}
+						{% if subj.0 == gradesubj.0 %}
 						   {% if subj.7 == "Professional" %}
 						   <td>{{ subj.0 }}</td>
 						   <td> {{ subj.1 }}</td>
@@ -444,13 +452,16 @@
 						   <td>{{ subj.5 }} </td>
 	
 						   {% if subj.6 %}
-						   <td> 1</td>
+						   <td> {{ gradesubj.1 }}</td>
 						   {% endif %}
 						   <td>{{ subj.6 }}</td>
 	
 						   <td>{{ subj.8 }} </td>
 						   <td>{{ subj.9 }} </td>
 						   {% endif %}
+
+						   {% endif %}
+						   {% endfor %}
 					   </tr>
 					   {% endfor %}
 						

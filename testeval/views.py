@@ -697,6 +697,25 @@ def appreciation_marks(marks):
         return "EXCELLENT"
 
 
+#grade
+def grade_marks(marks):
+    if marks >= 0.00 and marks < 5.00:
+        return "F"
+    if marks >= 5.00 and marks < 8.00:
+        return "E"
+    if marks >= 8.00 and marks < 10.00:
+        return "D"
+    if marks == 10.00:
+        return "C"
+    if marks > 10.00 and marks < 12.00:
+        return "C+"
+    if marks >= 12.00 and marks < 15.00:
+        return "B"
+    if marks >= 15.00 and marks < 17.00:
+        return "B+"
+    if marks >= 17.00 and marks < 20.00:
+        return "A"
+
 @login_required
 def cal_mark_class(request):
     classrooms = ClassRoom.objects.all()
@@ -4795,6 +4814,9 @@ def viewDocumentInvoice(request, slug):
     # Create an empty of subjects and marks
     subject_value_cat = []
 
+    # Create an empty of subjects and grade marks
+    subject_grade_val = []
+
     # Create an empty of subjects and marks
     subj_cat = []
 
@@ -4839,6 +4861,8 @@ def viewDocumentInvoice(request, slug):
                 for subject_tests in secondterm_reslts:
                     # print(f"subject_tests --- {subject_tests}")
                     moyentt = (subject_tests.value + subject_tests.sec_value) / 2
+                    grad_moyentt = grade_marks(moyentt)
+                    print(f"grad_moyentt --- {grad_moyentt}")
                     moy_tot = round((moyentt * subject_tests.coef), ndigits=2)
                     total_coeff = total_coeff + decimal.Decimal(subject_tests.coef)
                     total_tot = total_tot + decimal.Decimal(moy_tot)
@@ -4855,6 +4879,7 @@ def viewDocumentInvoice(request, slug):
                     
                     # 
                     subject_value_cat.append([subject_tests.subject.title,subject_tests.value,subject_tests.sec_value, moyentt, subject_tests.coef, moy_tot, subject_tests.observation, subject_tests.subject.category, subject_tests.teacher])
+                    subject_grade_val.append([subject_tests.subject.title,grad_moyentt])
         # 
         if(term == 'third'):
             # print(f"term---{term}")
@@ -4985,6 +5010,7 @@ def viewDocumentInvoice(request, slug):
         context['academ_yr'] = obj_report_card.academic_year
         context['acad_resumption'] = obj_report_card.resumption
         context['total_prof_tot'] = total_prof_tot
+        context['subject_grade'] = subject_grade_val
         # context['avgTotal'] = "{:.2f}".format(invoiceTotal)
 
         # print(f"academic_year {obj_report_card.academic_year}")
