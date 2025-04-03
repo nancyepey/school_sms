@@ -145,6 +145,7 @@ class ReportCard(models.Model):
     general_subjs_avr = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     prof_subjs_avr = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     total_avr = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    class_moy_avr =  models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     best_avr =  models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     worst_avr =  models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     firstterm_avr =  models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)

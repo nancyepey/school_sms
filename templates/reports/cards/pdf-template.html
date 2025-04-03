@@ -178,6 +178,7 @@
 						<div style="margin-left:4em; margin-top:1em;">
 							<img src="{{onlinestudimag}}" style="width: 100%; max-width: 100px; max-height: 80px " />
 						</div>
+						<h4 style="margin: auto; text-align:center; padding-right:2em;color:green;">SPECIALTY - {{student.specialty.name}}</h4>
 					</div> 
 					<hr style="height:2px;border-width:0;color:gray;background-color:gray"/>
 					
@@ -480,7 +481,7 @@
 										<p style="padding:0px; margin:0px; font-size:16px; ">Meilleure Moy.</p>
 									</div>
 									<div class="col-6" style="padding-left:30px; ">
-										<p style="padding:6px; margin:0px; font-weight:bold; font-size:22px; margin-bottom: -1em;  margin-top: 0em;">{{ prof_gen_tot_moy }}</p>
+										<p style="padding:6px; margin:0px; font-weight:bold; font-size:22px; margin-bottom: -1em;  margin-top: 0em;">{{ reportcard.best_avr }}</p>
 										<p style="padding:0px; margin:0px; font-size:16px; ">____________________</p>
 									</div>
 								</div>
@@ -490,7 +491,7 @@
 										<p style="padding:0px; margin:0px; font-size:16px; ">Moindre Moy.</p>
 									</div>
 									<div class="col-6" style="padding-left:30px; ">
-										<p style="padding:6px; margin:0px; font-weight:bold; font-size:22px; margin-bottom: -1em;  margin-top: 0em;">{{ prof_gen_tot_moy }}</p>
+										<p style="padding:6px; margin:0px; font-weight:bold; font-size:22px; margin-bottom: -1em;  margin-top: 0em;">{{ reportcard.worst_avr }}</p>
 										<p style="padding:0px; margin:0px; font-size:16px; ">____________________</p>
 									</div>
 								</div>
@@ -500,7 +501,7 @@
 										<p style="padding:0px; margin:0px; font-size:16px; ">Moy. Classe</p>
 									</div>
 									<div class="col-6" style="padding-left:30px; ">
-										<p style="padding:6px; margin:0px; font-weight:bold; font-size:22px; margin-bottom: -1em;  margin-top: 0em;">{{ prof_gen_tot_moy }}</p>
+										<p style="padding:6px; margin:0px; font-weight:bold; font-size:22px; margin-bottom: -1em;  margin-top: 0em;">{{ reportcard.class_moy_avr }}</p>
 										<p style="padding:0px; margin:0px; font-size:16px; ">____________________</p>
 									</div>
 								</div>

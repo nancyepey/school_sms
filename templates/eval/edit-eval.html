@@ -40,18 +40,31 @@
                          <div class="col-12">
                             <h5 class="form-title"><span>Test Information</span></h5>
                          </div>
+                         
                          <div class="col-12 col-sm-6">
+                           <div class="form-group">
+                              <label>Term</label>
+                              <select class="form-control" name="term" required>
+                                 {% comment %} <option value="">Select Term</option> {% endcomment %}
+                                 <option value="First" {% if eval.titre == "Eval1" %} selected{% endif %}>First Term </option>
+                                 <option value="Second" {% if eval.titre == "Eval3" %} selected{% endif %}>Second Term</option>
+                                 <option value="Third" {% if eval.titre == "Eval5" %} selected{% endif %}>Third Term</option>
+                                 {% comment %} <option value="Male">Male</option> {% endcomment %}
+                              </select>
+                           </div>
+                        </div>
+                         {% comment %} <div class="col-12 col-sm-6">
                             <div class="form-group">
                                <label>Title</label>
                                <input type="text" class="form-control"  name="title" value="{{ eval.title }}" required>
                             </div>
-                         </div>
-                         <div class="col-12 col-sm-6">
+                         </div>  {% endcomment %}
+                         {% comment %} <div class="col-12 col-sm-6">
                             <div class="form-group">
                                <label>Titre (FR)</label>
                                <input type="text" class="form-control" name ="titre" value="{{ eval.titre }}">
                             </div>
-                         </div>
+                         </div> {% endcomment %}
                          <div class="col-12 col-sm-6"> 
                             <div class="form-group">
                                <label>Student</label>

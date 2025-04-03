@@ -262,7 +262,7 @@ def display_image( cloudflare_id):
 
 @login_required
 def student_list(request):
-    student_list = Student.objects.select_related('parent').all()
+    student_list = Student.objects.select_related('parent').filter(is_actif=True)
     # print(student_list)
     # print(student_list[0].student_image)
     classroom = ClassRoom.objects.all()
@@ -365,7 +365,7 @@ def student_list(request):
             if class_selected == "all":
                 get_class = ClassRoom.objects.all()
                 if specialty_selected == "all":
-                    student_list = Student.objects.all()
+                    student_list = Student.objects.filter(is_actif=True)
                     # for students in student_list:
                     #     if students.stud_image:
                     #         myimage = display_image(students.stud_image)
@@ -382,7 +382,7 @@ def student_list(request):
                     }
                 else:
                     get_specialty = Specialty.objects.get(id = specialty_selected)
-                    student_list = Student.objects.filter(specialty= get_specialty)
+                    student_list = Student.objects.filter(specialty= get_specialty, is_actif=True)
                     # for students in student_list:
                     #     if students.stud_image:
                     #         myimage = display_image(students.stud_image.cloudflare_id)
@@ -402,7 +402,7 @@ def student_list(request):
                 
                 if specialty_selected == "all":
                     get_specialty = Specialty.objects.all()
-                    student_list = Student.objects.filter(student_class=get_class)
+                    student_list = Student.objects.filter(student_class=get_class, is_actif=True)
                     # for students in student_list:
                     #     if students.stud_image:
                     #         myimage = display_image(students.stud_image.cloudflare_id)
@@ -421,7 +421,7 @@ def student_list(request):
                     }
                 else:
                     get_specialty = Specialty.objects.get(id = specialty_selected)
-                    student_list = Student.objects.filter(student_class=get_class, specialty= get_specialty)
+                    student_list = Student.objects.filter(student_class=get_class, specialty= get_specialty, is_actif=True)
                     # for students in student_list:
                     #     if students.stud_image:
                     #         myimage = display_image(students.stud_image.cloudflare_id)

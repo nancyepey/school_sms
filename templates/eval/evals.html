@@ -201,6 +201,10 @@
                                          tabindex="-1" aria-disabled="true">Previous</a></li>
                                          
                                      {% endif %}
+
+                                     {% if pag_prev != 0 %}
+                                     <li class="page-item"><a class="page-link" href="?page={{pag_prev}}">{{pag_prev}}</a></li>
+                                     {% endif %}
                                          
                                      
                                      {% for page in paginator.page_range  %}
@@ -210,15 +214,19 @@
                  
                                      <li class="page-item active" aria-current="page"><a class="page-link" href="?page={{page}}">{{page}}</a></li>
                  
-                                     {% else %}
-                                     <li class="page-item"><a class="page-link" href="?page={{page}}">{{page}}</a></li>
+                                     {% comment %} {% else %}
+                                     <li class="page-item"><a class="page-link" href="?page={{page}}">{{page}}</a></li> {% endcomment %}
                                          
                                      {% endif %}
-                                         
-                 
                                      
                                          
                                      {% endfor %}
+                                     
+
+                                     {% if pag_next != 0 %}
+                                     <li class="page-item"><a class="page-link" href="?page={{pag_next}}">{{pag_next}}</a></li>
+                                         
+                                     {% endif %}
                  
                                      {% if eval_list.has_next %}
                                      <li class="page-item"><a class="page-link" href="?page={{eval_list.next_page_number}}" 

@@ -159,7 +159,7 @@ DATABASES = {
 # DATABASES["default"] = dj_database_url.parse("postgresql://giltead_posql_render_user:hksRQhjfkQz0fb0hblDV95YnCkahL7F0@dpg-cv1l2ld6l47c73fg5l0g-a.oregon-postgres.render.com/giltead_posql_render")
 # second
 DATABASES["default"] = dj_database_url.parse("postgresql://giltead_posql_render_user:hksRQhjfkQz0fb0hblDV95YnCkahL7F0@dpg-cvle383ipnbc73dih630-a.oregon-postgres.render.com/giltead_posql_render_v967")
-
+# postgresql://giltead_posql_render_user:hksRQhjfkQz0fb0hblDV95YnCkahL7F0@dpg-cvle383ipnbc73dih630-a.oregon-postgres.render.com/giltead_posql_render_v967
 # postgresql://giltead_posql_render_user:hksRQhjfkQz0fb0hblDV95YnCkahL7F0@dpg-cv1l2ld6l47c73fg5l0g-a.oregon-postgres.render.com/giltead_posql_render
 
 
