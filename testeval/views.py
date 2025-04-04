@@ -2579,14 +2579,19 @@ def addReportCard(request):
                 #get student class
                 # obj_student_class = Student.objects.get(id=student_info)
                 obj_student_class = Student.objects.filter(name=student_info, is_actif=True)
+                print(obj_student_class)
 
                 classroomId = obj_student_class.student_class_id
+                print(classroomId)
                 classroom =  ClassRoom.objects.get(id=classroomId)
+                print(classroom)
             
                 subjects = Subject.objects.filter(classroom=classroomId)
+                print(subjects)
                 # obj_eval_class = Eval.objects.filter(student_id=student_info, academic_year=academic_yr)
                 # obj_eval_cl_type = Eval.objects.filter(student_id=student_info, academic_year=academic_yr, is_actif=True)
                 obj_eval_cl_type = Eval.objects.filter(name=student_info, academic_year=academic_yr, is_actif=True)
+                print(obj_eval_cl_type)
             # pass
         except:
             messages.error(request, 'Something went wrong')
