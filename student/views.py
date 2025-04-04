@@ -274,7 +274,7 @@ def student_list(request):
     if 'q' in request.GET:
         search=request.GET['q']
         # student_list =  Student.objects.filter(name__startswith = search )
-        student_list =  Student.objects.filter(Q(name__contains = search) | Q(student_uid__contains = search) | Q(admission_number__contains = search)  | Q(minesec_ident_num__contains = search) )
+        student_list =  Student.objects.filter(Q(name__icontains = search) | Q(student_uid__icontains = search) | Q(admission_number__icontains = search)  | Q(minesec_ident_num__icontains = search) )
     
         # for students in student_list:
         #     if students.stud_image:

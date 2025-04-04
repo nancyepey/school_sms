@@ -36,14 +36,22 @@
                                  <div class="col-12 col-sm-6">
                                     <div class="form-group">
                                        <label>Student</label>
-                                       <select class="form-control" name="student" required>
+                                       <input type="text" list="students" id="studentsans" placeholder="Search student" class="form-control" name="selected_stud" required>
+                                       <datalist id="students" name="selected_stud">
+                                          {% for student in student %}
+                                             {% comment %} <option value="{{student.id}}">{{student.name}}</option> {% endcomment %}
+                                             <option data-value="{{student.id}}" value="{{student.name}}"></option>
+                                          
+                                          {% endfor %}
+                                       </datalist>
+                                       {% comment %} <select class="form-control" name="student" required>
                                           <option value="">Select Student</option>
                                           <option value="all">All</option>
                                           {% for student in student %}
                                              <option value="{{student.id}}">{{student.name}}</option>
                                           
                                           {% endfor %}
-                                       </select>
+                                       </select> {% endcomment %}
                                     </div>
                                  </div>
                                  <div class="col-12 col-sm-6">

@@ -283,11 +283,22 @@ def report_card_list(request):
     
     classroom = ClassRoom.objects.all()
     specialtys = Specialty.objects.all()
+
+    
+
+    # search
+    if 'q_card' in request.GET:
+        search=request.GET['q_card']
+        report_card = ReportCard.objects.filter(Q(student__name__icontains = search) | Q(term__icontains = search) | Q(total_avr__icontains = search) | Q(academic_year__icontains = search))
+
+
     context = {
         'report_card_list': report_card,
         'classroom':classroom,
         'specialtys':specialtys,
     }
+
+
     if request.method == 'POST':
         # print(request)
         class_selected = request.POST.get('student_class')
@@ -2421,7 +2432,8 @@ def addReportCard(request):
     
     if request.method == "POST":
         # student = request.POST.get('student')
-        student_info = request.POST.get('student')
+        student_info = request.POST.get('selected_stud')
+        # student_info = request.POST.get('student')
         term = request.POST.get('term')
         academic_yr = request.POST.get('academic_year')
         # print("academic_yr")
