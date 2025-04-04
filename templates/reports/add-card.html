@@ -38,6 +38,7 @@
                                        <label>Student</label>
                                        <input type="text" list="students" id="studentsans" placeholder="Search student" class="form-control" name="selected_stud" required>
                                        <datalist id="students" name="selected_stud">
+                                          <option data-value="all" value="All"></option>
                                           {% for student in student %}
                                              {% comment %} <option value="{{student.id}}">{{student.name}}</option> {% endcomment %}
                                              <option data-value="{{student.id}}" value="{{student.name}}"></option>

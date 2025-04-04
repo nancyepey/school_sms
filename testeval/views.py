@@ -2475,7 +2475,7 @@ def addReportCard(request):
             #Get Client Settings
             p_settings = Settings.objects.get(clientName='GILEAD TECHNICAL HIGH SCHOOL')
             # print('student')
-            if student_info == "all":
+            if student_info == "All":
                 obj_student_class_all = Student.objects.filter(is_actif=True)
                 # messages.error(request, 
                 # generate all report card at once
@@ -2493,21 +2493,23 @@ def addReportCard(request):
                             
             else:
                 #get student class
-                obj_student_class = Student.objects.get(id=student_info)
+                # obj_student_class = Student.objects.get(id=student_info)
+                obj_student_class = Student.objects.filter(name=student_info, is_actif=True)
 
                 classroomId = obj_student_class.student_class_id
                 classroom =  ClassRoom.objects.get(id=classroomId)
             
                 subjects = Subject.objects.filter(classroom=classroomId)
-                obj_eval_class = Eval.objects.filter(student_id=student_info, academic_year=academic_yr)
-                obj_eval_cl_type = Eval.objects.filter(student_id=student_info, academic_year=academic_yr, is_actif=True)
+                # obj_eval_class = Eval.objects.filter(student_id=student_info, academic_year=academic_yr)
+                # obj_eval_cl_type = Eval.objects.filter(student_id=student_info, academic_year=academic_yr, is_actif=True)
+                obj_eval_cl_type = Eval.objects.filter(name=student_info, academic_year=academic_yr, is_actif=True)
             # pass
         except:
             messages.error(request, 'Something went wrong')
             return redirect('report_cards')
         
         
-        if student_info == "all":
+        if student_info == "All":
             print("for all")
             if obj_student_class_all:
                 for obj_student_class in obj_student_class_all:
@@ -2516,6 +2518,7 @@ def addReportCard(request):
                     classroomId = obj_student_class.student_class_id
                     classroom =  ClassRoom.objects.get(id=classroomId)
                     # loop thro each student
+                    # obj_eval_cl_type = Eval.objects.filter(student_id=student, academic_year=academic_yr, is_actif=True)
                     obj_eval_cl_type = Eval.objects.filter(student_id=student, academic_year=academic_yr, is_actif=True)
                     if obj_eval_cl_type:
                         # if(term == 'first'):
@@ -2545,6 +2548,7 @@ def addReportCard(request):
                                     subject_value_cat.append([subject_tests.subject.title,subject_tests.value,subject_tests.sec_value, moyentt, subject_tests.coef, moy_tot, subject_tests.observation, subject_tests.subject.category, subject_tests.teacher])
                         
                         if(term == 'second'):
+                            print("sec")
                             secondterm_reslts = Eval.objects.filter(student_id=student.id, academic_year= academic_yr, title="Test3", is_actif =True)
                             if secondterm_reslts:
                                 for subject_tests in secondterm_reslts:
@@ -4874,7 +4878,7 @@ def viewDocumentInvoice(request, slug):
                     # print(f"subject_tests --- {subject_tests}")
                     moyentt = (subject_tests.value + subject_tests.sec_value) / 2
                     grad_moyentt = grade_marks(moyentt)
-                    print(f"grad_moyentt --- {grad_moyentt}")
+                    # print(f"grad_moyentt --- {grad_moyentt}")
                     moy_tot = round((moyentt * subject_tests.coef), ndigits=2)
                     total_coeff = total_coeff + decimal.Decimal(subject_tests.coef)
                     total_tot = total_tot + decimal.Decimal(moy_tot)
