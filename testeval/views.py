@@ -728,6 +728,90 @@ def grade_marks(marks):
         return "A"
 
 @login_required
+def stud_cal_mark(request):
+    current_aced_year = "2024/2025"
+    subjects = Subject.objects.all()
+    student_all = Student.objects.filter(is_actif=True)
+    # print(student_all)
+    context = {
+        'students':student_all,
+    }
+    # print(context)
+    if request.method == "POST":
+        try:
+            student_in = request.POST.get('student_in')
+            print(student_in)
+            # students = Student.objects.filter(is_actif=True, name=student_in).first()
+            students = Student.objects.filter( name=student_in).first()
+            print(f"{students}---students")
+            term = request.POST.get('term')
+            added_by = request.user.username
+            get_class = students.student_class
+            print(f"{get_class}---get_class")
+        except:
+            # print("out")
+            messages.error(request, 'Something went wrong')
+            return redirect('cal_stud_marks')
+        
+        # 
+        if students:
+            does_stud_has_test = Eval.objects.filter(student_id=students, academic_year=current_aced_year, is_actif=True)
+            if does_stud_has_test:
+                # 
+                subjects = Subject.classroom.through.objects.filter(classroom_id=get_class.id)
+                if subjects:
+                    for subjs in subjects:
+                        subj = Subject.objects.get(id=subjs.subject_id)
+                        if term == "second":
+                            # print("second")
+                            # 
+                            get_testa = Eval.objects.filter(title="Test3",student_id=students.id,subject_id = subj.id, academic_year=current_aced_year, is_actif=True).first()
+                            # print(get_testa)
+                            if get_testa:
+                                subj_avg = (get_testa.value + get_testa.sec_value) / 2
+                                # 
+                                observation = appreciation_marks(subj_avg)
+                                grade_tot_subj = subj_avg * get_testa.coef
+                                # print(f"subj Average:  --- {subj_avg}--- {subj.title} --- {grade_tot_subj}---- {observation}")
+                                current_mark = TestMoySpecialtySubjClass.objects.filter(term=term, classroom =get_class, specialty=students.specialty, student=students, subject=subj, academic_year=current_aced_year, is_actif=True).first()
+                                if current_mark:
+                                    current_mark.is_actif = False
+                                    current_mark.modified_by = request.user.username
+                                    current_mark.save()
+                                    mark_subj = TestMoySpecialtySubjClass.objects.create(
+                                        term = term,
+                                        classroom = students.student_class,
+                                        specialty = students.specialty,
+                                        student = students,
+                                        subject = subj,
+                                        test_avg = grade_tot_subj,
+                                        subj_coef = get_testa.coef,
+                                        observation = observation,
+                                        added_by = added_by,
+                                    )
+                                else:
+                                    # 
+                                    mark_subj = TestMoySpecialtySubjClass.objects.create(
+                                        term = term,
+                                        classroom = students.student_class,
+                                        specialty = students.specialty,
+                                        student = students,
+                                        subject = subj,
+                                        test_avg = grade_tot_subj,
+                                        subj_coef = get_testa.coef,
+                                        observation = observation,
+                                        added_by = added_by,
+                                    )
+                messages.success(request, f'{students} Marks Calculated successfully')
+                return redirect("cal_stud_marks")
+            else:
+                # print("out")
+                messages.error(request, 'Student has not marks')
+                return redirect('cal_stud_marks')
+    return render(request, "eval/cal_stud_marks.html", context=context)
+
+
+@login_required
 def cal_mark_class(request):
     classrooms = ClassRoom.objects.all()
     subjects = Subject.objects.all()

@@ -11,6 +11,7 @@ urlpatterns = [
     #calculate marks and class ranking
     # path('get_marks/', views.get_marks, name="get_marks"),
     path('calculate_marks/', views.cal_mark_class, name="calculate_mark_class"),
+    path('calculate_stud_marks/', views.stud_cal_mark, name="cal_stud_marks"),
     path('class_ranking/', views.cal_classranking, name="classranking_class"),
     path('all_class_ranking/', views.all_classrank, name="all_classrank"),
     path('all_ranking/', views.rankx_all, name="all_ranking"),
