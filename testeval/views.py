@@ -280,6 +280,8 @@ def eval_list(request):
 @login_required
 def report_card_list(request):
     report_card = ReportCard.objects.select_related('student').filter(is_actif=True)
+    report_card_count = ReportCard.objects.select_related('student').filter(is_actif=True).count()
+    print(f"{report_card_count}----report_card_count")
     
     classroom = ClassRoom.objects.all()
     specialtys = Specialty.objects.all()
@@ -6318,6 +6320,15 @@ def ANCIENcreate_report_card(request):
     
 
     return render(request, "reports/add-card.html", context=context)
+
+
+
+def has_stud_pass(avg):
+    #check is avg is a pass mark
+    if avg > 10.00:
+        return True
+    else:
+        return False
 
 
 

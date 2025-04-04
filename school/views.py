@@ -5,6 +5,7 @@ from django.http import HttpResponse
 import pandas as pd
 
 from core.models import CustomUser
+from testeval.models import ReportCard
 from teacher.models import Teacher
 from subject.models import Subject
 from student.models import Student
@@ -66,12 +67,15 @@ def admin_dashboard(request):
     count_class = ClassRoom.objects.all().count()
     count_subjects = Subject.objects.all().count()
     count_students = Student.objects.all().count()
+    report_card_count = ReportCard.objects.select_related('student').filter(is_actif=True).count()
+    print(f"{report_card_count}----report_card_count")
     context = {
         'company': company,
         "classroom" : classroom,
         "count_class" : count_class,
         "count_subjects" : count_subjects,
         "count_students" : count_students,
+        "repcard_counts":report_card_count,
     }
     # unread_notification = Notification.objects.filter(user=request.user, is_read=False)
     # unread_notification_count = unread_notification.count()
