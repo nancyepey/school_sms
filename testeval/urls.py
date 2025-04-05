@@ -24,6 +24,7 @@ urlpatterns = [
     path('reports/', views.report_card_list, name="report_cards"),
     # path('reports/create/', views.create_report_card, name="add_report_cards"),
     path('reports/create/', views.addReportCard, name="add_report_cards"),
+    path('reports/create_cls/', views.addClassReportCard, name="add_cls_cards"),
     path('delete_report/<str:slug>/', views.delete_report_card, name="del_report_card"),
     # path('reports/card/', views.generate_pdf, name="generate_pdf"),
 

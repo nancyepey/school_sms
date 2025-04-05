@@ -10,7 +10,8 @@
                         <h3 class="page-title">Create Report Card</h3>
                         <ul class="breadcrumb">
                            <li class="breadcrumb-item"><a href="{% url 'report_cards' %}">Report Card</a></li>
-                           <li class="breadcrumb-item active">Add Report Card</li>
+                           <li class="breadcrumb-item active">Add Report Card Per CLASS</li>
+                           <li class="breadcrumb-item"><a href="{% url 'add_report_cards' %}">Add Report Card Per Students</a></li>
                         </ul>
                      </div>
                   </div>
@@ -29,28 +30,18 @@
                               {% csrf_token %}
                               <div class="row">
                                  <div class="col-12">
-                                    <h5 class="form-title"><span>Card Information</span></h5>
+                                    <h5 class="form-title"><span>Add Report Cards Per CLASS Information</span></h5>
                                  </div>
                                  <div class="col-12 col-sm-6">
                                     <div class="form-group">
-                                       <label>Student</label>
-                                       <input type="text" list="students" id="studentsans" placeholder="Search student" class="form-control" name="selected_stud" required>
-                                       <datalist id="students" name="selected_stud">
-                                          <option data-value="all" value="All"></option>
-                                          {% for student in student %}
-                                             {% comment %} <option value="{{student.id}}">{{student.name}}</option> {% endcomment %}
-                                             <option data-value="{{student.id}}" value="{{student.name}}"></option>
+                                       <label>Classrom</label>
+                                       <select class="form-control" name="classrom_secl" required>
+                                          <option value="">Select Classrom</option>
+                                          {% for classrom in classrooms %}
+                                             <option value="{{classrom.id}}">{{classrom.class_name}}</option>
                                           
                                           {% endfor %}
-                                       </datalist>
-                                       {% comment %} <select class="form-control" name="student" required>
-                                          <option value="">Select Student</option>
-                                          <option value="all">All</option>
-                                          {% for student in student %}
-                                             <option value="{{student.id}}">{{student.name}}</option>
-                                          
-                                          {% endfor %}
-                                       </select> {% endcomment %}
+                                       </select> 
                                     </div>
                                  </div>
                                  <div class="col-12 col-sm-6">
@@ -70,12 +61,6 @@
                                        <input type="text" class="form-control" placeholder="Day Month, Year" name="resumptn_date"  required>
                                     </div>
                                  </div>
-                                 {% comment %} <div class="col-12 col-sm-6">
-                                    <div class="form-group">
-                                       <label>Academic Year</label>
-                                       <input type="text" class="form-control" placeholder="Year1/Year2" name="academic_year"  required>
-                                    </div>
-                                 </div> {% endcomment %}
                                  
                                  <div class="col-12 col-sm-6">
                                     <div class="form-group">
@@ -83,17 +68,9 @@
                                        <select class="form-control" name="academic_year" required>
                                           <option value="">Academic Year</option>
                                           <option value="2024/2025" selected>2024/2025</option>
-                                          {% comment %} <option value="2025/2026">2025/2026</option>
-                                          <option value="2026/2027">2026/2027</option> {% endcomment %}
                                        </select>
                                     </div>
                                  </div>
-                                 {% comment %} <div class="col-12 col-sm-6">
-                                    <div class="form-group">
-                                       <label>Remarks</label>
-                                       <input type="text" class="form-control" name="remarks" required>
-                                    </div>
-                                 </div> {% endcomment %}
                                  <div class="col-12">
                                     <button type="submit" class="btn btn-primary">Submit</button>
                                  </div>

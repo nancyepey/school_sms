@@ -68,7 +68,7 @@ def admin_dashboard(request):
     count_subjects = Subject.objects.all().count()
     count_students = Student.objects.all().count()
     report_card_count = ReportCard.objects.select_related('student').filter(is_actif=True).count()
-    print(f"{report_card_count}----report_card_count")
+    # print(f"{report_card_count}----report_card_count")
     context = {
         'company': company,
         "classroom" : classroom,
